@@ -76,6 +76,7 @@ class SettingsState {
         val watchedThresholds: WatchedThresholds = WatchedThresholds(),
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
+        val mobilePlayerBrightnessResetAtZero: Boolean = true,
         val volumeStabilizationEnabled: Boolean = false,
         val playerBufferProfile: PlayerBufferProfile = PlayerBufferProfile.SMALL,
         val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,
@@ -212,6 +213,8 @@ class SettingsState {
         data object TvPlayerVolumeKeysToggled : Event
 
         data object AdvancedPlayerVolumeToggled : Event
+
+        data object MobilePlayerBrightnessResetAtZeroToggled : Event
 
         /** Пользователь переключил стабилизацию громкости (сжатие динамического диапазона). */
         data object VolumeStabilizationToggled : Event
