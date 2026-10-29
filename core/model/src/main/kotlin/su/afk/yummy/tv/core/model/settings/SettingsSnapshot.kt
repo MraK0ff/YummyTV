@@ -32,6 +32,7 @@ data class SettingsSnapshot(
     val watchedThresholds: WatchedThresholds,
     val tvPlayerVolumeKeysEnabled: Boolean,
     val advancedPlayerVolumeEnabled: Boolean,
+    val mobilePlayerBrightnessResetAtZero: Boolean = true,
     val volumeStabilizationEnabled: Boolean,
     val playerBufferProfile: PlayerBufferProfile,
     val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,
