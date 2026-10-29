@@ -97,6 +97,20 @@ internal fun SettingsMobilePlayerContent(
                 onClick = { onPickerRequested(SettingsMobilePicker.PLAYER_ORIENTATION) },
             )
         }
+        SettingsMobileSection(title = stringResource(R.string.settings_mobile_section_player_advanced)) {
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_mobile_brightness_zero_label),
+                hint = stringResource(
+                    if (state.mobilePlayerBrightnessResetAtZero) {
+                        R.string.settings_mobile_brightness_zero_enabled
+                    } else {
+                        R.string.settings_mobile_brightness_zero_disabled
+                    },
+                ),
+                enabled = state.mobilePlayerBrightnessResetAtZero,
+                onClick = { onEvent(SettingsState.Event.MobilePlayerBrightnessResetAtZeroToggled) },
+            )
+        }
         SettingsMobileSection(title = stringResource(R.string.settings_tv_section_sound)) {
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_advanced_volume_label),
