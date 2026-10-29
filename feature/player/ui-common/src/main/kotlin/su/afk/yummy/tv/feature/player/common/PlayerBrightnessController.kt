@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -18,11 +17,12 @@ import javax.inject.Singleton
 import kotlin.math.roundToInt
 
 /**
- * Яркость мобильного плеера, выбранная пользователем жестом: доля 0.01–1.0 или `null`,
+ * Яркость мобильного плеера, выбранная пользователем жестом: доля 0.01–1.0 или `null` при 0,
  * пока яркость не менялась и действует системная.
  *
  * Синглтон на весь процесс: восстанавливается из DataStore при старте и сохраняется обратно
- * (с дебаунсом), чтобы переживать выход из плеера и перезапуск приложения.
+ * (с дебаунсом), чтобы переживать выход из плеера и перезапуск приложения. Нулевая яркость
+ * снимает переопределение и возвращает управление системной яркости.
  */
 @OptIn(FlowPreview::class)
 @Singleton
@@ -45,16 +45,21 @@ class PlayerBrightnessController @Inject constructor(
         }
         scope.launch {
             _brightness
-                .filterNotNull()
-                .map { (it * 100f).roundToInt() }
+                .map { it?.let { fraction -> (fraction * 100f).roundToInt() } }
                 .distinctUntilChanged()
                 .debounce(PERSIST_DEBOUNCE_MS)
-                .collect { percent -> settingsStore.setMobilePlayerBrightnessPercent(percent) }
+                .collect { percent ->
+                    if (percent == null) {
+                        settingsStore.resetMobilePlayerBrightness()
+                    } else {
+                        settingsStore.setMobilePlayerBrightnessPercent(percent)
+                    }
+                }
         }
     }
 
     fun setFraction(value: Float) {
-        _brightness.value = value.coerceIn(MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+        _brightness.value = if (value <= 0f) null else value.coerceIn(MIN_BRIGHTNESS, MAX_BRIGHTNESS)
     }
 
     companion object {
