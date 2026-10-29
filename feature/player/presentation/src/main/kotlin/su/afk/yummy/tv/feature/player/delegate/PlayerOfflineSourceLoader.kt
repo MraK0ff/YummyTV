@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.player.delegate
 
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
+import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.usecase.GetVideoDownloadUseCase
 import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadsUseCase
 import kotlinx.coroutines.flow.first
@@ -29,7 +30,7 @@ internal class PlayerOfflineSourceLoader @Inject constructor(
 ) {
     /** Скачанная серия, готовая к воспроизведению, или null. */
     suspend fun findDownloaded(downloadId: Long): VideoDownloadItem? =
-        getVideoDownload(downloadId)?.takeIf { it.status.name == "Downloaded" }
+        getVideoDownload(downloadId)?.takeIf { it.status == VideoDownloadStatus.Downloaded }
 
     fun missingDownload(state: PlayerState.State): PlayerState.State = state.copy(
         playerError = strings.get(R.string.player_download_missing),
