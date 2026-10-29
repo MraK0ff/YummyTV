@@ -21,7 +21,9 @@ class PlayerBrightnessControllerTest : BaseUnitTest() {
 
     private fun createController(storedPercent: Int?): PlayerBrightnessController {
         every { store.mobilePlayerBrightnessPercent } returns flowOf(storedPercent)
+        every { store.mobilePlayerBrightnessResetAtZero } returns flowOf(true)
         coEvery { store.setMobilePlayerBrightnessPercent(any()) } returns Unit
+        coEvery { store.setMobilePlayerBrightnessResetAtZero(any()) } returns Unit
         return PlayerBrightnessController(store, scope)
     }
 
