@@ -56,6 +56,8 @@ interface PlayerSettingsStore {
     val advancedPlayerVolumePercent: Flow<Int>
 
     /** Яркость мобильного плеера в процентах; `null` — пользователь её не менял, действует системная. */
+    val mobilePlayerBrightnessResetAtZero: Flow<Boolean>
+
     val mobilePlayerBrightnessPercent: Flow<Int?>
 
     /** Скорость воспроизведения, выбранная в плеере последней; общая для всех тайтлов. */
@@ -114,6 +116,7 @@ interface PlayerSettingsStore {
     suspend fun setTvPlayerVolumeKeysEnabled(enabled: Boolean)
     suspend fun setAdvancedPlayerVolumeEnabled(enabled: Boolean)
     suspend fun setAdvancedPlayerVolumePercent(percent: Int)
+    suspend fun setMobilePlayerBrightnessResetAtZero(enabled: Boolean)
     suspend fun setMobilePlayerBrightnessPercent(percent: Int)
     suspend fun resetMobilePlayerBrightness()
     suspend fun setPlayerPlaybackSpeed(speed: Float)
