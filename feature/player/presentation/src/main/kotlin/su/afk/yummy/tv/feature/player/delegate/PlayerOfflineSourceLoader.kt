@@ -7,6 +7,8 @@ import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
 import su.afk.yummy.tv.feature.player.PlayerSourceDubbing
 import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
 import su.afk.yummy.tv.feature.player.PlayerSourceGraph
+import su.afk.yummy.tv.feature.player.PlayerSkipSegment
+import su.afk.yummy.tv.feature.player.PlayerSkips
 import su.afk.yummy.tv.feature.player.PlayerSourceSelection
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -44,6 +46,14 @@ internal class PlayerOfflineSourceLoader @Inject constructor(
                 number = item.episode,
                 iframeUrl = item.iframeUrl,
                 screenshotUrl = item.screenshotUrl,
+                skips = PlayerSkips(
+                    opening = item.openingStartMs?.let { start ->
+                        item.openingEndMs?.let { end -> PlayerSkipSegment(startMs = start, endMs = end) }
+                    },
+                    ending = item.endingStartMs?.let { start ->
+                        item.endingEndMs?.let { end -> PlayerSkipSegment(startMs = start, endMs = end) }
+                    },
+                ),
             ),
         ),
         sourceSelection = PlayerSourceSelection(),

@@ -202,6 +202,10 @@ internal class EpisodeDownloadHandler @Inject constructor(
             dubbing = video.dubbing,
             iframeUrl = video.iframeUrl,
             screenshotUrl = screenshotUrl,
+            openingStartMs = video.skips.opening?.startMs,
+            openingEndMs = video.skips.opening?.endMs,
+            endingStartMs = video.skips.ending?.startMs,
+            endingEndMs = video.skips.ending?.endMs,
             quality = quality,
             headers = quality.headers.ifEmpty { candidate.headers },
         )

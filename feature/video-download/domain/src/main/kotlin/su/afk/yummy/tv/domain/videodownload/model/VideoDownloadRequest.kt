@@ -11,6 +11,10 @@ data class VideoDownloadRequest(
     val dubbing: String,
     val iframeUrl: String,
     val screenshotUrl: String,
+    val openingStartMs: Long? = null,
+    val openingEndMs: Long? = null,
+    val endingStartMs: Long? = null,
+    val endingEndMs: Long? = null,
     val quality: VideoDownloadQualityOption,
     val headers: Map<String, String>,
 )
