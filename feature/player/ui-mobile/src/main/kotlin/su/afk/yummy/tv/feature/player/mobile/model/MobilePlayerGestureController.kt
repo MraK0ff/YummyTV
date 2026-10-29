@@ -197,9 +197,11 @@ internal fun rememberMobilePlayerGestureController(
     // Сохранённая яркость применяется поверх системной; пока её нет, окно остаётся на системной.
     val savedBrightness by brightnessController.brightness.collectAsState()
     LaunchedEffect(activity, savedBrightness) {
-        val level = savedBrightness ?: return@LaunchedEffect
         activity?.window?.let { window ->
-            window.attributes = window.attributes.apply { screenBrightness = level }
+            window.attributes = window.attributes.apply {
+                screenBrightness = savedBrightness
+                    ?: WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+            }
         }
     }
     return controller
