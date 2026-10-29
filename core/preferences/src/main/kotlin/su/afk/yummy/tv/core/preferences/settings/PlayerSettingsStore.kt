@@ -115,6 +115,7 @@ interface PlayerSettingsStore {
     suspend fun setAdvancedPlayerVolumeEnabled(enabled: Boolean)
     suspend fun setAdvancedPlayerVolumePercent(percent: Int)
     suspend fun setMobilePlayerBrightnessPercent(percent: Int)
+    suspend fun resetMobilePlayerBrightness()
     suspend fun setPlayerPlaybackSpeed(speed: Float)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
     suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile)
