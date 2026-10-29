@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.player.common
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
@@ -31,19 +32,22 @@ class PlayerBrightnessController @Inject constructor(
     @DefaultApplicationScope private val scope: CoroutineScope,
 ) {
     private val _brightness = MutableStateFlow<Float?>(null)
+    private val resetAtZero = MutableStateFlow(true)
 
     /** Сохранённая яркость как доля 0.01f..1f; `null` — использовать системную. */
     val brightness: StateFlow<Float?> = _brightness.asStateFlow()
 
     init {
         scope.launch {
+            settingsStore.mobilePlayerBrightnessResetAtZero.collect { resetAtZero.value = it }
+        }
+        scope.launch {
             val storedPercent = settingsStore.mobilePlayerBrightnessPercent.first()
             // Жест мог успеть сработать раньше, чем DataStore ответил: его значение главнее.
             if (_brightness.value == null && storedPercent != null) {
                 _brightness.value = (storedPercent / 100f).coerceIn(MIN_BRIGHTNESS, MAX_BRIGHTNESS)
             }
-        }
-        scope.launch {
+            // Не сбрасываем сохранённую яркость начальным null до завершения восстановления.
             _brightness
                 .map { it?.let { fraction -> (fraction * 100f).roundToInt() } }
                 .distinctUntilChanged()
@@ -59,7 +63,11 @@ class PlayerBrightnessController @Inject constructor(
     }
 
     fun setFraction(value: Float) {
-        _brightness.value = if (value <= 0f) null else value.coerceIn(MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+        _brightness.value = if (value <= 0f && resetAtZero.value) {
+            null
+        } else {
+            value.coerceIn(MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+        }
     }
 
     companion object {
