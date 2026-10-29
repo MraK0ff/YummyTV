@@ -3,6 +3,8 @@ package su.afk.yummy.tv.feature.player.delegate
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.usecase.GetVideoDownloadUseCase
+import su.afk.yummy.tv.domain.videodownload.usecase.ObserveVideoDownloadsUseCase
+import kotlinx.coroutines.flow.first
 import su.afk.yummy.tv.feature.player.PlayerSourceBalancer
 import su.afk.yummy.tv.feature.player.PlayerSourceDubbing
 import su.afk.yummy.tv.feature.player.PlayerSourceEpisode
@@ -22,6 +24,7 @@ import javax.inject.Inject
  */
 internal class PlayerOfflineSourceLoader @Inject constructor(
     private val getVideoDownload: GetVideoDownloadUseCase,
+    private val observeVideoDownloads: ObserveVideoDownloadsUseCase,
     private val strings: StringProvider,
 ) {
     /** Скачанная серия, готовая к воспроизведению, или null. */
@@ -33,29 +36,11 @@ internal class PlayerOfflineSourceLoader @Inject constructor(
         streamUrl = null,
     )
 
-    fun downloaded(state: PlayerState.State, item: VideoDownloadItem): PlayerState.State = state.copy(
+    suspend fun downloaded(state: PlayerState.State, item: VideoDownloadItem): PlayerState.State = state.copy(
         animeTitle = item.animeTitle,
         animeId = item.animeId,
         posterUrl = item.posterUrl,
-        sourceGraph = singleEpisodeGraph(
-            balancer = item.playerName,
-            dubbing = item.dubbing,
-            episode = PlayerSourceEpisode(
-                id = item.videoId,
-                playerId = item.playerId,
-                number = item.episode,
-                iframeUrl = item.iframeUrl,
-                screenshotUrl = item.screenshotUrl,
-                skips = PlayerSkips(
-                    opening = item.openingStartMs?.let { start ->
-                        item.openingEndMs?.let { end -> PlayerSkipSegment(startMs = start, endMs = end) }
-                    },
-                    ending = item.endingStartMs?.let { start ->
-                        item.endingEndMs?.let { end -> PlayerSkipSegment(startMs = start, endMs = end) }
-                    },
-                ),
-            ),
-        ),
+        sourceGraph = downloadedEpisodeGraph(item),
         sourceSelection = PlayerSourceSelection(),
         streamUrl = item.streamUrl,
         streamHeaders = item.headers,
@@ -69,6 +54,55 @@ internal class PlayerOfflineSourceLoader @Inject constructor(
         offlineCacheKeyScheme = item.cacheKeyScheme.storageValue,
         playerError = null,
     )
+
+    /**
+     * Офлайн-граф содержит только скачанные серии того же тайтла, плеера и озвучки.
+     */
+    private suspend fun downloadedEpisodeGraph(current: VideoDownloadItem): PlayerSourceGraph {
+        val episodes = observeVideoDownloads().first()
+            .asSequence()
+            .filter { it.status.name == "Downloaded" }
+            .filter {
+                it.animeId == current.animeId &&
+                    it.playerName == current.playerName &&
+                    it.dubbing == current.dubbing
+            }
+            .distinctBy { it.videoId }
+            .map { item ->
+                PlayerSourceEpisode(
+                    id = item.videoId,
+                    playerId = item.playerId,
+                    number = item.episode,
+                    iframeUrl = item.iframeUrl,
+                    screenshotUrl = item.screenshotUrl,
+                    skips = PlayerSkips(
+                        opening = item.openingStartMs?.let { start ->
+                            item.openingEndMs?.let { end -> PlayerSkipSegment(start, end) }
+                        },
+                        ending = item.endingStartMs?.let { start ->
+                            item.endingEndMs?.let { end -> PlayerSkipSegment(start, end) }
+                        },
+                    ),
+                )
+            }
+            .sortedBy { it.number.toDoubleOrNull() ?: Double.MAX_VALUE }
+            .toList()
+        val completeEpisodes = if (episodes.any { it.id == current.videoId }) episodes else episodes + PlayerSourceEpisode(
+            id = current.videoId,
+            playerId = current.playerId,
+            number = current.episode,
+            iframeUrl = current.iframeUrl,
+            screenshotUrl = current.screenshotUrl,
+        )
+        return PlayerSourceGraph(
+            balancers = listOf(
+                PlayerSourceBalancer(
+                    name = current.playerName,
+                    dubbings = listOf(PlayerSourceDubbing(name = current.dubbing, episodes = completeEpisodes)),
+                ),
+            ),
+        )
+    }
 
     /** Локальный файл (ACTION_VIEW, content://) — с отдельным data-source ([PlayerState.State.isLocalFile]). */
     fun localFile(state: PlayerState.State, uri: String, title: String): PlayerState.State = state.copy(
