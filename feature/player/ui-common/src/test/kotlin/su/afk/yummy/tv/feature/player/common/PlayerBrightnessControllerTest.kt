@@ -19,9 +19,12 @@ class PlayerBrightnessControllerTest : BaseUnitTest() {
     private val store: PlayerSettingsStore = mockk(relaxed = true)
     private val scope = CoroutineScope(StandardTestDispatcher(testScheduler))
 
-    private fun createController(storedPercent: Int?): PlayerBrightnessController {
+    private fun createController(
+        storedPercent: Int?,
+        resetAtZero: Boolean = true,
+    ): PlayerBrightnessController {
         every { store.mobilePlayerBrightnessPercent } returns flowOf(storedPercent)
-        every { store.mobilePlayerBrightnessResetAtZero } returns flowOf(true)
+        every { store.mobilePlayerBrightnessResetAtZero } returns flowOf(resetAtZero)
         coEvery { store.setMobilePlayerBrightnessPercent(any()) } returns Unit
         coEvery { store.setMobilePlayerBrightnessResetAtZero(any()) } returns Unit
         return PlayerBrightnessController(store, scope)
@@ -41,6 +44,16 @@ class PlayerBrightnessControllerTest : BaseUnitTest() {
         testScheduler.runCurrent()
 
         assertEquals(0.4f, controller.brightness.value!!, 0.001f)
+    }
+
+    @Test
+    fun `zero brightness keeps minimum when system reset is disabled`() {
+        val controller = createController(storedPercent = null, resetAtZero = false)
+        testScheduler.runCurrent()
+
+        controller.setFraction(0f)
+
+        assertEquals(0.01f, controller.brightness.value!!, 0.0001f)
     }
 
     @Test
