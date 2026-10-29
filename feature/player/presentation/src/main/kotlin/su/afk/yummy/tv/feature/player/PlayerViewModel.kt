@@ -600,7 +600,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                 setState { offlineSources.missingDownload(this) }
                 return@launch
             }
-            setState { offlineSources.downloaded(this, item) }
+            val downloadedState = offlineSources.downloaded(currentState, item)
+            setState { downloadedState }
             loadFinalEpisodeAction(item.animeId)
         }
     }
