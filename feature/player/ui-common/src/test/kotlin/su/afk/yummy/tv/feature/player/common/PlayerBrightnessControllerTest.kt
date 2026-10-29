@@ -42,7 +42,7 @@ class PlayerBrightnessControllerTest : BaseUnitTest() {
     }
 
     @Test
-    fun `gesture value is clamped and persisted after debounce`() {
+    fun `zero brightness resets system override after debounce`() {
         val controller = createController(storedPercent = null)
         testScheduler.runCurrent()
 
@@ -51,7 +51,7 @@ class PlayerBrightnessControllerTest : BaseUnitTest() {
         testScheduler.advanceTimeBy(600)
         testScheduler.runCurrent()
 
-        assertEquals(0.01f, controller.brightness.value!!, 0.0001f)
-        coVerify { store.setMobilePlayerBrightnessPercent(1) }
+        assertNull(controller.brightness.value)
+        coVerify { store.resetMobilePlayerBrightness() }
     }
 }
