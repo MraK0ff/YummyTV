@@ -141,6 +141,8 @@ internal class DataStoreSettingsStore @Inject constructor(
             watchedThresholds = prefs.watchedThresholds(),
             tvPlayerVolumeKeysEnabled = prefs[tvPlayerVolumeKeysEnabledKey] ?: false,
             advancedPlayerVolumeEnabled = prefs[advancedPlayerVolumeEnabledKey] ?: false,
+            mobilePlayerBrightnessResetAtZero =
+                prefs[mobilePlayerBrightnessResetAtZeroKey] ?: true,
             volumeStabilizationEnabled = prefs[volumeStabilizationEnabledKey] ?: false,
             playerBufferProfile = prefs.enum(playerBufferProfileKey, PlayerBufferProfile.SMALL),
             browserUserAgentProfile = prefs.enum(
