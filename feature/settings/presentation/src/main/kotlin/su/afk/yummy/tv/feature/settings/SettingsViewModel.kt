@@ -99,6 +99,7 @@ class SettingsViewModel @Inject internal constructor(
                         watchedThresholds = snapshot.watchedThresholds,
                         tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
+                        mobilePlayerBrightnessResetAtZero = snapshot.mobilePlayerBrightnessResetAtZero,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
                         browserUserAgentProfile = snapshot.browserUserAgentProfile,
@@ -353,6 +354,12 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.tvPlayerVolumeKeysEnabled
                 analytics.eventTvPlayerVolumeKeysToggled(enabled)
                 settingsStore.setTvPlayerVolumeKeysEnabled(enabled)
+            }
+
+            SettingsState.Event.MobilePlayerBrightnessResetAtZeroToggled -> viewModelScope.launch {
+                settingsStore.setMobilePlayerBrightnessResetAtZero(
+                    !currentState.mobilePlayerBrightnessResetAtZero,
+                )
             }
 
             SettingsState.Event.AdvancedPlayerVolumeToggled -> viewModelScope.launch {
