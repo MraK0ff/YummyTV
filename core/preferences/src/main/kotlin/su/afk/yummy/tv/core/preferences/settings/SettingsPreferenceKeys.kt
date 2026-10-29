@@ -61,6 +61,8 @@ internal object SettingsPreferenceKeys {
         intPreferencesKey("advanced_player_volume_percent")
     val mobilePlayerBrightnessPercentKey =
         intPreferencesKey("mobile_player_brightness_percent")
+    val mobilePlayerBrightnessResetAtZeroKey =
+        booleanPreferencesKey("mobile_player_brightness_reset_at_zero")
     val playerPlaybackSpeedKey =
         floatPreferencesKey("player_playback_speed")
     val volumeStabilizationEnabledKey =
