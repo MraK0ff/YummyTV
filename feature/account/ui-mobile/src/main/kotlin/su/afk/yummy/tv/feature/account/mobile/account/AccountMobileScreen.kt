@@ -99,6 +99,7 @@ fun AccountMobileScreen(
     state: AccountState.State,
     effect: Flow<AccountState.Effect>,
     onEvent: (AccountState.Event) -> Unit,
+    initialTab: AccountState.AccountTab? = null,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -106,6 +107,9 @@ fun AccountMobileScreen(
     val context = LocalContext.current
     val captchaHint = stringResource(R.string.account_captcha_required_toast)
     LaunchedEffect(Unit) { onEvent(AccountState.Event.ScreenShown) }
+    LaunchedEffect(initialTab) {
+        initialTab?.let { onEvent(AccountState.Event.TabSelected(it)) }
+    }
 
     val openNotificationFailed = AccountUiError.OPEN_NOTIFICATION_FAILED.accountErrorMessage()
     LaunchedEffect(state.hubError) {
