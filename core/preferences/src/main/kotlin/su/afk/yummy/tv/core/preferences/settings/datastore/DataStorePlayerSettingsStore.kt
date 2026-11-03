@@ -71,7 +71,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val autoSkipDelaySeconds: Flow<Int> = store.data.map { prefs ->
         (prefs[autoSkipDelaySecondsKey] ?: DEFAULT_AUTO_SKIP_DELAY_SECONDS)
-            .coerceIn(MIN_AUTO_SKIP_DELAY_SECONDS, MAX_AUTO_SKIP_DELAY_SECONDS)
+            .coerceIn(0, MAX_AUTO_SKIP_DELAY_SECONDS)
     }
 
     override val showOpeningOnTimeline: Flow<Boolean> =
@@ -206,7 +206,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override suspend fun setAutoSkipDelaySeconds(seconds: Int) {
         store.edit { prefs ->
             prefs[autoSkipDelaySecondsKey] =
-                seconds.coerceIn(MIN_AUTO_SKIP_DELAY_SECONDS, MAX_AUTO_SKIP_DELAY_SECONDS)
+                seconds.coerceIn(0, MAX_AUTO_SKIP_DELAY_SECONDS)
         }
     }
 
@@ -355,7 +355,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         const val MAX_VOLUME_PERCENT = 100
         const val MIN_BRIGHTNESS_PERCENT = 1
         const val DEFAULT_AUTO_SKIP_DELAY_SECONDS = 5
-        const val MIN_AUTO_SKIP_DELAY_SECONDS = 1
         const val MAX_AUTO_SKIP_DELAY_SECONDS = 15
         const val DEFAULT_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 10
         const val MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 30
