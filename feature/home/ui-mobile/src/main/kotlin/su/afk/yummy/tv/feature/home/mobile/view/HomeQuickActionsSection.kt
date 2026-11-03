@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,8 +34,10 @@ internal fun HomeQuickActionsSection(
     title: String,
     scheduleTitle: String,
     reviewsTitle: String,
+    newsTitle: String,
     onScheduleClick: () -> Unit,
     onReviewsClick: () -> Unit,
+    onNewsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -61,6 +64,12 @@ internal fun HomeQuickActionsSection(
                 title = reviewsTitle,
                 icon = Icons.Filled.RateReview,
                 onClick = onReviewsClick,
+                modifier = Modifier.weight(1f),
+            )
+            HomeQuickActionCard(
+                title = newsTitle,
+                icon = Icons.Filled.Newspaper,
+                onClick = onNewsClick,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -114,7 +123,9 @@ private fun HomeQuickActionsSectionPreview() = ScreenPreviewTheme {
         title = "Ещё",
         scheduleTitle = "Расписание",
         reviewsTitle = "Рецензии",
+        newsTitle = "Новости",
         onScheduleClick = {},
         onReviewsClick = {},
+        onNewsClick = {},
     )
 }
