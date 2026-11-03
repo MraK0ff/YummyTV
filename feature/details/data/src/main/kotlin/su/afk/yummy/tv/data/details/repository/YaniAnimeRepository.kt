@@ -569,8 +569,10 @@ class YaniAnimeRepository(
         // Ответ зависит от авторизации (поле `subscribed`, серверный прогресс): запрос, начатый до входа или
         // выхода, чужому состоянию отдавать нельзя.
         val key = "$animeId:$languageCode:${settingsStore.currentUserId()}"
-        val deferred = videosInFlight.computeIfAbsent(key) {
-            detailsScope.async(start = CoroutineStart.LAZY) {
+        // Не используем computeIfAbsent: завершение LAZY-задачи может одновременно удалить
+        // запись из этой же таблицы. Явная критическая секция исключает recursive update в CHM.
+        val deferred = synchronized(videosInFlight) {
+            videosInFlight[key] ?: detailsScope.async(start = CoroutineStart.LAZY) {
                 val dto = api.getAnimeVideos(animeId)
                 // Маппинг тысяч видео — вычисления, а не IO: отдаём его пулу Default.
                 val cache = withContext(Dispatchers.Default) {
@@ -583,6 +585,7 @@ class YaniAnimeRepository(
                 animeStorage.saveVideos(cache)
                 cache
             }.also { started ->
+                videosInFlight[key] = started
                 started.invokeOnCompletion { videosInFlight.remove(key, started) }
             }
         }
