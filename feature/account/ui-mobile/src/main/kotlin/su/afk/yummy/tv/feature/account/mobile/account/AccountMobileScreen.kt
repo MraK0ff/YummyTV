@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.PersonSearch
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WatchLater
@@ -50,7 +49,6 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseScreen
 import su.afk.yummy.tv.core.designsystem.components.OfflineBanner
 import su.afk.yummy.tv.core.designsystem.locals.LocalIsOffline
 import su.afk.yummy.tv.core.designsystem.mobile.MobileSwipeableTabsPager
-import su.afk.yummy.tv.core.designsystem.mobile.bar.LocalMobileBottomBarUpFocusRequester
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.layout.mobileContentMaxWidth
 import su.afk.yummy.tv.core.designsystem.mobile.rememberMobileSwipeableTabsState
@@ -101,6 +99,7 @@ fun AccountMobileScreen(
     state: AccountState.State,
     effect: Flow<AccountState.Effect>,
     onEvent: (AccountState.Event) -> Unit,
+    initialTab: AccountState.AccountTab? = null,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -108,6 +107,9 @@ fun AccountMobileScreen(
     val context = LocalContext.current
     val captchaHint = stringResource(R.string.account_captcha_required_toast)
     LaunchedEffect(Unit) { onEvent(AccountState.Event.ScreenShown) }
+    LaunchedEffect(initialTab) {
+        initialTab?.let { onEvent(AccountState.Event.TabSelected(it)) }
+    }
 
     val openNotificationFailed = AccountUiError.OPEN_NOTIFICATION_FAILED.accountErrorMessage()
     LaunchedEffect(state.hubError) {
@@ -132,7 +134,6 @@ fun AccountMobileScreen(
 
     val isOffline = LocalIsOffline.current
     var showLogoutConfirm by remember { mutableStateOf(false) }
-    val bottomBarUpFocusRequester = LocalMobileBottomBarUpFocusRequester.current
     val accountTabs = AccountState.AccountTab.entries
     val tabsState = rememberMobileSwipeableTabsState(
         selectedPage = accountTabs.indexOf(state.selectedTab).coerceAtLeast(0),
@@ -178,15 +179,6 @@ fun AccountMobileScreen(
                         title = stringResource(R.string.account_user_search),
                         icon = Icons.Filled.PersonSearch,
                         onClick = { onEvent(AccountState.Event.UserSearchSelected) },
-                    ),
-                )
-                add(
-                    AccountMobileQuickAction(
-                        key = "settings",
-                        title = stringResource(R.string.account_settings),
-                        icon = Icons.Filled.Settings,
-                        onClick = { onEvent(AccountState.Event.SettingsSelected) },
-                        focusRequester = bottomBarUpFocusRequester,
                     ),
                 )
                 add(
@@ -251,15 +243,6 @@ fun AccountMobileScreen(
                         title = stringResource(R.string.account_profile_social_friends),
                         icon = Icons.Filled.Groups,
                         onClick = { onEvent(AccountState.Event.FriendsSelected) },
-                    ),
-                )
-                add(
-                    AccountMobileQuickAction(
-                        key = "settings",
-                        title = stringResource(R.string.account_settings),
-                        icon = Icons.Filled.Settings,
-                        onClick = { onEvent(AccountState.Event.SettingsSelected) },
-                        focusRequester = bottomBarUpFocusRequester,
                     ),
                 )
                 add(
