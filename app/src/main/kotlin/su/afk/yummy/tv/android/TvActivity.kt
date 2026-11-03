@@ -15,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import su.afk.yummy.tv.android.episodepush.utils.cancelEpisodePushNotification
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
 import su.afk.yummy.tv.core.designsystem.locals.LocalStaticBaseUrl
+import su.afk.yummy.tv.core.designsystem.insets.AdaptiveWindowInsetsProvider
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.tv.api.ITvIntegration
 import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
@@ -45,12 +46,14 @@ class TvActivity : ComponentActivity() {
         tvIntegration.bindBrowsableChannelRequests(this, lifecycleScope)
 
         setContent {
+            AdaptiveWindowInsetsProvider {
             // теги Compose видны UiAutomator как resource-id — на них опираются сценарии
             // baseline profile и бенчмарки (модуль :baselineprofile)
             CompositionLocalProvider(LocalStaticBaseUrl provides siteApiConfig.staticBaseUrl) {
                 Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
                     mainGraph.MainGraph()
                 }
+            }
             }
         }
 
