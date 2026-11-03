@@ -5,4 +5,9 @@ internal enum class PlayerSetupMobilePicker {
     LANGUAGE,
     ORIENTATION,
     QUALITY,
+    AUTO_SKIP_DELAY,
+    AUTOPLAY_DELAY,
+    CONTROLS_TIMEOUT,
+    THEME,
+    BACKGROUND,
 }
