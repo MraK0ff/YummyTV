@@ -39,7 +39,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
-import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeDrawingPadding
+import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeContentPadding
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -241,7 +241,7 @@ fun PlayerMobileScreen(
             text = sourceToastText,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .adaptiveSafeDrawingPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+                .adaptiveSafeContentPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                 .padding(bottom = 16.dp),
         )
         if (showErrorBalancerSheet && uiState.canChangePlayer) {
