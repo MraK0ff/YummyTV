@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.feature.catalog
 
+import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
 import su.afk.yummy.tv.core.mvi.UiState
 import su.afk.yummy.tv.core.model.text.UiText
@@ -17,4 +18,6 @@ class SeasonalCatalogState {
         data object RetrySelected : Event
         data class ItemSelected(val action: HomeFeedItemAction) : Event
     }
+
+    sealed interface Effect : UiEffect
 }
