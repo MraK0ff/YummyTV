@@ -153,6 +153,7 @@
         <string name="settings_auto_skip_label">Автопропуск опенинга и эндинга</string>
     <string name="settings_auto_skip_enabled">Пропускать, если для серии есть таймкоды</string>
     <string name="settings_auto_skip_delay_label">Задержка автопропуска</string>
+    <string name="settings_auto_skip_delay_instant">Мгновенно</string>
     <string name="settings_show_opening_on_timeline_label">Показывать опенинг на таймлайне</string>
     <string name="settings_show_opening_on_timeline_enabled">Участок опенинга подсвечивается на полосе прогресса</string>
     <string name="settings_auto_manage_library_lists_label">Авто-добавление в Смотрю / Просмотрено</string>
