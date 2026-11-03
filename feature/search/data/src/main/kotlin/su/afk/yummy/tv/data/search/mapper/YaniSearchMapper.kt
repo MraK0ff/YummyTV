@@ -2,7 +2,7 @@ package su.afk.yummy.tv.data.search.mapper
 
 import su.afk.yummy.tv.core.utils.poster.animePosterOrNull
 import su.afk.yummy.tv.data.search.dto.YaniSearchItemDto
-import su.afk.yummy.tv.domain.catalog.model.SearchItem
+import su.afk.yummy.tv.domain.search.model.SearchItem
 
 internal fun YaniSearchItemDto.toSearchItem(): SearchItem? {
     val id = animeId ?: return null
