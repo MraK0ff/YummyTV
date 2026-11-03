@@ -82,7 +82,7 @@ class SearchViewModel @Inject internal constructor(
         loadFilterOptions()
         restoreLastSearchOrShowSearch()
         // Названия фильтров и результаты приходят на языке контента: при его смене грузим заново.
-        appearanceSettingsStore.showSearchTitleYear
+        appearanceSettingsStore.showCatalogTitleYear
             .onEach { showTitleYear -> setState { copy(showTitleYear = showTitleYear) } }
             .launchIn(viewModelScope)
         appearanceSettingsStore.titleCardLayout
