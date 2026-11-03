@@ -17,6 +17,11 @@ import androidx.compose.material.icons.outlined.ScreenRotation
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Timeline
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Timer
+import su.afk.yummy.tv.core.model.settings.AppTheme
+import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -156,6 +161,48 @@ fun PlayerSetupMobileScreen(
                 )
             }
 
+            PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_playback)) {
+                PlayerSetupMobileOptionRow(
+                    label = stringResource(R.string.player_setup_auto_skip_delay_label),
+                    icon = Icons.Outlined.Timer,
+                    value = if (state.autoSkipDelaySeconds == 0) stringResource(R.string.player_setup_instant) else stringResource(R.string.player_setup_seconds, state.autoSkipDelaySeconds),
+                    hint = stringResource(R.string.player_setup_auto_skip_delay_hint),
+                    onClick = { activePicker = PlayerSetupMobilePicker.AUTO_SKIP_DELAY },
+                    enabled = state.autoSkipOpeningsEndings,
+                )
+                PlayerSetupMobileOptionRow(
+                    label = stringResource(R.string.player_setup_autoplay_delay_label),
+                    icon = Icons.Outlined.Timer,
+                    value = if (state.nextEpisodeSwitchDelaySeconds == 0) stringResource(R.string.player_setup_instant) else stringResource(R.string.player_setup_seconds, state.nextEpisodeSwitchDelaySeconds),
+                    hint = stringResource(R.string.player_setup_autoplay_delay_hint),
+                    onClick = { activePicker = PlayerSetupMobilePicker.AUTOPLAY_DELAY },
+                    enabled = state.autoPlayNextEpisode,
+                )
+                PlayerSetupMobileOptionRow(
+                    label = stringResource(R.string.player_setup_controls_timeout_label),
+                    icon = Icons.Outlined.Timer,
+                    value = stringResource(R.string.player_setup_seconds, state.playerControlsAutoHideSeconds),
+                    hint = stringResource(R.string.player_setup_controls_timeout_hint),
+                    onClick = { activePicker = PlayerSetupMobilePicker.CONTROLS_TIMEOUT },
+                )
+            }
+            PlayerSetupMobileSection(title = stringResource(R.string.player_setup_mobile_section_appearance)) {
+                PlayerSetupMobileOptionRow(
+                    label = stringResource(R.string.player_setup_theme_label),
+                    icon = Icons.Outlined.Palette,
+                    value = state.appTheme.name.replace('_', ' ').lowercase().replaceFirstChar { it.uppercase() },
+                    hint = stringResource(R.string.player_setup_theme_hint),
+                    onClick = { activePicker = PlayerSetupMobilePicker.THEME },
+                )
+                PlayerSetupMobileOptionRow(
+                    label = stringResource(R.string.player_setup_background_label),
+                    icon = Icons.Outlined.DarkMode,
+                    value = state.backgroundStyle.name.lowercase().replaceFirstChar { it.uppercase() },
+                    hint = stringResource(R.string.player_setup_background_hint),
+                    onClick = { activePicker = PlayerSetupMobilePicker.BACKGROUND },
+                )
+            }
+
             Button(
                 onClick = { onEvent(PlayerSetupState.Event.DoneSelected) },
                 modifier = Modifier.fillMaxWidth(),
@@ -209,6 +256,43 @@ fun PlayerSetupMobileScreen(
                 onEvent(PlayerSetupState.Event.PreferredVideoQualitySelected(it))
                 activePicker = null
             },
+        )
+
+
+        PlayerSetupMobilePicker.AUTO_SKIP_DELAY -> PlayerSetupMobilePickerSheet(
+            title = stringResource(R.string.player_setup_auto_skip_delay_label),
+            selectedValue = state.autoSkipDelaySeconds,
+            options = (0..15).map { PlayerSetupMobilePickerOption(it, if (it == 0) "Instant" else "$it seconds") },
+            onDismiss = { activePicker = null },
+            onSelected = { onEvent(PlayerSetupState.Event.AutoSkipDelaySelected(it)); activePicker = null },
+        )
+        PlayerSetupMobilePicker.AUTOPLAY_DELAY -> PlayerSetupMobilePickerSheet(
+            title = stringResource(R.string.player_setup_autoplay_delay_label),
+            selectedValue = state.nextEpisodeSwitchDelaySeconds,
+            options = (0..30).map { PlayerSetupMobilePickerOption(it, if (it == 0) "Instant" else "$it seconds") },
+            onDismiss = { activePicker = null },
+            onSelected = { onEvent(PlayerSetupState.Event.NextEpisodeDelaySelected(it)); activePicker = null },
+        )
+        PlayerSetupMobilePicker.CONTROLS_TIMEOUT -> PlayerSetupMobilePickerSheet(
+            title = stringResource(R.string.player_setup_controls_timeout_label),
+            selectedValue = state.playerControlsAutoHideSeconds,
+            options = (1..10).map { PlayerSetupMobilePickerOption(it, "$it seconds") },
+            onDismiss = { activePicker = null },
+            onSelected = { onEvent(PlayerSetupState.Event.ControlsTimeoutSelected(it)); activePicker = null },
+        )
+        PlayerSetupMobilePicker.THEME -> PlayerSetupMobilePickerSheet(
+            title = stringResource(R.string.player_setup_theme_label),
+            selectedValue = state.appTheme,
+            options = AppTheme.entries.map { PlayerSetupMobilePickerOption(it, it.name.replace('_', ' ').lowercase().replaceFirstChar { c -> c.uppercase() }) },
+            onDismiss = { activePicker = null },
+            onSelected = { onEvent(PlayerSetupState.Event.ThemeSelected(it)); activePicker = null },
+        )
+        PlayerSetupMobilePicker.BACKGROUND -> PlayerSetupMobilePickerSheet(
+            title = stringResource(R.string.player_setup_background_label),
+            selectedValue = state.backgroundStyle,
+            options = BackgroundStyle.entries.map { PlayerSetupMobilePickerOption(it, it.name.lowercase().replaceFirstChar { c -> c.uppercase() }) },
+            onDismiss = { activePicker = null },
+            onSelected = { onEvent(PlayerSetupState.Event.BackgroundSelected(it)); activePicker = null },
         )
 
         null -> Unit

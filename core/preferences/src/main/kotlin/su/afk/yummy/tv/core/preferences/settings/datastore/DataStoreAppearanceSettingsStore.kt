@@ -73,10 +73,10 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
     override val librarySortDirection: Flow<LibrarySortDirection> =
         store.enumFlow(librarySortDirectionKey, LibrarySortDirection.DESC)
 
-    override val appTheme: Flow<AppTheme> = store.enumFlow(appThemeKey, AppTheme.WARM_AMBER)
+    override val appTheme: Flow<AppTheme> = store.enumFlow(appThemeKey, AppTheme.GRAPHITE)
 
     override val backgroundStyle: Flow<BackgroundStyle> =
-        store.enumFlow(backgroundStyleKey, BackgroundStyle.DARK)
+        store.enumFlow(backgroundStyleKey, BackgroundStyle.AMOLED)
 
     override val navTransitionStyle: Flow<NavTransitionStyle> =
         store.enumFlow(navTransitionStyleKey, NavTransitionStyle.FADE_SCALE)

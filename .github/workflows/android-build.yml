@@ -50,6 +50,48 @@ jobs:
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
 
+      - name: Re-sign APK with the standard Android testkey
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          key_dir="$RUNNER_TEMP/android-testkey"
+          mkdir -p "$key_dir"
+
+          # AOSP's public test signing key (not suitable for production releases).
+          curl -fsSL 'https://android.googlesource.com/platform/build/+/refs/heads/main/target/product/security/testkey.pk8?format=TEXT' \
+            | base64 --decode > "$key_dir/testkey.pk8"
+          curl -fsSL 'https://android.googlesource.com/platform/build/+/refs/heads/main/target/product/security/testkey.x509.pem?format=TEXT' \
+            | base64 --decode > "$key_dir/testkey.x509.pem"
+
+          # apksigner --key requires unencrypted PKCS#8 in DER format.
+          # AOSP's .pk8 file is already in that format; do not convert it to PEM.
+          openssl pkcs8 -inform DER -nocrypt \
+            -in "$key_dir/testkey.pk8" \
+            -out /dev/null
+
+          # Confirm that the downloaded certificate belongs to this private key.
+          openssl pkey -inform DER -in "$key_dir/testkey.pk8" -pubout \
+            -out "$key_dir/key-public.pem"
+          openssl x509 -in "$key_dir/testkey.x509.pem" -pubkey -noout \
+            > "$key_dir/cert-public.pem"
+          diff -u "$key_dir/key-public.pem" "$key_dir/cert-public.pem"
+
+          apksigner="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name apksigner | sort -V | tail -n 1)"
+          test -n "$apksigner"
+
+          shopt -s nullglob
+          apks=(app/build/outputs/apk/debug/*.apk)
+          test "${#apks[@]}" -gt 0
+
+          for apk in "${apks[@]}"; do
+            "$apksigner" sign \
+              --key "$key_dir/testkey.pk8" \
+              --cert "$key_dir/testkey.x509.pem" \
+              "$apk"
+            "$apksigner" verify --verbose --print-certs "$apk"
+          done
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v7
         with:

@@ -1,6 +1,19 @@
 <resources>
     <string name="player_setup_title">Налаштування застосунку</string>
-    <string name="player_setup_subtitle">Оберіть, як вам зручніше. Усе можна змінити пізніше в налаштуваннях.</string>
+        <string name="player_setup_subtitle">Оберіть, як вам зручніше</string>
+    <string name="player_setup_mobile_section_appearance">Оформлення</string>
+    <string name="player_setup_auto_skip_delay_label">Затримка автопропуску</string>
+    <string name="player_setup_auto_skip_delay_hint">Пауза перед пропуском опенінгу або ендінгу</string>
+    <string name="player_setup_autoplay_delay_label">Затримка автовідтворення</string>
+    <string name="player_setup_autoplay_delay_hint">Пауза перед запуском наступної серії</string>
+    <string name="player_setup_controls_timeout_label">Приховувати контролери через</string>
+    <string name="player_setup_controls_timeout_hint">Час до приховування елементів керування</string>
+    <string name="player_setup_theme_label">Тема</string>
+    <string name="player_setup_theme_hint">Оберіть колірну палітру</string>
+    <string name="player_setup_background_label">Фон</string>
+    <string name="player_setup_background_hint">Оберіть стиль фону застосунку</string>
+    <string name="player_setup_instant">Миттєво</string>
+    <string name="player_setup_seconds">%1$d с</string>
     <string name="player_setup_mobile_more_settings">Решта — у налаштуваннях</string>
     <string name="player_setup_opening_timeline_label">Показувати опенінг на таймлайні</string>
     <string name="player_setup_opening_timeline_hint">Ділянка опенінгу підсвічується на смузі прогресу</string>

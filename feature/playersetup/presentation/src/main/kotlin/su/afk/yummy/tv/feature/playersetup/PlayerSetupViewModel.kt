@@ -40,6 +40,11 @@ class PlayerSetupViewModel @Inject internal constructor(
                 settingsHandler.setAutoSkipOpeningsEndings(!currentState.autoSkipOpeningsEndings)
             }
 
+            is PlayerSetupState.Event.AutoSkipDelaySelected -> launchWrite { settingsHandler.setAutoSkipDelaySeconds(event.seconds) }
+            is PlayerSetupState.Event.NextEpisodeDelaySelected -> launchWrite { settingsHandler.setNextEpisodeSwitchDelaySeconds(event.seconds) }
+            is PlayerSetupState.Event.ControlsTimeoutSelected -> launchWrite { settingsHandler.setPlayerControlsAutoHideSeconds(event.seconds) }
+            is PlayerSetupState.Event.ThemeSelected -> launchWrite { settingsHandler.setTheme(event.theme) }
+            is PlayerSetupState.Event.BackgroundSelected -> launchWrite { settingsHandler.setBackground(event.style) }
             PlayerSetupState.Event.AutoPlayNextEpisodeToggled -> launchWrite {
                 settingsHandler.setAutoPlayNextEpisode(!currentState.autoPlayNextEpisode)
             }

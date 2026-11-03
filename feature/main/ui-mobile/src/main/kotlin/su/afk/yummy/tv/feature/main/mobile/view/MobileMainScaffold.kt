@@ -3,6 +3,18 @@ package su.afk.yummy.tv.feature.main.mobile.view
 import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalOverlay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.weight
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -40,6 +52,11 @@ internal fun <T> MobileMainScaffold(
     showRail: Boolean,
     onDestinationSelected: (T) -> Unit,
     toastMessage: String?,
+    unreadNotificationsCount: Int,
+    onNotificationsClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    showHeader: Boolean = true,
     showSeasonalOverlay: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -95,18 +112,49 @@ internal fun <T> MobileMainScaffold(
             } else {
                 WindowInsets(0.dp)
             }
-            Box(
+            var collapsed by remember { mutableStateOf(false) }
+            var scrollAccumulator by remember { mutableFloatStateOf(0f) }
+            val scrollConnection = remember {
+                object : NestedScrollConnection {
+                    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                        val dy = available.y
+                        if (dy > 0f) {
+                            scrollAccumulator = 0f
+                            collapsed = false
+                        } else if (dy < 0f) {
+                            scrollAccumulator += -dy
+                            if (scrollAccumulator > 18f) {
+                                collapsed = true
+                                scrollAccumulator = 0f
+                            }
+                        }
+                        return Offset.Zero
+                    }
+                }
+            }
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .consumeWindowInsets(barInsets)
-                    .background(MaterialTheme.colorScheme.background),
+                    .background(MaterialTheme.colorScheme.background)
+                    .nestedScroll(scrollConnection),
             ) {
-                content()
-                if (showSeasonalOverlay) SeasonalOverlay()
-                GlobalToastOverlay(
-                    text = toastMessage,
-                    modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),
+                if (showHeader) MobileGlobalHeader(
+                    collapsed = collapsed,
+                    unreadNotificationsCount = unreadNotificationsCount,
+                    onNotificationsClick = onNotificationsClick,
+                    onSettingsClick = onSettingsClick,
+                    onSearchClick = onSearchClick,
+                    modifier = Modifier.statusBarsPadding(),
                 )
+                Box(modifier = Modifier.weight(1f)) {
+                    content()
+                    if (showSeasonalOverlay) SeasonalOverlay()
+                    GlobalToastOverlay(
+                        text = toastMessage,
+                        modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),
+                    )
+                }
             }
         }
     }

@@ -28,6 +28,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import su.afk.yummy.tv.core.model.settings.AppTheme
+import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.feature.playersetup.PlayerSetupState
 import su.afk.yummy.tv.feature.playersetup.presentation.R
@@ -120,6 +122,42 @@ fun PlayerSetupTvScreen(
             onCycle = {
                 onEvent(PlayerSetupState.Event.PreferredVideoQualitySelected(state.preferredVideoQuality.next()))
             },
+        )
+
+        PlayerSetupTvChoiceRow(
+            label = stringResource(R.string.player_setup_auto_skip_delay_label),
+            icon = Icons.Outlined.Speed,
+            hint = stringResource(R.string.player_setup_auto_skip_delay_hint),
+            value = if (state.autoSkipDelaySeconds == 0) stringResource(R.string.player_setup_instant) else "${state.autoSkipDelaySeconds}s",
+            onCycle = { onEvent(PlayerSetupState.Event.AutoSkipDelaySelected((state.autoSkipDelaySeconds + 1) % 16)) },
+        )
+        PlayerSetupTvChoiceRow(
+            label = stringResource(R.string.player_setup_autoplay_delay_label),
+            icon = Icons.Outlined.Speed,
+            hint = stringResource(R.string.player_setup_autoplay_delay_hint),
+            value = if (state.nextEpisodeSwitchDelaySeconds == 0) stringResource(R.string.player_setup_instant) else "${state.nextEpisodeSwitchDelaySeconds}s",
+            onCycle = { onEvent(PlayerSetupState.Event.NextEpisodeDelaySelected((state.nextEpisodeSwitchDelaySeconds + 1) % 31)) },
+        )
+        PlayerSetupTvChoiceRow(
+            label = stringResource(R.string.player_setup_controls_timeout_label),
+            icon = Icons.Outlined.Speed,
+            hint = stringResource(R.string.player_setup_controls_timeout_hint),
+            value = "${state.playerControlsAutoHideSeconds}s",
+            onCycle = { onEvent(PlayerSetupState.Event.ControlsTimeoutSelected(if (state.playerControlsAutoHideSeconds >= 10) 1 else state.playerControlsAutoHideSeconds + 1)) },
+        )
+        PlayerSetupTvChoiceRow(
+            label = stringResource(R.string.player_setup_theme_label),
+            icon = Icons.Outlined.HighQuality,
+            hint = stringResource(R.string.player_setup_theme_hint),
+            value = state.appTheme.name.replace('_', ' '),
+            onCycle = { onEvent(PlayerSetupState.Event.ThemeSelected(AppTheme.entries.filter { it != AppTheme.DYNAMIC }.let { themes -> themes[(themes.indexOf(state.appTheme) + 1) % themes.size] })) },
+        )
+        PlayerSetupTvChoiceRow(
+            label = stringResource(R.string.player_setup_background_label),
+            icon = Icons.Outlined.HighQuality,
+            hint = stringResource(R.string.player_setup_background_hint),
+            value = state.backgroundStyle.name,
+            onCycle = { onEvent(PlayerSetupState.Event.BackgroundSelected(BackgroundStyle.entries[(state.backgroundStyle.ordinal + 1) % BackgroundStyle.entries.size])) },
         )
 
         PlayerSetupTvButton(

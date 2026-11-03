@@ -6,6 +6,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object AccountDestination : NavKey
 
+/** Открыть аккаунт сразу на вкладке уведомлений из глобальной панели. */
+@Serializable
+data object AccountNotificationsDestination : NavKey
+
 @Serializable
 data class UserProfileDestination(val userId: Int) : NavKey
 

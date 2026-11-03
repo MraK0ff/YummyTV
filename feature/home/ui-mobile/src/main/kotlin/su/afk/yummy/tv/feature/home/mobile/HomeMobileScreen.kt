@@ -62,7 +62,6 @@ import su.afk.yummy.tv.feature.home.mobile.view.HomeAnnouncementDialog
 import su.afk.yummy.tv.feature.home.mobile.view.HomeContinueWatchingActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.mobile.view.HomeHeroCarousel
-import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSearchBar
 import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSkeleton
 import su.afk.yummy.tv.feature.home.mobile.view.HomeBoostyPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.HomeCommunityPromptDialog
@@ -227,17 +226,13 @@ fun HomeMobileScreen(
                 ) {
                     val feed = state.feed
 
-                    // Плашки и поиск в одном item: иначе spacedBy(24) растягивает зазор между ними
-                    item(key = "search") {
-                        Column(modifier = Modifier.mobileContentMaxWidth()) {
-                            OfflineBanner(isOffline = isOffline)
-                            InfoBanner(message = state.statusMessage)
-                            HomeMobileSearchBar(
-                                onClick = { onEvent(HomeState.Event.SearchSelected) },
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .padding(top = if (isOffline || state.statusMessage != null) 8.dp else 0.dp),
-                            )
+                    // Status banners stay at the top; search is now available from the global header.
+                    if (isOffline || state.statusMessage != null) {
+                        item(key = "status") {
+                            Column(modifier = Modifier.mobileContentMaxWidth()) {
+                                OfflineBanner(isOffline = isOffline)
+                                InfoBanner(message = state.statusMessage)
+                            }
                         }
                     }
 

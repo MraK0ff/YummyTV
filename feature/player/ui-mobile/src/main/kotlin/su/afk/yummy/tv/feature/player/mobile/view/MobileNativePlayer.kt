@@ -6,31 +6,29 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -39,9 +37,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
+import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeContentPadding
 import su.afk.yummy.tv.core.utils.cast.CastSupport
-import su.afk.yummy.tv.feature.player.PlayerState
+import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
+import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
 import su.afk.yummy.tv.feature.player.common.PlayerBufferingIndicator
 import su.afk.yummy.tv.feature.player.common.PlayerEpisodeEndController
@@ -56,8 +58,6 @@ import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
 import su.afk.yummy.tv.feature.player.common.PlayerVolumeEffect
-import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
-import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.common.rememberDelayedRecoveryIndicator
 import su.afk.yummy.tv.feature.player.common.rememberPlayerBufferingState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerCompletionTracker
@@ -106,9 +106,8 @@ import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerPlaybackUiState
+import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.presentation.R
-import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -674,7 +673,7 @@ internal fun MobileNativePlayer(
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .windowInsetsPadding(WindowInsets.navigationBars)
+                .adaptiveSafeContentPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                 .padding(end = 18.dp, bottom = skipButtonBottomPadding),
         )
 
@@ -685,6 +684,7 @@ internal fun MobileNativePlayer(
             icon = stepSeekToast.direction.toastIcon,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .adaptiveSafeContentPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                 .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 128.dp else 36.dp),
         )
 
@@ -707,6 +707,7 @@ internal fun MobileNativePlayer(
             scale = gestures.liveVideoTransform.scale,
             modifier = Modifier
                 .align(Alignment.TopCenter)
+                .adaptiveSafeContentPadding(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
                 .padding(top = 28.dp),
         )
 

@@ -49,27 +49,42 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
             )
         },
         combine(
+            store.autoSkipDelaySeconds,
+            store.nextEpisodeSwitchDelaySeconds,
+            store.playerControlsAutoHideSeconds,
+        ) { skip, next, controls -> Triple(skip, next, controls) },
+        combine(
             store.adaptiveVideoQualityEnabled,
             store.preferredVideoQuality,
             store.playerOrientationMode,
             store.pictureInPictureEnabled,
-            accountStore.yaniContentLanguage,
-        ) { adaptive, quality, orientation, pip, language ->
+        ) { adaptive, quality, orientation, pip ->
             PlayerSetupState.State(
                 adaptiveVideoQualityEnabled = adaptive,
                 preferredVideoQuality = quality,
                 playerOrientationMode = orientation,
                 pictureInPictureEnabled = pip,
-                contentLanguage = language,
             )
         },
-    ) { toggles, playback ->
+        combine(
+            accountStore.yaniContentLanguage,
+            appearanceStore.appTheme,
+            appearanceStore.backgroundStyle,
+        ) { language, theme, background ->
+            Triple(language, theme, background)
+        },
+    ) { toggles, delays, playback, appearance ->
         toggles.copy(
+            autoSkipDelaySeconds = delays.first,
+            nextEpisodeSwitchDelaySeconds = delays.second,
+            playerControlsAutoHideSeconds = delays.third,
             adaptiveVideoQualityEnabled = playback.adaptiveVideoQualityEnabled,
             preferredVideoQuality = playback.preferredVideoQuality,
             playerOrientationMode = playback.playerOrientationMode,
             pictureInPictureEnabled = playback.pictureInPictureEnabled,
-            contentLanguage = playback.contentLanguage,
+            contentLanguage = appearance.first,
+            appTheme = appearance.second,
+            backgroundStyle = appearance.third,
         )
     }
 
@@ -78,6 +93,11 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
     suspend fun setAutoSkipOpeningsEndings(enabled: Boolean) = store.setAutoSkipOpeningsEndings(enabled)
 
     suspend fun setAutoPlayNextEpisode(enabled: Boolean) = store.setAutoPlayNextEpisode(enabled)
+    suspend fun setAutoSkipDelaySeconds(seconds: Int) = store.setAutoSkipDelaySeconds(seconds)
+    suspend fun setNextEpisodeSwitchDelaySeconds(seconds: Int) = store.setNextEpisodeSwitchDelaySeconds(seconds)
+    suspend fun setPlayerControlsAutoHideSeconds(seconds: Int) = store.setPlayerControlsAutoHideSeconds(seconds)
+    suspend fun setTheme(theme: su.afk.yummy.tv.core.model.settings.AppTheme) = appearanceStore.setAppTheme(theme)
+    suspend fun setBackground(style: su.afk.yummy.tv.core.model.settings.BackgroundStyle) = appearanceStore.setBackgroundStyle(style)
 
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean) =
         store.setSuggestNextEpisodeOnWatched(enabled)
