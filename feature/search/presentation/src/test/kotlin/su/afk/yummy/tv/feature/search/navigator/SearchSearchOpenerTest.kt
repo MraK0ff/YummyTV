@@ -9,13 +9,13 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 
-class SearchSearchOpenerTest : BaseUnitTest() {
+class SearchOpenerTest : BaseUnitTest() {
 
     private val nav: INavigationManager = mockk(relaxed = true)
 
     @Test
     fun `open search switches to the catalog tab and keeps the request until consumed`() {
-        val opener = SearchSearchOpener(nav)
+        val opener = SearchOpener(nav)
 
         opener.openSearch()
 
