@@ -10,7 +10,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-internal class SearchSearchOpener @Inject constructor(
+internal class SearchOpener @Inject constructor(
     private val nav: INavigationManager,
 ) : ISearchOpener {
     private val pending = MutableStateFlow(false)
