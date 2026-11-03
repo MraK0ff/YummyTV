@@ -22,6 +22,7 @@ import su.afk.yummy.tv.android.shortcuts.AppShortcutsPublisher
 import su.afk.yummy.tv.android.widget.ContinueWatchingWidgetUpdater
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
 import su.afk.yummy.tv.core.designsystem.locals.LocalStaticBaseUrl
+import su.afk.yummy.tv.core.designsystem.insets.AdaptiveWindowInsetsProvider
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
@@ -62,12 +63,14 @@ class MobileActivity : ComponentActivity() {
         )
 
         setContent {
+            AdaptiveWindowInsetsProvider {
             // теги Compose видны UiAutomator как resource-id — на них опираются сценарии
             // baseline profile и бенчмарки (модуль :baselineprofile)
             CompositionLocalProvider(LocalStaticBaseUrl provides siteApiConfig.staticBaseUrl) {
                 Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
                     mainGraph.MainGraph()
                 }
+            }
             }
         }
 
