@@ -56,6 +56,7 @@ internal fun <T> MobileMainScaffold(
     onNotificationsClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onSearchClick: () -> Unit,
+    showHeader: Boolean = true,
     showSeasonalOverlay: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -138,7 +139,7 @@ internal fun <T> MobileMainScaffold(
                     .background(MaterialTheme.colorScheme.background)
                     .nestedScroll(scrollConnection),
             ) {
-                MobileGlobalHeader(
+                if (showHeader) MobileGlobalHeader(
                     collapsed = collapsed,
                     unreadNotificationsCount = unreadNotificationsCount,
                     onNotificationsClick = onNotificationsClick,
