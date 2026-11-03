@@ -40,7 +40,7 @@ import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
-import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeDrawingPadding
+import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeContentPadding
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.feature.player.common.model.rememberPlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.common.model.StepSeekDirection
@@ -673,7 +673,7 @@ internal fun MobileNativePlayer(
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .adaptiveSafeDrawingPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+                .adaptiveSafeContentPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                 .padding(end = 18.dp, bottom = skipButtonBottomPadding),
         )
 
@@ -684,7 +684,7 @@ internal fun MobileNativePlayer(
             icon = stepSeekToast.direction.toastIcon,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .adaptiveSafeDrawingPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+                .adaptiveSafeContentPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                 .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 128.dp else 36.dp),
         )
 
@@ -707,7 +707,7 @@ internal fun MobileNativePlayer(
             scale = gestures.liveVideoTransform.scale,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .adaptiveSafeDrawingPadding(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                .adaptiveSafeContentPadding(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
                 .padding(top = 28.dp),
         )
 
