@@ -508,6 +508,7 @@ internal fun TvExoPlayerView(
             highlightedSkipKey = skipUi.highlightedSkipKey,
             qualityCount = playback.qualityLabels.size,
             currentQualityLabel = activeQuality.orEmpty(),
+            activeSpeed = activeSpeed,
             adaptiveQuality = playback.adaptiveQuality,
             showAllohaButton = trackMenu.showAudioChoice,
             onPlayPause = { if (wantsPlay) player.pause() else player.play() },
@@ -537,6 +538,11 @@ internal fun TvExoPlayerView(
             },
             onTogglePlayerSettings = {
                 togglePanel(TvPlayerPanel.PlayerSettings, PanelReturnFocusTarget.PlayerSettings)
+            },
+            onCycleSpeed = {
+                val nextIndex = (PlayerSpeedOptions.nearestIndex(activeSpeed) + 1) % speeds.size
+                onPlayerEvent(PlayerState.Event.SpeedSelected(speeds[nextIndex]))
+                onInteraction()
             },
             onToggleAlloha = {
                 togglePanel(TvPlayerPanel.Alloha, PanelReturnFocusTarget.Alloha)
