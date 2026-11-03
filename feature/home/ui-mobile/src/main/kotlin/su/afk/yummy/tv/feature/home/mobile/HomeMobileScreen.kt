@@ -225,7 +225,7 @@ fun HomeMobileScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(24.dp),
                 ) {
-                    val feed = state.feed
+                    val feed = state.feed?.copy(heroItems = emptyList())
 
                     // Плашки и поиск в одном item: иначе spacedBy(24) растягивает зазор между ними
                     item(key = "search") {
