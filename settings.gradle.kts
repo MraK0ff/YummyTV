@@ -65,6 +65,7 @@ include(":feature:commonScreen:presenter")
 
 include(":feature:home:api")
 include(":feature:catalog:api")
+include(":feature:search:api")
 include(":feature:library:api")
 include(":feature:details:api")
 include(":feature:player:api")
