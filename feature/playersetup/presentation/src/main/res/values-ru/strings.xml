@@ -1,6 +1,19 @@
 <resources>
     <string name="player_setup_title">Настройки приложения</string>
-    <string name="player_setup_subtitle">Выберите, как вам удобнее. Всё можно изменить позже в настройках.</string>
+        <string name="player_setup_subtitle">Выберите, как вам удобнее</string>
+    <string name="player_setup_mobile_section_appearance">Оформление</string>
+    <string name="player_setup_auto_skip_delay_label">Задержка автопропуска</string>
+    <string name="player_setup_auto_skip_delay_hint">Пауза перед пропуском опенинга или эндинга</string>
+    <string name="player_setup_autoplay_delay_label">Задержка автовоспроизведения</string>
+    <string name="player_setup_autoplay_delay_hint">Пауза перед запуском следующей серии</string>
+    <string name="player_setup_controls_timeout_label">Скрывать контролы через</string>
+    <string name="player_setup_controls_timeout_hint">Время до скрытия элементов управления</string>
+    <string name="player_setup_theme_label">Тема</string>
+    <string name="player_setup_theme_hint">Выберите цветовую палитру</string>
+    <string name="player_setup_background_label">Фон</string>
+    <string name="player_setup_background_hint">Выберите стиль фона приложения</string>
+    <string name="player_setup_instant">Сразу</string>
+    <string name="player_setup_seconds">%1$d сек.</string>
     <string name="player_setup_mobile_more_settings">Остальное — в настройках</string>
     <string name="player_setup_opening_timeline_label">Показывать опенинг на таймлайне</string>
     <string name="player_setup_opening_timeline_hint">Участок опенинга подсвечивается на полосе прогресса</string>
