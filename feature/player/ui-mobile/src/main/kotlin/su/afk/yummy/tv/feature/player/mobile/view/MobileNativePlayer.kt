@@ -6,12 +6,9 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +37,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import kotlinx.coroutines.delay
+import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeDrawingPadding
+import androidx.compose.foundation.layout.WindowInsetsSides
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.PlayerBlackBackdrop
@@ -674,7 +673,7 @@ internal fun MobileNativePlayer(
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .windowInsetsPadding(WindowInsets.navigationBars)
+                .adaptiveSafeDrawingPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                 .padding(end = 18.dp, bottom = skipButtonBottomPadding),
         )
 
@@ -685,7 +684,8 @@ internal fun MobileNativePlayer(
             icon = stepSeekToast.direction.toastIcon,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 128.dp else 36.dp),
+                .adaptiveSafeDrawingPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+                .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 112.dp else 20.dp),
         )
 
         MobilePlayerSkipToast(
@@ -707,7 +707,8 @@ internal fun MobileNativePlayer(
             scale = gestures.liveVideoTransform.scale,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 28.dp),
+                .adaptiveSafeDrawingPadding(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                .padding(top = 12.dp),
         )
 
         MobilePlayerGestureIndicator(
