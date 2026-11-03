@@ -146,12 +146,6 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
 }
 
 /**
- * Applies padding only where the display cutout intrudes into the window.
- *
- * System bars, gesture areas and the IME are deliberately excluded: player controls should
- * remain close to the screen edges unless a camera/notch cutout actually occupies that edge.
-  */
-/**
  * Maps each cutout rectangle to the nearest physical window edge. Some devices report a
  * landscape cutout's safe area as top/bottom insets after rotation; using the rectangle keeps
  * padding on the edge where the camera actually is.
