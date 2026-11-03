@@ -62,6 +62,8 @@ class MobileMainGraph @Inject internal constructor(
         // иначе держится только на atTabRoot, а тот зависит от того, успел ли таб-стек
         // проинициализироваться к моменту навигации из MainViewModel.init.
         val isFullscreenDestination = currentDestination is FullscreenDestination
+        val isHeaderDestination = currentDestination is AccountNotificationsDestination ||
+            currentDestination is SettingsDestination || currentDestination is CatalogDestination
         // Рейка на широком окне остаётся рядом с деталями, уходит только в полноэкранных сценах.
         val showRail = !isRequiredUpdateDestination && !isFullscreenDestination
 
@@ -106,7 +108,7 @@ class MobileMainGraph @Inject internal constructor(
                             state.unreadNotificationsCount,
                             if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
                         ),
-                        showBottomBar = atTabRoot && !isRequiredUpdateDestination &&
+                        showBottomBar = (atTabRoot || isHeaderDestination) && !isRequiredUpdateDestination &&
                             !isFullscreenDestination,
                         showRail = showRail,
                         onDestinationSelected = { root ->

@@ -6,10 +6,10 @@ import androidx.navigation3.runtime.NavKey
 import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.feature.account.IMobileAccountEntry
-import su.afk.yummy.tv.feature.account.account.AccountState
 import su.afk.yummy.tv.feature.account.account.AccountViewModel
 import su.afk.yummy.tv.feature.account.localauth.LocalAuthViewModel
 import su.afk.yummy.tv.feature.account.mobile.account.AccountMobileScreen
+import su.afk.yummy.tv.feature.account.mobile.account.AccountNotificationsMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.localauth.LocalAuthMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.mysubscriptions.MySubscriptionsMobileScreen
 import su.afk.yummy.tv.feature.account.mobile.passwordreset.PasswordResetMobileScreen
@@ -52,11 +52,10 @@ class AccountNavRegistrar @Inject constructor() : IMobileAccountEntry {
             entry<AccountNotificationsDestination> {
                 val viewModel = hiltViewModel<AccountViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
-                    AccountMobileScreen(
+                    AccountNotificationsMobileScreen(
                         state = state,
                         effect = effect,
                         onEvent = onEvent,
-                        initialTab = AccountState.AccountTab.NOTIFICATIONS,
                     )
                 }
             }

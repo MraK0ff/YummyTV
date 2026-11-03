@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -34,12 +35,13 @@ internal fun MobileGlobalHeader(
 ) {
     val height = animateDpAsState(if (collapsed) 48.dp else 64.dp, label = "header-height")
     Surface(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
     ) {
         Row(
             modifier = Modifier
+                .fillMaxWidth()
                 .height(height.value)
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
