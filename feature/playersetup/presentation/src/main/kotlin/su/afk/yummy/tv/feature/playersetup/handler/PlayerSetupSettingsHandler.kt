@@ -40,48 +40,51 @@ internal class PlayerSetupSettingsHandler @Inject constructor(
             store.autoSkipOpeningsEndings,
             store.autoPlayNextEpisode,
             store.suggestNextEpisodeOnWatched,
-            store.autoSkipDelaySeconds,
-            store.nextEpisodeSwitchDelaySeconds,
-            store.playerControlsAutoHideSeconds,
-        ) { showOpening, autoSkip, autoPlay, suggestNext, skipDelay, nextDelay, controlsTimeout ->
+        ) { showOpening, autoSkip, autoPlay, suggestNext ->
             PlayerSetupState.State(
                 showOpeningOnTimeline = showOpening,
                 autoSkipOpeningsEndings = autoSkip,
                 autoPlayNextEpisode = autoPlay,
                 suggestNextEpisodeOnWatched = suggestNext,
-                autoSkipDelaySeconds = skipDelay,
-                nextEpisodeSwitchDelaySeconds = nextDelay,
-                playerControlsAutoHideSeconds = controlsTimeout,
             )
         },
+        combine(
+            store.autoSkipDelaySeconds,
+            store.nextEpisodeSwitchDelaySeconds,
+            store.playerControlsAutoHideSeconds,
+        ) { skip, next, controls -> Triple(skip, next, controls) },
         combine(
             store.adaptiveVideoQualityEnabled,
             store.preferredVideoQuality,
             store.playerOrientationMode,
             store.pictureInPictureEnabled,
-            accountStore.yaniContentLanguage,
-            appearanceStore.appTheme,
-            appearanceStore.backgroundStyle,
-        ) { adaptive, quality, orientation, pip, language, theme, background ->
+        ) { adaptive, quality, orientation, pip ->
             PlayerSetupState.State(
                 adaptiveVideoQualityEnabled = adaptive,
                 preferredVideoQuality = quality,
                 playerOrientationMode = orientation,
                 pictureInPictureEnabled = pip,
-                contentLanguage = language,
-                appTheme = theme,
-                backgroundStyle = background,
             )
         },
-    ) { toggles, playback ->
+        combine(
+            accountStore.yaniContentLanguage,
+            appearanceStore.appTheme,
+            appearanceStore.backgroundStyle,
+        ) { language, theme, background ->
+            Triple(language, theme, background)
+        },
+    ) { toggles, delays, playback, appearance ->
         toggles.copy(
+            autoSkipDelaySeconds = delays.first,
+            nextEpisodeSwitchDelaySeconds = delays.second,
+            playerControlsAutoHideSeconds = delays.third,
             adaptiveVideoQualityEnabled = playback.adaptiveVideoQualityEnabled,
             preferredVideoQuality = playback.preferredVideoQuality,
             playerOrientationMode = playback.playerOrientationMode,
             pictureInPictureEnabled = playback.pictureInPictureEnabled,
-            contentLanguage = playback.contentLanguage,
-            appTheme = playback.appTheme,
-            backgroundStyle = playback.backgroundStyle,
+            contentLanguage = appearance.first,
+            appTheme = appearance.second,
+            backgroundStyle = appearance.third,
         )
     }
 
