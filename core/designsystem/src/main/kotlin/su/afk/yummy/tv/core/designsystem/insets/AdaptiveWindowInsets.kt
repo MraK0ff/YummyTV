@@ -36,8 +36,12 @@ import androidx.core.view.WindowInsetsCompat
 data class AdaptiveWindowInfo(
     val windowWidthPx: Int = 0,
     val windowHeightPx: Int = 0,
+    val displayWidthPx: Int = 0,
+    val displayHeightPx: Int = 0,
     val orientation: Int = Configuration.ORIENTATION_UNDEFINED,
     val isFullscreen: Boolean = false,
+    val systemBarsVisible: Boolean = true,
+    val isInMultiWindowMode: Boolean = false,
     val hasDisplayCutout: Boolean = false,
     val cutoutBounds: List<Rect> = emptyList(),
     val safeInsets: Insets = Insets.NONE,
@@ -78,15 +82,20 @@ fun AdaptiveWindowInsetsProvider(content: @Composable () -> Unit) {
             val waterfall = cutout?.waterfallInsets ?: Insets.NONE
             val safe = maxInsets(maxInsets(systemBars, cutoutInsets), waterfall)
             val bounds = cutout?.boundingRects?.map { Rect(it) }.orEmpty()
-            val fullscreen = ((activity?.window?.attributes?.flags ?: 0) and
+            val barsVisible = insets?.isVisible(WindowInsetsCompat.Type.systemBars()) ?: true
+            val fullscreenFlag = ((activity?.window?.attributes?.flags ?: 0) and
                 WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0
 
             val next = AdaptiveWindowInfo(
                 windowWidthPx = decorView.width,
                 windowHeightPx = decorView.height,
+                displayWidthPx = decorView.resources.displayMetrics.widthPixels,
+                displayHeightPx = decorView.resources.displayMetrics.heightPixels,
                 orientation = decorView.resources.configuration.orientation,
-                isFullscreen = fullscreen,
-                hasDisplayCutout = bounds.isNotEmpty() ||
+                isFullscreen = fullscreenFlag || !barsVisible,
+                systemBarsVisible = barsVisible,
+                isInMultiWindowMode = activity?.isInMultiWindowMode == true,
+                hasDisplayCutout = cutout != null || bounds.isNotEmpty() ||
                     cutoutInsets != Insets.NONE ||
                     waterfall != Insets.NONE,
                 cutoutBounds = bounds,
@@ -100,22 +109,21 @@ fun AdaptiveWindowInsetsProvider(content: @Composable () -> Unit) {
             if (next != info) info = next
         }
 
-        val insetsListener = View.OnApplyWindowInsetsListener { _, platformInsets ->
-            val compat = WindowInsetsCompat.toWindowInsetsCompat(platformInsets, decorView)
-            update(compat)
-            platformInsets
+        val insetsListener: (View, WindowInsetsCompat) -> WindowInsetsCompat = { _, insets ->
+            update(insets)
+            insets
         }
         val layoutListener = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             update(ViewCompat.getRootWindowInsets(decorView))
         }
 
-        decorView.setOnApplyWindowInsetsListener(insetsListener)
+        ViewCompat.setOnApplyWindowInsetsListener(decorView, insetsListener)
         decorView.addOnLayoutChangeListener(layoutListener)
         update(ViewCompat.getRootWindowInsets(decorView))
         ViewCompat.requestApplyInsets(decorView)
 
         onDispose {
-            decorView.setOnApplyWindowInsetsListener(null)
+            ViewCompat.setOnApplyWindowInsetsListener(decorView, null)
             decorView.removeOnLayoutChangeListener(layoutListener)
         }
     }
