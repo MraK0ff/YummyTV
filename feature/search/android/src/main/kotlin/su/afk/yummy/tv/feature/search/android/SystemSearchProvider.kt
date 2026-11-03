@@ -107,7 +107,7 @@ class SystemSearchProvider : ContentProvider() {
         EntryPointAccessors.fromApplication(
             context,
             SystemSearchProviderEntryPoint::class.java,
-        ).searchUseCase()
+        ).searchFeatureUseCase()
 
     private fun appContext(): Context =
         checkNotNull(context?.applicationContext) { "ContentProvider is not attached." }
@@ -115,7 +115,7 @@ class SystemSearchProvider : ContentProvider() {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface SystemSearchProviderEntryPoint {
-        fun searchUseCase(): SearchUseCase
+        fun searchFeatureUseCase(): SearchUseCase
     }
 
     private companion object {
