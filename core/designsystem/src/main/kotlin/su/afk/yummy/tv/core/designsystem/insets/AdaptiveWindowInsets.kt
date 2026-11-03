@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.waterfall
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -152,4 +153,4 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
  */
 fun Modifier.adaptiveSafeDrawingPadding(
     sides: WindowInsetsSides = WindowInsetsSides.All,
-): Modifier = windowInsetsPadding(WindowInsets.safeDrawing.only(sides))
+): Modifier = windowInsetsPadding(WindowInsets.safeDrawing.union(WindowInsets.waterfall).only(sides))
