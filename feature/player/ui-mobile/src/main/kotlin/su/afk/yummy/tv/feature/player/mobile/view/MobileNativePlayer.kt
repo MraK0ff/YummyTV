@@ -707,7 +707,7 @@ internal fun MobileNativePlayer(
                 !isInPictureInPictureMode &&
                 !tutorialBlocksPlayback,
             icon = MobileVerticalGestureZone.Brightness.gestureIcon,
-            percentText = gestures.brightnessLevel.toGesturePercentText(),
+            percentText = if (gestures.brightnessLevel == 0f) "AUTO" else gestures.brightnessLevel.toGesturePercentText(),
             modifier = Modifier
                 .align(Alignment.Center),
         )
