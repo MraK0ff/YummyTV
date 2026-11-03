@@ -7,7 +7,7 @@ import dagger.hilt.components.SingletonComponent
 import su.afk.yummy.tv.feature.search.ISearchNavigator
 import su.afk.yummy.tv.feature.search.ISearchOpener
 import su.afk.yummy.tv.feature.search.navigator.SearchNavigator
-import su.afk.yummy.tv.feature.search.navigator.SearchSearchOpener
+import su.afk.yummy.tv.feature.search.navigator.SearchOpener
 import javax.inject.Singleton
 
 @Module
@@ -20,5 +20,5 @@ internal interface SearchNavigatorModule {
 
     @Binds
     @Singleton
-    fun bindSearchSearchOpener(impl: SearchSearchOpener): ISearchOpener
+    fun bindSearchOpener(impl: SearchOpener): ISearchOpener
 }
