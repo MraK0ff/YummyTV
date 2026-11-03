@@ -64,15 +64,18 @@ jobs:
           curl -fsSL 'https://android.googlesource.com/platform/build/+/refs/heads/main/target/product/security/testkey.x509.pem?format=TEXT' \
             | base64 --decode > "$key_dir/testkey.x509.pem"
 
-          # AOSP stores this key as unencrypted DER-encoded PKCS#8.
-          # Convert explicitly with pkcs8 so apksigner receives PEM PKCS#8.
+          # apksigner --key requires unencrypted PKCS#8 in DER format.
+          # AOSP's .pk8 file is already in that format; do not convert it to PEM.
           openssl pkcs8 -inform DER -nocrypt \
             -in "$key_dir/testkey.pk8" \
-            -out "$key_dir/testkey.pem"
+            -out /dev/null
 
-          # Fail early if the private key cannot be parsed or is not RSA.
-          openssl pkey -in "$key_dir/testkey.pem" -check -noout
-          grep -q 'BEGIN PRIVATE KEY' "$key_dir/testkey.pem"
+          # Confirm that the downloaded certificate belongs to this private key.
+          openssl pkey -inform DER -in "$key_dir/testkey.pk8" -pubout \
+            -out "$key_dir/key-public.pem"
+          openssl x509 -in "$key_dir/testkey.x509.pem" -pubkey -noout \
+            > "$key_dir/cert-public.pem"
+          diff -u "$key_dir/key-public.pem" "$key_dir/cert-public.pem"
 
           apksigner="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name apksigner | sort -V | tail -n 1)"
           test -n "$apksigner"
@@ -83,7 +86,7 @@ jobs:
 
           for apk in "${apks[@]}"; do
             "$apksigner" sign \
-              --key "$key_dir/testkey.pem" \
+              --key "$key_dir/testkey.pk8" \
               --cert "$key_dir/testkey.x509.pem" \
               "$apk"
             "$apksigner" verify --verbose --print-certs "$apk"
