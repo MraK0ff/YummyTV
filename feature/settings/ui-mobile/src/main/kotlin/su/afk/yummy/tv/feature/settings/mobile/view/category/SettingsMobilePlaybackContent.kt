@@ -34,9 +34,12 @@ internal fun SettingsMobilePlaybackContent(
             )
             SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_auto_skip_delay_label),
-                valueLabel = { stringResource(R.string.settings_next_episode_switch_delay_seconds, it) },
+                valueLabel = {
+                    if (it == 0) stringResource(R.string.settings_auto_skip_delay_instant)
+                    else stringResource(R.string.settings_next_episode_switch_delay_seconds, it)
+                },
                 value = state.autoSkipDelaySeconds,
-                valueRange = 1..15,
+                valueRange = 0..15,
                 enabled = state.autoSkipOpeningsEndings,
                 onValueCommitted = {
                     onEvent(SettingsState.Event.AutoSkipDelayChanged(it))
