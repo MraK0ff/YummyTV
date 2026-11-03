@@ -21,7 +21,7 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":core:tv:api"))
     implementation(project(":core:utils"))
-    implementation(project(":feature:catalog:api"))
+    implementation(project(":feature:search:api"))
     implementation(project(":feature:collection:api"))
     implementation(project(":feature:bloggers:api"))
     implementation(project(":feature:bloggers:domain"))
