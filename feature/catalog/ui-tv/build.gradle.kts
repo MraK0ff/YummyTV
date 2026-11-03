@@ -13,6 +13,8 @@ dependencies {
     implementation(project(":feature:details:api"))
     implementation(project(":feature:catalog:api"))
     implementation(project(":feature:catalog:presentation"))
+    implementation(project(":feature:home:presentation"))
+    implementation(project(":feature:home:ui-tv"))
     implementation(project(":feature:settings:api"))
 
     implementation(libs.bundles.compose.screen)
