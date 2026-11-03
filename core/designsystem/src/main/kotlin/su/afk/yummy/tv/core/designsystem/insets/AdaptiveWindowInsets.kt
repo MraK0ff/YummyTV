@@ -7,14 +7,15 @@ import android.content.res.Configuration
 import android.graphics.Rect
 import android.view.View
 import android.view.WindowManager
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,7 +72,7 @@ fun AdaptiveWindowInsetsProvider(content: @Composable () -> Unit) {
     val activity = remember(decorView) { decorView.context.findActivity() }
     var info by remember(decorView) { mutableStateOf(AdaptiveWindowInfo()) }
 
-    androidx.compose.runtime.DisposableEffect(decorView, activity) {
+    DisposableEffect(decorView, activity) {
         fun update(insets: WindowInsetsCompat?) {
             val cutout: DisplayCutoutCompat? = insets?.displayCutout
             val systemBars = insets?.getInsets(WindowInsetsCompat.Type.systemBars()) ?: Insets.NONE
