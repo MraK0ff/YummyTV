@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":feature:posts:api"))
     implementation(project(":feature:schedule:api"))
     implementation(project(":feature:catalog:api"))
+    implementation(project(":feature:search:api"))
     implementation(project(":feature:account:domain"))
     implementation(project(":feature:library:domain"))
     implementation(project(":feature:playersetup:api"))
