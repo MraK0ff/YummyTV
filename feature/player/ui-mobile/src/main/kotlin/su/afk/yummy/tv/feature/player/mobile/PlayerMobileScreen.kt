@@ -7,23 +7,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
@@ -35,12 +36,13 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
+import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeContentPadding
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
+import su.afk.yummy.tv.core.designsystem.R as CoreR
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
-import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
 import su.afk.yummy.tv.feature.player.mobile.model.MobileVideoTransform
@@ -52,8 +54,8 @@ import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerMessage
 import su.afk.yummy.tv.feature.player.mobile.view.MobilePlayerSkipToast
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
+import su.afk.yummy.tv.feature.player.PlayerState
 import su.afk.yummy.tv.feature.player.presentation.R
-import su.afk.yummy.tv.core.designsystem.R as CoreR
 
 @OptIn(UnstableApi::class)
 @Preview(name = "Default", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -239,7 +241,8 @@ fun PlayerMobileScreen(
             text = sourceToastText,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 48.dp),
+                .adaptiveSafeContentPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+                .padding(bottom = 16.dp),
         )
         if (showErrorBalancerSheet && uiState.canChangePlayer) {
             MobilePlayerBalancerSheet(
