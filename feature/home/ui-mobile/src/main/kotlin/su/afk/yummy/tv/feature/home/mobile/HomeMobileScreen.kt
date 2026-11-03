@@ -227,10 +227,12 @@ fun HomeMobileScreen(
                     val feed = state.feed
 
                     // Status banners stay at the top; search is now available from the global header.
-                    item(key = "status") {
-                        Column(modifier = Modifier.mobileContentMaxWidth()) {
-                            OfflineBanner(isOffline = isOffline)
-                            InfoBanner(message = state.statusMessage)
+                    if (isOffline || state.statusMessage != null) {
+                        item(key = "status") {
+                            Column(modifier = Modifier.mobileContentMaxWidth()) {
+                                OfflineBanner(isOffline = isOffline)
+                                InfoBanner(message = state.statusMessage)
+                            }
                         }
                     }
 
