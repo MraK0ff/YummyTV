@@ -10,9 +10,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -36,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.theme.overline
+import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeDrawingPadding
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.feature.player.mobile.utils.labelRes
 import su.afk.yummy.tv.feature.player.presentation.R
@@ -67,7 +66,7 @@ internal fun MobilePlayerTopBar(
             modifier = modifier
                 .fillMaxWidth()
                 .background(Color.Black.copy(alpha = 0.28f))
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                .adaptiveSafeDrawingPadding(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
                 .padding(horizontal = 8.dp, vertical = 8.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
