@@ -91,7 +91,7 @@ private fun AccountMobileScreenErrorPreview() = ScreenPreviewTheme {
         AccountState.State(isSessionResolved = true, error = AccountUiError.SIGN_IN_FAILED),
         effect = emptyFlow(),
         onEvent = {},
-    ) {}
+    )
 }
 
 @Composable
