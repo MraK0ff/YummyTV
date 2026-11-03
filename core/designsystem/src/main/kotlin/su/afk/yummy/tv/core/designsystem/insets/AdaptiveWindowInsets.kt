@@ -151,11 +151,13 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
  * Keep decorative/media surfaces edge-to-edge and apply this to interactive content layers.
  * The Compose inset source updates dynamically as system bars, cutouts and the IME change.
  */
+@Composable
 fun Modifier.adaptiveSafeDrawingPadding(
-    sides: WindowInsetsSides = WindowInsetsSides.All,
+    sides: WindowInsetsSides = WindowInsetsSides.Horizontal + WindowInsetsSides.Vertical,
 ): Modifier = windowInsetsPadding(WindowInsets.safeDrawing.only(sides))
 
 /** Applies drawing and gesture-safe insets to interactive controls. */
+@Composable
 fun Modifier.adaptiveSafeContentPadding(
-    sides: WindowInsetsSides = WindowInsetsSides.All,
+    sides: WindowInsetsSides = WindowInsetsSides.Horizontal + WindowInsetsSides.Vertical,
 ): Modifier = windowInsetsPadding(WindowInsets.safeContent.only(sides))
