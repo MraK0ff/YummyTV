@@ -64,7 +64,15 @@ jobs:
           curl -fsSL 'https://android.googlesource.com/platform/build/+/refs/heads/main/target/product/security/testkey.x509.pem?format=TEXT' \
             | base64 --decode > "$key_dir/testkey.x509.pem"
 
-          openssl pkey -inform DER -in "$key_dir/testkey.pk8" -out "$key_dir/testkey.pem"
+          # AOSP stores this key as unencrypted DER-encoded PKCS#8.
+          # Convert explicitly with pkcs8 so apksigner receives PEM PKCS#8.
+          openssl pkcs8 -inform DER -nocrypt \
+            -in "$key_dir/testkey.pk8" \
+            -out "$key_dir/testkey.pem"
+
+          # Fail early if the private key cannot be parsed or is not RSA.
+          openssl pkey -in "$key_dir/testkey.pem" -check -noout
+          grep -q 'BEGIN PRIVATE KEY' "$key_dir/testkey.pem"
 
           apksigner="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name apksigner | sort -V | tail -n 1)"
           test -n "$apksigner"
