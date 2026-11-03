@@ -26,7 +26,7 @@ import su.afk.yummy.tv.core.navigation.host.AppNavHost
 import su.afk.yummy.tv.core.navigation.manager.BackStackHost
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
-import su.afk.yummy.tv.feature.account.navigator.AccountDestination
+import su.afk.yummy.tv.feature.account.navigator.AccountNotificationsDestination
 import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsDestination
 import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
@@ -114,7 +114,10 @@ class MobileMainGraph @Inject internal constructor(
                         },
                         toastMessage = toast.message,
                         unreadNotificationsCount = state.unreadNotificationsCount,
-                        onNotificationsClick = { navManager.switchRoot(RootTab.ACCOUNT) },
+                        onNotificationsClick = {
+                            navManager.switchRoot(RootTab.ACCOUNT)
+                            navManager.navigate(AccountNotificationsDestination)
+                        },
                         onSettingsClick = { navManager.navigate(SettingsDestination) },
                         onSearchClick = { navManager.navigate(CatalogDestination()) },
                         showSeasonalOverlay = !isFullscreenDestination,
