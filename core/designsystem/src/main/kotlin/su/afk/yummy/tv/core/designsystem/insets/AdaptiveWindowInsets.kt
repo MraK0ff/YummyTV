@@ -45,6 +45,7 @@ data class AdaptiveWindowInfo(
     val hasDisplayCutout: Boolean = false,
     val cutoutBounds: List<Rect> = emptyList(),
     val safeInsets: Insets = Insets.NONE,
+    val displayCutoutInsets: Insets = Insets.NONE,
     val statusBarInsets: Insets = Insets.NONE,
     val navigationBarInsets: Insets = Insets.NONE,
     val systemBarInsets: Insets = Insets.NONE,
@@ -100,6 +101,7 @@ fun AdaptiveWindowInsetsProvider(content: @Composable () -> Unit) {
                     waterfall != Insets.NONE,
                 cutoutBounds = bounds,
                 safeInsets = safe,
+                displayCutoutInsets = cutoutInsets,
                 statusBarInsets = statusBars,
                 navigationBarInsets = navigationBars,
                 systemBarInsets = systemBars,
@@ -149,13 +151,53 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
  * System bars, gesture areas and the IME are deliberately excluded: player controls should
  * remain close to the screen edges unless a camera/notch cutout actually occupies that edge.
   */
+/**
+ * Maps each cutout rectangle to the nearest physical window edge. Some devices report a
+ * landscape cutout's safe area as top/bottom insets after rotation; using the rectangle keeps
+ * padding on the edge where the camera actually is.
+ */
+private fun AdaptiveWindowInfo.edgeSpecificCutoutInsets(): Insets {
+    if (windowWidthPx <= 0 || windowHeightPx <= 0 || cutoutBounds.isEmpty()) return Insets.NONE
+
+    var left = 0
+    var top = 0
+    var right = 0
+    var bottom = 0
+
+    cutoutBounds.forEach { bounds ->
+        val distances = listOf(
+            bounds.left.coerceAtLeast(0),
+            bounds.top.coerceAtLeast(0),
+            (windowWidthPx - bounds.right).coerceAtLeast(0),
+            (windowHeightPx - bounds.bottom).coerceAtLeast(0),
+        )
+        when (distances.indices.minByOrNull { distances[it] }) {
+            0 -> left = maxOf(left, displayCutoutInsets.left)
+            1 -> top = maxOf(top, displayCutoutInsets.top)
+            2 -> right = maxOf(right, displayCutoutInsets.right)
+            3 -> bottom = maxOf(bottom, displayCutoutInsets.bottom)
+        }
+    }
+    return Insets.of(left, top, right, bottom)
+}
+
 @Composable
 fun Modifier.adaptiveSafeDrawingPadding(
     sides: WindowInsetsSides = WindowInsetsSides.Horizontal + WindowInsetsSides.Vertical,
-): Modifier = windowInsetsPadding(WindowInsets.displayCutout.only(sides))
+): Modifier {
+    val cutoutInsets = LocalAdaptiveWindowInfo.current.edgeSpecificCutoutInsets()
+    return windowInsetsPadding(
+        WindowInsets(
+            left = cutoutInsets.left,
+            top = cutoutInsets.top,
+            right = cutoutInsets.right,
+            bottom = cutoutInsets.bottom,
+        ).only(sides),
+    )
+}
 
-/** Applies display-cutout padding to interactive controls without adding status/navigation-bar gaps. */
+/** Applies only the cutout's physical edge to interactive controls, never system-bar spacing. */
 @Composable
 fun Modifier.adaptiveSafeContentPadding(
     sides: WindowInsetsSides = WindowInsetsSides.Horizontal + WindowInsetsSides.Vertical,
-): Modifier = windowInsetsPadding(WindowInsets.displayCutout.only(sides))
+): Modifier = adaptiveSafeDrawingPadding(sides)
