@@ -172,10 +172,10 @@ private fun AdaptiveWindowInfo.edgeSpecificCutoutInsets(): Insets {
             (windowHeightPx - bounds.bottom).coerceAtLeast(0),
         )
         when (distances.indices.minByOrNull { distances[it] }) {
-            0 -> left = maxOf(left, displayCutoutInsets.left)
-            1 -> top = maxOf(top, displayCutoutInsets.top)
-            2 -> right = maxOf(right, displayCutoutInsets.right)
-            3 -> bottom = maxOf(bottom, displayCutoutInsets.bottom)
+            0 -> left = maxOf(left, bounds.right, displayCutoutInsets.left)
+            1 -> top = maxOf(top, bounds.bottom, displayCutoutInsets.top)
+            2 -> right = maxOf(right, windowWidthPx - bounds.left, displayCutoutInsets.right)
+            3 -> bottom = maxOf(bottom, windowHeightPx - bounds.top, displayCutoutInsets.bottom)
         }
     }
     return Insets.of(left, top, right, bottom)
