@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
@@ -86,7 +86,7 @@ internal fun MobilePlayerOverlay(
                     onClick = onPrevEpisode,
                 )
                 MobilePlayerActionButton(
-                    icon = Icons.AutoMirrored.Filled.VolumeUp,
+                    icon = Icons.Filled.GraphicEq,
                     contentDescription = stringResource(R.string.player_mobile_track_settings_title),
                     onClick = onTrackSettings,
                 )
