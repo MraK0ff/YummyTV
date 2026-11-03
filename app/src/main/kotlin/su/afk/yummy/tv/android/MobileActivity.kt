@@ -25,7 +25,7 @@ import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
 import su.afk.yummy.tv.core.designsystem.insets.AdaptiveWindowInsetsProvider
 import su.afk.yummy.tv.core.designsystem.locals.LocalStaticBaseUrl
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
-import su.afk.yummy.tv.feature.search.android.SystemSearchIntentHandler
+import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
 import su.afk.yummy.tv.feature.main.mobile.navigation.MobileKeyboardShortcuts
 import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
