@@ -13,13 +13,13 @@ import su.afk.yummy.tv.data.search.network.YaniSearchApi
 import su.afk.yummy.tv.data.search.repository.DataStoreSearchHistoryRepository
 import su.afk.yummy.tv.data.search.repository.YaniSearchRepository
 import su.afk.yummy.tv.data.search.storage.searchHistoryDataStore
-import su.afk.yummy.tv.domain.catalog.repository.SearchHistoryRepository
-import su.afk.yummy.tv.domain.catalog.repository.SearchRepository
+import su.afk.yummy.tv.domain.search.repository.SearchHistoryRepository
+import su.afk.yummy.tv.domain.search.repository.SearchRepository
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object CatalogDataModule {
+object SearchDataModule {
 
     @Provides
     @Singleton
