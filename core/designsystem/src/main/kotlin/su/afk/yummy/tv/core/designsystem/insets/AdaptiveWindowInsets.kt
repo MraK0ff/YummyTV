@@ -8,8 +8,6 @@ import android.graphics.Rect
 import android.view.View
 import android.view.WindowManager
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeContent
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.WindowInsetsSides
