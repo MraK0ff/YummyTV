@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.data.details.repository
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -145,10 +146,11 @@ class YaniAnimeRepository(
     private suspend fun fetchDetailsShared(animeId: Int, languageCode: String): AnimeDetails {
         val key = "$animeId:$languageCode"
         val deferred = detailsInFlight.computeIfAbsent(key) {
-            detailsScope.async { fetchDetailsFromNetwork(animeId, languageCode) }.also { started ->
+            detailsScope.async(start = CoroutineStart.LAZY) { fetchDetailsFromNetwork(animeId, languageCode) }.also { started ->
                 started.invokeOnCompletion { detailsInFlight.remove(key, started) }
             }
         }
+        deferred.start()
         return deferred.await()
     }
 
@@ -568,7 +570,7 @@ class YaniAnimeRepository(
         // выхода, чужому состоянию отдавать нельзя.
         val key = "$animeId:$languageCode:${settingsStore.currentUserId()}"
         val deferred = videosInFlight.computeIfAbsent(key) {
-            detailsScope.async {
+            detailsScope.async(start = CoroutineStart.LAZY) {
                 val dto = api.getAnimeVideos(animeId)
                 // Маппинг тысяч видео — вычисления, а не IO: отдаём его пулу Default.
                 val cache = withContext(Dispatchers.Default) {
@@ -584,6 +586,7 @@ class YaniAnimeRepository(
                 started.invokeOnCompletion { videosInFlight.remove(key, started) }
             }
         }
+        deferred.start()
         return deferred.await()
     }
 

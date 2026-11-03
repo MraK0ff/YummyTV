@@ -224,7 +224,7 @@ fun HomeMobileScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(24.dp),
                 ) {
-                    val feed = state.feed
+                    val feed = state.feed?.copy(heroItems = emptyList())
 
                     // Status banners stay at the top; search is now available from the global header.
                     if (isOffline || state.statusMessage != null) {

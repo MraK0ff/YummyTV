@@ -7,6 +7,7 @@
     <string name="main_tab_library">Библиотека</string>
     <string name="main_tab_history">История</string>
     <string name="main_tab_catalog">Каталог</string>
+    <string name="main_tab_search">Поиск</string>
     <string name="main_tab_schedule">Расписание</string>
     <string name="main_tab_collections">Коллекции</string>
     <string name="main_settings_content_description">Настройки</string>

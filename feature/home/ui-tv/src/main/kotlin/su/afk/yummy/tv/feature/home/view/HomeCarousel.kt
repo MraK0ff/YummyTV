@@ -41,7 +41,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-internal fun HomeCarousel(
+fun HomeCarousel(
     items: List<HomeFeedItem>,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     sectionKey: String,

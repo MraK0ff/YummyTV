@@ -3,9 +3,6 @@ name: Android Debug Build
 on:
   pull_request:
   push:
-    branches:
-      - main
-      - master
 
 permissions:
   contents: read
