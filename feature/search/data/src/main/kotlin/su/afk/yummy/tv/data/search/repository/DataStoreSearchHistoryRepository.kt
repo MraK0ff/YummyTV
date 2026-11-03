@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 import su.afk.yummy.tv.data.search.storage.mapper.toSearchHistory
 import su.afk.yummy.tv.data.search.storage.mapper.toSearchHistoryStorage
 import su.afk.yummy.tv.data.search.storage.searchHistoryKey
-import su.afk.yummy.tv.domain.catalog.repository.SearchHistoryRepository
+import su.afk.yummy.tv.domain.search.repository.SearchHistoryRepository
 import java.io.IOException
 
 internal class DataStoreSearchHistoryRepository(
