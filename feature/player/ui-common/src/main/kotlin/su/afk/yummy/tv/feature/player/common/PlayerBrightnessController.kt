@@ -5,9 +5,10 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -31,30 +32,59 @@ class PlayerBrightnessController @Inject constructor(
     @DefaultApplicationScope private val scope: CoroutineScope,
 ) {
     private val _brightness = MutableStateFlow<Float?>(null)
+    private val _autoReturnToSystemAtZero = MutableStateFlow(true)
+    @Volatile
+    private var userChangedBrightness = false
 
     /** Сохранённая яркость как доля 0.01f..1f; `null` — использовать системную. */
     val brightness: StateFlow<Float?> = _brightness.asStateFlow()
 
+    /** Текущая настройка автоматического возврата системной яркости. */
+    val autoReturnToSystemAtZero: StateFlow<Boolean> = _autoReturnToSystemAtZero.asStateFlow()
+
     init {
+        scope.launch {
+            settingsStore.autoReturnMobileBrightnessToSystemAtZero.collect {
+                _autoReturnToSystemAtZero.value = it
+            }
+        }
         scope.launch {
             val storedPercent = settingsStore.mobilePlayerBrightnessPercent.first()
             // Жест мог успеть сработать раньше, чем DataStore ответил: его значение главнее.
-            if (_brightness.value == null && storedPercent != null) {
+            if (!userChangedBrightness && _brightness.value == null && storedPercent != null) {
                 _brightness.value = (storedPercent / 100f).coerceIn(MIN_BRIGHTNESS, MAX_BRIGHTNESS)
             }
         }
         scope.launch {
             _brightness
-                .filterNotNull()
-                .map { (it * 100f).roundToInt() }
+                .map { value -> value?.let { (it * 100f).roundToInt() } }
                 .distinctUntilChanged()
+                .drop(1)
                 .debounce(PERSIST_DEBOUNCE_MS)
-                .collect { percent -> settingsStore.setMobilePlayerBrightnessPercent(percent) }
+                .collect { percent ->
+                    if (percent == null) {
+                        settingsStore.clearMobilePlayerBrightnessPercent()
+                    } else {
+                        settingsStore.setMobilePlayerBrightnessPercent(percent)
+                    }
+                }
         }
     }
 
     fun setFraction(value: Float) {
+        userChangedBrightness = true
         _brightness.value = value.coerceIn(MIN_BRIGHTNESS, MAX_BRIGHTNESS)
+    }
+
+    /** Сбрасывает переопределение окна и сохранённое значение, возвращая системную яркость. */
+    fun resetToSystem() {
+        userChangedBrightness = true
+        val hadSavedOverride = _brightness.value != null
+        _brightness.value = null
+        // Если DataStore ещё не успел восстановить значение, перехода StateFlow не будет.
+        if (!hadSavedOverride) {
+            scope.launch { settingsStore.clearMobilePlayerBrightnessPercent() }
+        }
     }
 
     companion object {

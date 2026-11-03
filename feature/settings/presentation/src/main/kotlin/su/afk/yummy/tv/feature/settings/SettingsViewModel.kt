@@ -135,6 +135,11 @@ class SettingsViewModel @Inject internal constructor(
                 setState { copy(tvPlayerControlsTutorialDismissed = dismissed) }
             }
             .launchIn(viewModelScope)
+        settingsStore.autoReturnMobileBrightnessToSystemAtZero
+            .onEach { enabled ->
+                setState { copy(autoReturnMobileBrightnessToSystemAtZero = enabled) }
+            }
+            .launchIn(viewModelScope)
         // Запасной режим хранения сессии показываем в "О приложении": пользователю со сломанным
         // Keystore на кастомной прошивке иначе нечего сообщить в поддержку.
         yaniAuthPreferences.storageMode
@@ -342,6 +347,12 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.pictureInPictureEnabled
                 analytics.eventPictureInPictureToggled(enabled)
                 settingsStore.setPictureInPictureEnabled(enabled)
+            }
+
+            SettingsState.Event.AutoReturnMobileBrightnessToSystemAtZeroToggled -> viewModelScope.launch {
+                settingsStore.setAutoReturnMobileBrightnessToSystemAtZero(
+                    !currentState.autoReturnMobileBrightnessToSystemAtZero,
+                )
             }
 
             is SettingsState.Event.PlayerOrientationModeSelected -> viewModelScope.launch {

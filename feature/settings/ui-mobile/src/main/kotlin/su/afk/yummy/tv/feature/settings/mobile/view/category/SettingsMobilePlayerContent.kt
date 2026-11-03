@@ -126,6 +126,14 @@ internal fun SettingsMobilePlayerContent(
                 enabled = state.pictureInPictureEnabled,
                 onClick = { onEvent(SettingsState.Event.PictureInPictureToggled) },
             )
+            SettingsMobileToggleRow(
+                label = stringResource(R.string.settings_brightness_return_system_label),
+                hint = stringResource(R.string.settings_brightness_return_system_hint),
+                enabled = state.autoReturnMobileBrightnessToSystemAtZero,
+                onClick = {
+                    onEvent(SettingsState.Event.AutoReturnMobileBrightnessToSystemAtZeroToggled)
+                },
+            )
             SettingsMobileActionRow(
                 label = stringResource(R.string.settings_player_gesture_tutorial_reset),
                 hint = if (state.mobilePlayerGestureTutorialDismissed) {

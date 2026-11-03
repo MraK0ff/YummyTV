@@ -26,6 +26,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkip
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerBrightnessPercentKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoReturnMobileBrightnessToSystemAtZeroKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
@@ -127,6 +128,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override val mobilePlayerBrightnessPercent: Flow<Int?> = store.data.map { prefs ->
         prefs[mobilePlayerBrightnessPercentKey]?.coerceIn(MIN_BRIGHTNESS_PERCENT, MAX_VOLUME_PERCENT)
     }
+
+    override val autoReturnMobileBrightnessToSystemAtZero: Flow<Boolean> =
+        store.boolean(autoReturnMobileBrightnessToSystemAtZeroKey, true)
 
     override val playerPlaybackSpeed: Flow<Float> = store.data.map { prefs ->
         (prefs[playerPlaybackSpeedKey] ?: DEFAULT_PLAYBACK_SPEED)
@@ -277,6 +281,13 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
                 percent.coerceIn(MIN_BRIGHTNESS_PERCENT, MAX_VOLUME_PERCENT)
         }
     }
+
+    override suspend fun clearMobilePlayerBrightnessPercent() {
+        store.edit { prefs -> prefs.remove(mobilePlayerBrightnessPercentKey) }
+    }
+
+    override suspend fun setAutoReturnMobileBrightnessToSystemAtZero(enabled: Boolean) =
+        store.setBoolean(autoReturnMobileBrightnessToSystemAtZeroKey, enabled)
 
     override suspend fun setPlayerPlaybackSpeed(speed: Float) {
         store.edit { prefs ->

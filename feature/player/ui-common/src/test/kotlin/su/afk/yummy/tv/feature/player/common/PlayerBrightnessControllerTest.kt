@@ -21,7 +21,9 @@ class PlayerBrightnessControllerTest : BaseUnitTest() {
 
     private fun createController(storedPercent: Int?): PlayerBrightnessController {
         every { store.mobilePlayerBrightnessPercent } returns flowOf(storedPercent)
+        every { store.autoReturnMobileBrightnessToSystemAtZero } returns flowOf(true)
         coEvery { store.setMobilePlayerBrightnessPercent(any()) } returns Unit
+        coEvery { store.clearMobilePlayerBrightnessPercent() } returns Unit
         return PlayerBrightnessController(store, scope)
     }
 
@@ -54,4 +56,19 @@ class PlayerBrightnessControllerTest : BaseUnitTest() {
         assertEquals(0.01f, controller.brightness.value!!, 0.0001f)
         coVerify { store.setMobilePlayerBrightnessPercent(1) }
     }
+
+    @Test
+    fun `reset to system clears saved brightness`() {
+        val controller = createController(storedPercent = 40)
+        testScheduler.runCurrent()
+
+        controller.resetToSystem()
+        testScheduler.runCurrent()
+        testScheduler.advanceTimeBy(600)
+        testScheduler.runCurrent()
+
+        assertNull(controller.brightness.value)
+        coVerify { store.clearMobilePlayerBrightnessPercent() }
+    }
+
 }

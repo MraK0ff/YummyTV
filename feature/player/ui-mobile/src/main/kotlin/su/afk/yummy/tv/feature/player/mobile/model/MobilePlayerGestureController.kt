@@ -39,6 +39,7 @@ internal class MobilePlayerGestureController(
     private val volumeLevelProvider: () -> Float,
     private val onVolumeChanged: (Float) -> Unit,
     private val brightnessController: PlayerBrightnessController,
+    private val autoReturnToSystemAtZero: () -> Boolean,
     private val onGestureStart: () -> Unit,
     private val onVideoTransformChanged: (MobileVideoTransform) -> Unit,
 ) {
@@ -101,12 +102,26 @@ internal class MobilePlayerGestureController(
     fun applyVerticalGesture(zone: MobileVerticalGestureZone, deltaFraction: Float) {
         when (zone) {
             MobileVerticalGestureZone.Brightness -> {
+                val minBrightness = if (autoReturnToSystemAtZero()) {
+                    0f
+                } else {
+                    MOBILE_PLAYER_MIN_BRIGHTNESS
+                }
                 rawBrightnessLevel = (rawBrightnessLevel + deltaFraction)
-                    .coerceIn(MOBILE_PLAYER_MIN_BRIGHTNESS, 1f)
+                    .coerceIn(minBrightness, 1f)
                 val stepped = rawBrightnessLevel.quantizeToGestureStep()
-                    .coerceIn(MOBILE_PLAYER_MIN_BRIGHTNESS, 1f)
+                    .coerceIn(minBrightness, 1f)
                 if (stepped == brightnessLevel) return
                 brightnessLevel = stepped
+                if (stepped == 0f && autoReturnToSystemAtZero()) {
+                    brightnessController.resetToSystem()
+                    activity?.window?.let { window ->
+                        window.attributes = window.attributes.apply {
+                            screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                        }
+                    }
+                    return
+                }
                 brightnessController.setFraction(stepped)
                 activity?.window?.let { window ->
                     window.attributes = window.attributes.apply {
@@ -167,6 +182,8 @@ internal fun rememberMobilePlayerGestureController(
 ): MobilePlayerGestureController {
     val context = LocalContext.current
     val brightnessController = rememberPlayerBrightnessController()
+    val autoReturnToSystemAtZero by brightnessController.autoReturnToSystemAtZero.collectAsState()
+    val currentAutoReturnToSystemAtZero = rememberUpdatedState(autoReturnToSystemAtZero)
     val currentVolumeLevelProvider = rememberUpdatedState(volumeLevelProvider)
     val currentOnVolumeChanged = rememberUpdatedState(onVolumeChanged)
     val currentOnGestureStart = rememberUpdatedState(onGestureStart)
@@ -177,6 +194,7 @@ internal fun rememberMobilePlayerGestureController(
             context = context,
             initialTransform = initialTransform,
             brightnessController = brightnessController,
+            autoReturnToSystemAtZero = { currentAutoReturnToSystemAtZero.value },
             volumeLevelProvider = { currentVolumeLevelProvider.value.invoke() },
             onVolumeChanged = { currentOnVolumeChanged.value.invoke(it) },
             onGestureStart = { currentOnGestureStart.value.invoke() },
