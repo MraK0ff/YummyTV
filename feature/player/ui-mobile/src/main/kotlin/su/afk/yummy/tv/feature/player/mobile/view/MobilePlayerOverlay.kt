@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeDrawingPadding
+import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeContentPadding
 import su.afk.yummy.tv.feature.player.common.model.PlayerPlaybackProgressState
 import su.afk.yummy.tv.feature.player.presentation.R
 
@@ -59,7 +59,7 @@ internal fun MobilePlayerOverlay(
                     )
                 )
             )
-            .adaptiveSafeDrawingPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+            .adaptiveSafeContentPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
             .padding(horizontal = 18.dp, vertical = 18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
