@@ -74,14 +74,22 @@ import su.afk.yummy.tv.feature.account.presentation.R
 @OptIn(ExperimentalMaterial3Api::class)
 private fun AccountMobileScreenDefaultPreview() =
     ScreenPreviewTheme {
-        AccountMobileScreen(AccountState.State(isSessionResolved = true), emptyFlow()) {}
+        AccountMobileScreen(
+            AccountState.State(isSessionResolved = true),
+            emptyFlow(),
+            onEvent = {},
+        )
     }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(name = "Loading", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
 private fun AccountMobileScreenLoadingPreview() = ScreenPreviewTheme {
-    AccountMobileScreen(AccountState.State(isSessionResolved = true, isLoading = true), emptyFlow()) {}
+    AccountMobileScreen(
+        AccountState.State(isSessionResolved = true, isLoading = true),
+        emptyFlow(),
+        onEvent = {},
+    )
 }
 
 @Preview(name = "Error", device = "spec:width=412dp,height=915dp,dpi=420", showBackground = true)
@@ -90,7 +98,8 @@ private fun AccountMobileScreenErrorPreview() = ScreenPreviewTheme {
     AccountMobileScreen(
         AccountState.State(isSessionResolved = true, error = AccountUiError.SIGN_IN_FAILED),
         emptyFlow(),
-    ) {}
+        onEvent = {},
+    )
 }
 
 @Composable
