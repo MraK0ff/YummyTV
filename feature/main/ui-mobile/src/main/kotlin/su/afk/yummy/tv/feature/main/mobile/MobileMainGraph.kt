@@ -120,6 +120,7 @@ class MobileMainGraph @Inject internal constructor(
                         },
                         onSettingsClick = { navManager.navigate(SettingsDestination) },
                         onSearchClick = { navManager.navigate(CatalogDestination()) },
+                        showHeader = !isRequiredUpdateDestination && !isFullscreenDestination,
                         showSeasonalOverlay = !isFullscreenDestination,
                     ) {
                         AppNavHost(
