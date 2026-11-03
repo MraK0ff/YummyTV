@@ -9,7 +9,7 @@ import su.afk.yummy.tv.data.search.dto.YaniSearchGenresDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchGenresResponseDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchItemDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchResponseDto
-import su.afk.yummy.tv.domain.catalog.model.SearchFilters
+import su.afk.yummy.tv.domain.search.model.SearchFilters
 
 class YaniSearchApi(
     private val clientProvider: YaniHttpClientProvider,
