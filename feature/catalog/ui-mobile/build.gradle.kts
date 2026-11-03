@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":feature:catalog:domain"))
     implementation(project(":feature:catalog:presentation"))
     implementation(project(":feature:home:domain"))
+    implementation(project(":feature:home:presentation"))
     implementation(project(":feature:home:ui-mobile"))
 
     implementation(libs.bundles.compose.screen)
