@@ -28,7 +28,7 @@ import kotlin.math.roundToInt
 @OptIn(FlowPreview::class)
 @Singleton
 class PlayerBrightnessController @Inject constructor(
-    settingsStore: PlayerSettingsStore,
+    private val settingsStore: PlayerSettingsStore,
     @DefaultApplicationScope private val scope: CoroutineScope,
 ) {
     private val _brightness = MutableStateFlow<Float?>(null)
