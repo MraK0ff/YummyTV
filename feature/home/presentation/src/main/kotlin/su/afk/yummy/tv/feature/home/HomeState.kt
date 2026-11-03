@@ -77,6 +77,9 @@ class HomeState {
         /** Пользователь открыл расписание с главного экрана. */
         data object ScheduleSelected : Event
 
+        /** Пользователь открыл новости из блока «Ещё» на главном экране. */
+        data object NewsSelected : Event
+
         /** Пользователь открыл общую ленту рецензий с главного экрана. */
         data object ReviewsSelected : Event
 
