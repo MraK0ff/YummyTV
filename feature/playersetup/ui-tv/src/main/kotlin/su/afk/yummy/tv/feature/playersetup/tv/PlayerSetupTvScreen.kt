@@ -128,14 +128,14 @@ fun PlayerSetupTvScreen(
             label = stringResource(R.string.player_setup_auto_skip_delay_label),
             icon = Icons.Outlined.Speed,
             hint = stringResource(R.string.player_setup_auto_skip_delay_hint),
-            value = if (state.autoSkipDelaySeconds == 0) "Instant" else "${state.autoSkipDelaySeconds}s",
+            value = if (state.autoSkipDelaySeconds == 0) stringResource(R.string.player_setup_instant) else "${state.autoSkipDelaySeconds}s",
             onCycle = { onEvent(PlayerSetupState.Event.AutoSkipDelaySelected((state.autoSkipDelaySeconds + 1) % 16)) },
         )
         PlayerSetupTvChoiceRow(
             label = stringResource(R.string.player_setup_autoplay_delay_label),
             icon = Icons.Outlined.Speed,
             hint = stringResource(R.string.player_setup_autoplay_delay_hint),
-            value = if (state.nextEpisodeSwitchDelaySeconds == 0) "Instant" else "${state.nextEpisodeSwitchDelaySeconds}s",
+            value = if (state.nextEpisodeSwitchDelaySeconds == 0) stringResource(R.string.player_setup_instant) else "${state.nextEpisodeSwitchDelaySeconds}s",
             onCycle = { onEvent(PlayerSetupState.Event.NextEpisodeDelaySelected((state.nextEpisodeSwitchDelaySeconds + 1) % 31)) },
         )
         PlayerSetupTvChoiceRow(
@@ -150,7 +150,7 @@ fun PlayerSetupTvScreen(
             icon = Icons.Outlined.HighQuality,
             hint = stringResource(R.string.player_setup_theme_hint),
             value = state.appTheme.name.replace('_', ' '),
-            onCycle = { onEvent(PlayerSetupState.Event.ThemeSelected(AppTheme.entries[(state.appTheme.ordinal + 1) % AppTheme.entries.size])) },
+            onCycle = { onEvent(PlayerSetupState.Event.ThemeSelected(AppTheme.entries.filter { it != AppTheme.DYNAMIC }.let { themes -> themes[(themes.indexOf(state.appTheme) + 1) % themes.size] })) },
         )
         PlayerSetupTvChoiceRow(
             label = stringResource(R.string.player_setup_background_label),
