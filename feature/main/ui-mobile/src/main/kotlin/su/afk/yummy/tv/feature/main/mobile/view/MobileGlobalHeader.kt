@@ -20,10 +20,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.AppBrandIcon
-import su.afk.yummy.tv.feature.main.presentation.R
 
 @Composable
 internal fun MobileGlobalHeader(
@@ -54,7 +52,7 @@ internal fun MobileGlobalHeader(
                     IconButton(onClick = onNotificationsClick) {
                         Icon(
                             Icons.Filled.Notifications,
-                            contentDescription = stringResource(R.string.main_header_notifications),
+                            contentDescription = "Notifications",
                         )
                     }
                     if (unreadNotificationsCount > 0) {
@@ -71,13 +69,13 @@ internal fun MobileGlobalHeader(
                 IconButton(onClick = onSettingsClick) {
                     Icon(
                         Icons.Filled.Settings,
-                        contentDescription = stringResource(R.string.main_header_settings),
+                        contentDescription = "Settings",
                     )
                 }
                 IconButton(onClick = onSearchClick) {
                     Icon(
                         Icons.Filled.Search,
-                        contentDescription = stringResource(R.string.main_header_search),
+                        contentDescription = "Search",
                     )
                 }
             }
