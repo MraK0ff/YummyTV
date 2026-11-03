@@ -16,7 +16,6 @@ import su.afk.yummy.tv.feature.posts.ITvPostsEntry
 import su.afk.yummy.tv.feature.reviews.ITvReviewsEntry
 import su.afk.yummy.tv.feature.schedule.ITvScheduleEntry
 import su.afk.yummy.tv.feature.catalog.ITvCatalogEntry
-import su.afk.yummy.tv.feature.search.ITvSearchEntry
 import su.afk.yummy.tv.feature.settings.ITvSettingsEntry
 import su.afk.yummy.tv.feature.update.navigator.IUpdateEntry
 import javax.inject.Inject
@@ -40,7 +39,6 @@ class TvNavigationHolder @Inject constructor(
     reviews: ITvReviewsEntry,
     schedule: ITvScheduleEntry,
     catalog: ITvCatalogEntry,
-    search: ITvSearchEntry,
     settings: ITvSettingsEntry,
     playerSetup: ITvPlayerSetupEntry,
     update: IUpdateEntry,
@@ -60,7 +58,6 @@ class TvNavigationHolder @Inject constructor(
         reviews,
         schedule,
         catalog,
-        search,
         settings,
         playerSetup,
         update,

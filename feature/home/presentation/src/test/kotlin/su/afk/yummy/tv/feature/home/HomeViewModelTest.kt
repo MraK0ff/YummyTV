@@ -54,7 +54,7 @@ import su.afk.yummy.tv.domain.home.usecase.RefreshRemoteContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
-import su.afk.yummy.tv.feature.search.ISearchOpener
+import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.HomeState.Effect
@@ -74,7 +74,7 @@ class HomeViewModelTest : BaseUnitTest() {
     private val reviewsNavigator: IReviewsNavigator = mockk()
     private val bloggerVideosNavigator: IBloggerVideosNavigator = mockk()
     private val scheduleNavigator: IScheduleNavigator = mockk()
-    private val searchOpener: ISearchOpener = mockk(relaxed = true)
+    private val catalogSearchOpener: ICatalogSearchOpener = mockk(relaxed = true)
     private val getHomeFeed: GetHomeFeedUseCase = mockk()
     private val getBloggerVideos: GetBloggerVideosUseCase = mockk()
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase = mockk()
@@ -151,7 +151,7 @@ class HomeViewModelTest : BaseUnitTest() {
         reviewsNavigator = reviewsNavigator,
         bloggerVideosNavigator = bloggerVideosNavigator,
         scheduleNavigator = scheduleNavigator,
-        searchOpener = searchOpener,
+        catalogSearchOpener = catalogSearchOpener,
         getHomeFeed = getHomeFeed,
         getBloggerVideos = getBloggerVideos,
         getCachedHomeFeed = getCachedHomeFeed,
@@ -633,7 +633,7 @@ class HomeViewModelTest : BaseUnitTest() {
 
         vm.setEvent(Event.SearchSelected)
 
-        verify(exactly = 1) { searchOpener.openSearch() }
+        verify(exactly = 1) { catalogSearchOpener.openSearch() }
     }
 
     private companion object {

@@ -30,7 +30,6 @@ import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
-import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.preferences.settings.currentUserId
@@ -54,7 +53,7 @@ import su.afk.yummy.tv.domain.home.usecase.RefreshRemoteContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.RemoveCachedContinueWatchingUseCase
 import su.afk.yummy.tv.domain.watching.usecase.ResolveContinueWatchingLaunchUseCase
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
-import su.afk.yummy.tv.feature.search.ISearchOpener
+import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
@@ -85,7 +84,7 @@ class HomeViewModel @Inject internal constructor(
     private val reviewsNavigator: IReviewsNavigator,
     private val bloggerVideosNavigator: IBloggerVideosNavigator,
     private val scheduleNavigator: IScheduleNavigator,
-    private val searchOpener: ISearchOpener,
+    private val catalogSearchOpener: ICatalogSearchOpener,
     private val getHomeFeed: GetHomeFeedUseCase,
     private val getBloggerVideos: GetBloggerVideosUseCase,
     private val getCachedHomeFeed: GetCachedHomeFeedUseCase,
@@ -233,15 +232,11 @@ class HomeViewModel @Inject internal constructor(
                 nav.navigate(scheduleNavigator.getScheduleDest())
             }
 
-            HomeState.Event.NewsSelected -> {
-                nav.switchRoot(root = RootTab.POSTS, reselectPopToRoot = true)
-            }
-
             HomeState.Event.ReviewsSelected -> {
                 nav.navigate(reviewsNavigator.feed())
             }
 
-            HomeState.Event.SearchSelected -> searchOpener.openSearch()
+            HomeState.Event.SearchSelected -> catalogSearchOpener.openSearch()
 
             HomeState.Event.BloggerVideosSelected -> nav.navigate(bloggerVideosNavigator.feed())
 

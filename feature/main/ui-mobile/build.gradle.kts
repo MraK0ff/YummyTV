@@ -35,7 +35,6 @@ dependencies {
     implementation(project(":feature:schedule:api"))
     implementation(project(":feature:schedule:ui-mobile"))
     implementation(project(":feature:catalog:api"))
-    implementation(project(":feature:search:api"))
     implementation(project(":feature:catalog:ui-mobile"))
     implementation(project(":feature:settings:api"))
     implementation(project(":feature:update:api"))

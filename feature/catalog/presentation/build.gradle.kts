@@ -18,9 +18,6 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":core:utils"))
     implementation(project(":feature:details:api"))
-    implementation(project(":feature:home:domain"))
-    implementation(project(":feature:collection:api"))
-    implementation(project(":feature:bloggers:api"))
 
     implementation(libs.androidx.paging.runtime)
     implementation(libs.bundles.compose.presentation)

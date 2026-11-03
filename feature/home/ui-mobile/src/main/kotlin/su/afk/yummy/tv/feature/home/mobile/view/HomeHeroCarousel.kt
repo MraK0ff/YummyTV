@@ -48,7 +48,7 @@ private object HeroPageSize : PageSize {
 }
 
 @Composable
-fun HomeHeroCarousel(
+internal fun HomeHeroCarousel(
     items: List<HomeFeedItem>,
     onItemSelected: (HomeFeedItem) -> Unit,
     modifier: Modifier = Modifier,

@@ -177,7 +177,7 @@ fun HomeTvScreen(
             )
 
             else -> HomeDashboard(
-                feed = feed.copy(heroItems = emptyList()),
+                feed = feed,
                 continueWatching = state.continueWatching,
                 launchingContinueWatchingAnimeId = state.launchingContinueWatchingAnimeId,
                 requestInitialFocus = focusHandoff.shouldFocusContent,
