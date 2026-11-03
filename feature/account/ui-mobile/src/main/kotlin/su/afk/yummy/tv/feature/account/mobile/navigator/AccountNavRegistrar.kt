@@ -19,6 +19,7 @@ import su.afk.yummy.tv.feature.account.mobile.userprofile.UserProfileResolverMob
 import su.afk.yummy.tv.feature.account.mobile.usersearch.UserSearchMobileScreen
 import su.afk.yummy.tv.feature.account.mysubscriptions.MySubscriptionsViewModel
 import su.afk.yummy.tv.feature.account.navigator.AccountDestination
+import su.afk.yummy.tv.feature.account.navigator.AccountNotificationsDestination
 import su.afk.yummy.tv.feature.account.navigator.LocalAuthDestination
 import su.afk.yummy.tv.feature.account.navigator.MySubscriptionsDestination
 import su.afk.yummy.tv.feature.account.navigator.PasswordResetDestination
@@ -45,6 +46,17 @@ class AccountNavRegistrar @Inject constructor() : IMobileAccountEntry {
                 val viewModel = hiltViewModel<AccountViewModel>()
                 ScreenNavigator(viewModel) { state, effect, onEvent ->
                     AccountMobileScreen(state = state, effect = effect, onEvent = onEvent)
+                }
+            }
+            entry<AccountNotificationsDestination> {
+                val viewModel = hiltViewModel<AccountViewModel>()
+                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                    AccountMobileScreen(
+                        state = state,
+                        effect = effect,
+                        onEvent = onEvent,
+                        initialTab = AccountState.AccountTab.NOTIFICATIONS,
+                    )
                 }
             }
             entry<UserProfileDestination> { dest ->
