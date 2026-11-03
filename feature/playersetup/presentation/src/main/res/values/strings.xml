@@ -1,6 +1,19 @@
 <resources>
     <string name="player_setup_title">App settings</string>
-    <string name="player_setup_subtitle">Choose what suits you. Everything can be changed later in Settings.</string>
+        <string name="player_setup_subtitle">Choose what suits you</string>
+    <string name="player_setup_mobile_section_appearance">Appearance</string>
+    <string name="player_setup_auto_skip_delay_label">Auto-skip delay</string>
+    <string name="player_setup_auto_skip_delay_hint">Wait before skipping opening or ending</string>
+    <string name="player_setup_autoplay_delay_label">Autoplay delay</string>
+    <string name="player_setup_autoplay_delay_hint">Wait before starting the next episode</string>
+    <string name="player_setup_controls_timeout_label">Hide player controls after</string>
+    <string name="player_setup_controls_timeout_hint">Time before controls disappear when idle</string>
+    <string name="player_setup_theme_label">Theme</string>
+    <string name="player_setup_theme_hint">Choose the accent color palette</string>
+    <string name="player_setup_background_label">Background</string>
+    <string name="player_setup_background_hint">Choose the app background style</string>
+    <string name="player_setup_instant">Instant</string>
+    <string name="player_setup_seconds">%1$d seconds</string>
     <string name="player_setup_mobile_more_settings">The rest is in Settings</string>
     <string name="player_setup_opening_timeline_label">Show opening on the timeline</string>
     <string name="player_setup_opening_timeline_hint">The opening segment is highlighted on the progress bar</string>
