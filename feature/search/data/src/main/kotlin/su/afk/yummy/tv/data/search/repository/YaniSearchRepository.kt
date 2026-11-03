@@ -14,12 +14,12 @@ import su.afk.yummy.tv.data.search.mapper.toSearchItem
 import su.afk.yummy.tv.data.search.network.YaniSearchApi
 import su.afk.yummy.tv.data.search.storage.mapper.toSearchFilterOptionsCache
 import su.afk.yummy.tv.data.search.storage.mapper.toSearchPageCache
-import su.afk.yummy.tv.domain.catalog.model.CachedSearchPage
-import su.afk.yummy.tv.domain.catalog.model.SearchFilterOptions
-import su.afk.yummy.tv.domain.catalog.model.SearchFilters
-import su.afk.yummy.tv.domain.catalog.model.SearchItem
-import su.afk.yummy.tv.domain.catalog.model.SearchPage
-import su.afk.yummy.tv.domain.catalog.repository.SearchRepository
+import su.afk.yummy.tv.domain.search.model.CachedSearchPage
+import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
+import su.afk.yummy.tv.domain.search.model.SearchFilters
+import su.afk.yummy.tv.domain.search.model.SearchItem
+import su.afk.yummy.tv.domain.search.model.SearchPage
+import su.afk.yummy.tv.domain.search.repository.SearchRepository
 import su.afk.yummy.tv.data.search.storage.mapper.toSearchFilterOptions as toStoredSearchFilterOptions
 import su.afk.yummy.tv.data.search.storage.mapper.toSearchPage as toStoredSearchPage
 
