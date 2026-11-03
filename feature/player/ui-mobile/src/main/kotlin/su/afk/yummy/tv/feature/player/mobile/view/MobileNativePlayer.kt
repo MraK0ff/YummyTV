@@ -51,6 +51,7 @@ import su.afk.yummy.tv.feature.player.common.PlayerListenerEffect
 import su.afk.yummy.tv.feature.player.common.PlayerMediaItemEffect
 import su.afk.yummy.tv.feature.player.common.PlayerProgressPollingEffect
 import su.afk.yummy.tv.feature.player.common.PlayerQualityAdaptationEffect
+import su.afk.yummy.tv.feature.player.common.PlayerSpeedOptions
 import su.afk.yummy.tv.feature.player.common.PlayerStallWatchdogEffect
 import su.afk.yummy.tv.feature.player.common.PlayerSubtitleOverlay
 import su.afk.yummy.tv.feature.player.common.PlayerTrackOption
@@ -606,6 +607,13 @@ internal fun MobileNativePlayer(
             openingStartMs = ui.activeSkips.opening?.startMs?.takeIf { state.showOpeningOnTimeline },
             openingEndMs = ui.activeSkips.opening?.endMs?.takeIf { state.showOpeningOnTimeline },
             hasPrevEpisode = ui.hasPrevEpisode,
+            selectedSpeed = selectedSpeed,
+            onCycleSpeed = {
+                val speeds = PlayerSpeedOptions.values
+                val nextIndex = (PlayerSpeedOptions.nearestIndex(selectedSpeed) + 1) % speeds.size
+                onEvent(PlayerState.Event.SpeedSelected(speeds[nextIndex]))
+                overlay.show()
+            },
             onPlayPause = {
                 if (wantsPlay) player.pause() else player.play()
                 overlay.show()
@@ -707,7 +715,7 @@ internal fun MobileNativePlayer(
                 !isInPictureInPictureMode &&
                 !tutorialBlocksPlayback,
             icon = MobileVerticalGestureZone.Brightness.gestureIcon,
-            percentText = gestures.brightnessLevel.toGesturePercentText(),
+            percentText = if (gestures.brightnessLevel == 0f) "AUTO" else gestures.brightnessLevel.toGesturePercentText(),
             modifier = Modifier
                 .align(Alignment.Center),
         )

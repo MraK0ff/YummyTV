@@ -43,6 +43,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     highlightedSkipKey: String?,
     qualityCount: Int,
     currentQualityLabel: String,
+    activeSpeed: Float,
     adaptiveQuality: Boolean,
     showAllohaButton: Boolean,
     onPlayPause: () -> Unit,
@@ -58,6 +59,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     onToggleBalancer: () -> Unit,
     onToggleEpisodes: () -> Unit,
     onTogglePlayerSettings: () -> Unit,
+    onCycleSpeed: () -> Unit,
     onToggleAlloha: () -> Unit,
 ) {
     val progressDownFocusRequester = when {
@@ -189,6 +191,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     playerName = playback.activeBalancerName,
                     dubbing = playback.activeDubbing,
                     currentQualityLabel = currentQualityLabel,
+                    activeSpeed = activeSpeed,
                     adaptiveQuality = adaptiveQuality,
                     qualityFocusRequester = focus.quality,
                     dubbingFocusRequester = focus.dubbing,
@@ -205,6 +208,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     onToggleEpisodes = onToggleEpisodes,
                     playerSettingsFocusRequester = focus.playerSettings,
                     onTogglePlayerSettings = onTogglePlayerSettings,
+                    onCycleSpeed = onCycleSpeed,
                     allohaFocusRequester = focus.alloha,
                     showAllohaButton = showAllohaButton,
                     nextEpisodeFocusRequester = focus.nextEpisodeControl,

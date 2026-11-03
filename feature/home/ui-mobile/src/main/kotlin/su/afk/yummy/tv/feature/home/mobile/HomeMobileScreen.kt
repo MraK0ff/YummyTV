@@ -334,8 +334,10 @@ fun HomeMobileScreen(
                             title = stringResource(R.string.home_mobile_more),
                             scheduleTitle = stringResource(R.string.home_mobile_schedule),
                             reviewsTitle = stringResource(R.string.home_mobile_reviews),
+                            newsTitle = stringResource(R.string.home_mobile_news),
                             onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
                             onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
+                            onNewsClick = { onEvent(HomeState.Event.NewsSelected) },
                             modifier = Modifier.mobileContentMaxWidth(),
                         )
                     }

@@ -65,6 +65,7 @@ class SettingsState {
         val playerControlsAutoHideSeconds: Int = 4,
         val pictureInPictureEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
+        val autoReturnMobileBrightnessToSystemAtZero: Boolean = true,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
         val mobilePlayerGestureTutorialDismissed: Boolean = false,
         val tvPlayerControlsTutorialDismissed: Boolean = false,
@@ -202,6 +203,9 @@ class SettingsState {
 
         /** Пользователь включил или выключил плавающий режим мобильного плеера. */
         data object PictureInPictureToggled : Event
+
+        /** Пользователь включил или выключил возврат системной яркости при достижении нуля. */
+        data object AutoReturnMobileBrightnessToSystemAtZeroToggled : Event
 
         /** Пользователь выбрал режим принудительной ориентации плеера. */
         data class PlayerOrientationModeSelected(val mode: PlayerOrientationMode) : Event

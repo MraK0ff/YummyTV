@@ -26,6 +26,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkip
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerBrightnessPercentKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoReturnMobileBrightnessToSystemAtZeroKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
@@ -70,7 +71,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val autoSkipDelaySeconds: Flow<Int> = store.data.map { prefs ->
         (prefs[autoSkipDelaySecondsKey] ?: DEFAULT_AUTO_SKIP_DELAY_SECONDS)
-            .coerceIn(MIN_AUTO_SKIP_DELAY_SECONDS, MAX_AUTO_SKIP_DELAY_SECONDS)
+            .coerceIn(0, MAX_AUTO_SKIP_DELAY_SECONDS)
     }
 
     override val showOpeningOnTimeline: Flow<Boolean> =
@@ -127,6 +128,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override val mobilePlayerBrightnessPercent: Flow<Int?> = store.data.map { prefs ->
         prefs[mobilePlayerBrightnessPercentKey]?.coerceIn(MIN_BRIGHTNESS_PERCENT, MAX_VOLUME_PERCENT)
     }
+
+    override val autoReturnMobileBrightnessToSystemAtZero: Flow<Boolean> =
+        store.boolean(autoReturnMobileBrightnessToSystemAtZeroKey, true)
 
     override val playerPlaybackSpeed: Flow<Float> = store.data.map { prefs ->
         (prefs[playerPlaybackSpeedKey] ?: DEFAULT_PLAYBACK_SPEED)
@@ -202,7 +206,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override suspend fun setAutoSkipDelaySeconds(seconds: Int) {
         store.edit { prefs ->
             prefs[autoSkipDelaySecondsKey] =
-                seconds.coerceIn(MIN_AUTO_SKIP_DELAY_SECONDS, MAX_AUTO_SKIP_DELAY_SECONDS)
+                seconds.coerceIn(0, MAX_AUTO_SKIP_DELAY_SECONDS)
         }
     }
 
@@ -278,6 +282,13 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         }
     }
 
+    override suspend fun clearMobilePlayerBrightnessPercent() {
+        store.edit { prefs -> prefs.remove(mobilePlayerBrightnessPercentKey) }
+    }
+
+    override suspend fun setAutoReturnMobileBrightnessToSystemAtZero(enabled: Boolean) =
+        store.setBoolean(autoReturnMobileBrightnessToSystemAtZeroKey, enabled)
+
     override suspend fun setPlayerPlaybackSpeed(speed: Float) {
         store.edit { prefs ->
             prefs[playerPlaybackSpeedKey] = speed.coerceIn(MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED)
@@ -344,7 +355,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         const val MAX_VOLUME_PERCENT = 100
         const val MIN_BRIGHTNESS_PERCENT = 1
         const val DEFAULT_AUTO_SKIP_DELAY_SECONDS = 5
-        const val MIN_AUTO_SKIP_DELAY_SECONDS = 1
         const val MAX_AUTO_SKIP_DELAY_SECONDS = 15
         const val DEFAULT_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 10
         const val MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 30

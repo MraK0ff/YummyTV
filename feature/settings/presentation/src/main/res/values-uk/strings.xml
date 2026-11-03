@@ -153,6 +153,7 @@
         <string name="settings_auto_skip_label">Автопропуск опенінгу та ендінгу</string>
     <string name="settings_auto_skip_enabled">Пропускати, якщо для серії є тайм-коди</string>
     <string name="settings_auto_skip_delay_label">Затримка автопропуску</string>
+    <string name="settings_auto_skip_delay_instant">Миттєво</string>
     <string name="settings_show_opening_on_timeline_label">Показувати опенінг на таймлайні</string>
     <string name="settings_show_opening_on_timeline_enabled">Ділянка опенінгу підсвічується на смузі прогресу</string>
     <string name="settings_auto_manage_library_lists_label">Авто-додавання в Дивлюсь / Переглянуто</string>
@@ -167,6 +168,8 @@
     <string name="settings_controls_auto_hide_label">Приховувати керування плеєром через</string>
     <string name="settings_picture_in_picture_label">Плаваючий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматично вмикати під час виходу із застосунку під час відтворення</string>
+    <string name="settings_brightness_return_system_label">Повертати системну яскравість при 0</string>
+    <string name="settings_brightness_return_system_hint">Коли яскравість плеєра досягає 0, застосунок перестає задавати її, і нею знову керує Android</string>
     <string name="settings_advanced_volume_label">Розширена гучність у плеєрі</string>
     <string name="settings_advanced_volume_enabled" formatted="false">Плеєр має власну гучність (0–100%, крок 1%), незалежно від системи</string>
     <string name="settings_advanced_volume_disabled">Гучність змінює системний звук як зазвичай</string>

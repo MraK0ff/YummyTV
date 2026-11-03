@@ -153,6 +153,7 @@
         <string name="settings_auto_skip_label">Auto-skip opening and ending</string>
     <string name="settings_auto_skip_enabled">Skip when episode timings are available</string>
     <string name="settings_auto_skip_delay_label">Auto-skip delay</string>
+    <string name="settings_auto_skip_delay_instant">Instant</string>
     <string name="settings_show_opening_on_timeline_label">Show opening on the timeline</string>
     <string name="settings_show_opening_on_timeline_enabled">The opening segment is highlighted on the progress bar</string>
     <string name="settings_auto_manage_library_lists_label">Auto-add to Watching / Completed</string>
@@ -167,6 +168,8 @@
     <string name="settings_controls_auto_hide_label">Hide player controls after</string>
     <string name="settings_picture_in_picture_label">Picture-in-Picture (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Automatically open when leaving the app during playback</string>
+    <string name="settings_brightness_return_system_label">Return system brightness at 0</string>
+    <string name="settings_brightness_return_system_hint">When player brightness reaches 0, stop overriding screen brightness and let Android control it</string>
     <string name="settings_advanced_volume_label">Advanced volume in the player</string>
     <string name="settings_advanced_volume_enabled" formatted="false">The player has its own volume (0–100%, 1% steps), independent of the system</string>
     <string name="settings_advanced_volume_disabled">Volume changes the system volume as usual</string>

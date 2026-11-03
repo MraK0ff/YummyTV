@@ -11,11 +11,12 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,6 +36,8 @@ internal fun MobilePlayerOverlay(
     openingStartMs: Long?,
     openingEndMs: Long?,
     hasPrevEpisode: Boolean,
+    selectedSpeed: Float,
+    onCycleSpeed: () -> Unit,
     onPlayPause: () -> Unit,
     onSeekChange: (Float) -> Unit,
     onSeekFinished: () -> Unit,
@@ -86,7 +89,7 @@ internal fun MobilePlayerOverlay(
                     onClick = onPrevEpisode,
                 )
                 MobilePlayerActionButton(
-                    icon = Icons.AutoMirrored.Filled.VolumeUp,
+                    icon = Icons.Filled.GraphicEq,
                     contentDescription = stringResource(R.string.player_mobile_track_settings_title),
                     onClick = onTrackSettings,
                 )
@@ -106,6 +109,12 @@ internal fun MobilePlayerOverlay(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 MobilePlayerActionButton(
+                    icon = Icons.Filled.Speed,
+                    contentDescription = stringResource(R.string.player_speed_title),
+                    label = selectedSpeed.toMobileSpeedLabel(),
+                    onClick = onCycleSpeed,
+                )
+                MobilePlayerActionButton(
                     icon = Icons.Filled.Tune,
                     contentDescription = stringResource(R.string.player_mobile_playback_settings_title),
                     onClick = onPlayerSettings,
@@ -119,3 +128,6 @@ internal fun MobilePlayerOverlay(
         }
     }
 }
+
+private fun Float.toMobileSpeedLabel(): String =
+    if (this % 1f == 0f) "${toInt()}x" else "${this}x"

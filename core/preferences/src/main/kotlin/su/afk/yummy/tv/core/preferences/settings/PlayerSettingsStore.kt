@@ -21,7 +21,7 @@ interface PlayerSettingsStore {
     val adaptiveVideoQualityEnabled: Flow<Boolean>
     val autoSkipOpeningsEndings: Flow<Boolean>
 
-    /** Задержка перед автопропуском опенинга/эндинга, сек (1..15). */
+    /** Задержка перед автопропуском опенинга/эндинга, сек; 0 — мгновенно, 1..15 — с задержкой. */
     val autoSkipDelaySeconds: Flow<Int>
 
     /** Показывать участок опенинга на полосе прогресса плеера. */
@@ -53,6 +53,9 @@ interface PlayerSettingsStore {
 
     /** Яркость мобильного плеера в процентах; `null` — пользователь её не менял, действует системная. */
     val mobilePlayerBrightnessPercent: Flow<Int?>
+
+    /** Возвращать системное управление яркостью при достижении нуля в мобильном плеере. */
+    val autoReturnMobileBrightnessToSystemAtZero: Flow<Boolean>
 
     /** Скорость воспроизведения, выбранная в плеере последней; общая для всех тайтлов. */
     val playerPlaybackSpeed: Flow<Float>
@@ -109,6 +112,8 @@ interface PlayerSettingsStore {
     suspend fun setAdvancedPlayerVolumeEnabled(enabled: Boolean)
     suspend fun setAdvancedPlayerVolumePercent(percent: Int)
     suspend fun setMobilePlayerBrightnessPercent(percent: Int)
+    suspend fun clearMobilePlayerBrightnessPercent()
+    suspend fun setAutoReturnMobileBrightnessToSystemAtZero(enabled: Boolean)
     suspend fun setPlayerPlaybackSpeed(speed: Float)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
     suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile)

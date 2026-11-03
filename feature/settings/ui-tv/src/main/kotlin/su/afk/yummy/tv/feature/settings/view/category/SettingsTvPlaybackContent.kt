@@ -39,12 +39,16 @@ internal fun SettingsTvPlaybackContent(
     SettingsDivider()
     SettingsSliderRow(
         label = stringResource(R.string.settings_auto_skip_delay_label),
-        valueText = stringResource(
-            R.string.settings_next_episode_switch_delay_seconds,
-            state.autoSkipDelaySeconds,
-        ),
+        valueText = if (state.autoSkipDelaySeconds == 0) {
+            stringResource(R.string.settings_auto_skip_delay_instant)
+        } else {
+            stringResource(
+                R.string.settings_next_episode_switch_delay_seconds,
+                state.autoSkipDelaySeconds,
+            )
+        },
         value = state.autoSkipDelaySeconds,
-        valueRange = 1..15,
+        valueRange = 0..15,
         enabled = state.autoSkipOpeningsEndings,
         onValueChange = {
             onEvent(SettingsState.Event.AutoSkipDelayChanged(it))

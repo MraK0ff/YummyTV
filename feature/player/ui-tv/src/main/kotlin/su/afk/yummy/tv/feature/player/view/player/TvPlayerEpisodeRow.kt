@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.presentation.R
+import su.afk.yummy.tv.feature.player.utils.speedLabel
 import su.afk.yummy.tv.feature.player.utils.withoutDubbingTitlePrefix
 
 @Composable
@@ -43,6 +44,7 @@ internal fun TvPlayerEpisodeRow(
     playerName: String,
     dubbing: String,
     currentQualityLabel: String,
+    activeSpeed: Float,
     adaptiveQuality: Boolean,
     qualityFocusRequester: FocusRequester? = null,
     dubbingFocusRequester: FocusRequester? = null,
@@ -62,6 +64,7 @@ internal fun TvPlayerEpisodeRow(
     onToggleBalancer: () -> Unit,
     onToggleEpisodes: () -> Unit = {},
     onTogglePlayerSettings: () -> Unit = {},
+    onCycleSpeed: () -> Unit = {},
     onToggleAlloha: () -> Unit = {},
 ) {
     Row(
@@ -199,6 +202,20 @@ internal fun TvPlayerEpisodeRow(
             }
             Spacer(Modifier.width(8.dp))
         }
+        TvControlButton(
+            onClick = onCycleSpeed,
+            onFocused = onInteraction,
+            modifier = Modifier
+                .focusProperties { up = upFocusRequester }
+                .widthIn(min = 72.dp),
+        ) { color ->
+            Text(
+                text = activeSpeed.speedLabel(),
+                style = MaterialTheme.typography.labelLarge,
+                color = color,
+            )
+        }
+        Spacer(Modifier.width(8.dp))
         TvControlButton(
             onClick = onTogglePlayerSettings,
             onFocused = onInteraction,

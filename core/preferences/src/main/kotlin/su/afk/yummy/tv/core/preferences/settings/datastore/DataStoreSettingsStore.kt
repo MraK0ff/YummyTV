@@ -119,7 +119,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             watchNextEnabled = prefs[watchNextEnabledKey] ?: true,
             previewCacheSize = (prefs[previewCacheSizeKey] ?: 100).coerceIn(50, 500),
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
-            autoSkipDelaySeconds = (prefs[autoSkipDelaySecondsKey] ?: 5).coerceIn(1, 15),
+            autoSkipDelaySeconds = (prefs[autoSkipDelaySecondsKey] ?: 5).coerceIn(0, 15),
             showOpeningOnTimeline = prefs[showOpeningOnTimelineKey] ?: false,
             autoPlayNextEpisode = prefs[autoPlayNextEpisodeKey] ?: false,
             nextEpisodeSwitchDelaySeconds =
