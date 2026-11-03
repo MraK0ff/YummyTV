@@ -146,18 +146,18 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
 }
 
 /**
- * Applies only the requested sides of the current safe drawing insets.
+ * Applies padding only where the display cutout intrudes into the window.
  *
- * Keep decorative/media surfaces edge-to-edge and apply this to interactive content layers.
- * The Compose inset source updates dynamically as system bars, cutouts and the IME change.
- */
+ * System bars, gesture areas and the IME are deliberately excluded: player controls should
+ * remain close to the screen edges unless a camera/notch cutout actually occupies that edge.
+  */
 @Composable
 fun Modifier.adaptiveSafeDrawingPadding(
     sides: WindowInsetsSides = WindowInsetsSides.Horizontal + WindowInsetsSides.Vertical,
-): Modifier = windowInsetsPadding(WindowInsets.safeDrawing.only(sides))
+): Modifier = windowInsetsPadding(WindowInsets.displayCutout.only(sides))
 
-/** Applies drawing and gesture-safe insets to interactive controls. */
+/** Applies display-cutout padding to interactive controls without adding status/navigation-bar gaps. */
 @Composable
 fun Modifier.adaptiveSafeContentPadding(
     sides: WindowInsetsSides = WindowInsetsSides.Horizontal + WindowInsetsSides.Vertical,
-): Modifier = windowInsetsPadding(WindowInsets.safeContent.only(sides))
+): Modifier = windowInsetsPadding(WindowInsets.displayCutout.only(sides))
