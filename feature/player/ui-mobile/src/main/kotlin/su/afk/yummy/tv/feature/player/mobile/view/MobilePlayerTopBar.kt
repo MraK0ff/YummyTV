@@ -33,7 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeDrawingPadding
+import su.afk.yummy.tv.core.designsystem.insets.adaptiveSafeContentPadding
 import su.afk.yummy.tv.core.designsystem.R as DesignSystemR
 import su.afk.yummy.tv.core.designsystem.theme.overline
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -66,7 +66,7 @@ internal fun MobilePlayerTopBar(
             modifier = modifier
                 .fillMaxWidth()
                 .background(Color.Black.copy(alpha = 0.28f))
-                .adaptiveSafeDrawingPadding(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                .adaptiveSafeContentPadding(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
                 .padding(horizontal = 8.dp, vertical = 8.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
