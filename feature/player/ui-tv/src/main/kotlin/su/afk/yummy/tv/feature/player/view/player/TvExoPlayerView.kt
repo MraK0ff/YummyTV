@@ -494,20 +494,6 @@ internal fun TvExoPlayerView(
             )
         }
 
-        TvPlayerInfoBar(
-            visible = controllerVisible,
-            animeTitle = state.animeTitle,
-            episode = playback.activeEpisode,
-            dubbing = playback.activeDubbing,
-            modifier = Modifier.align(Alignment.TopStart),
-        )
-
-        TvPlayerNameBadge(
-            visible = controllerVisible,
-            playerName = playback.activeBalancerLabel,
-            modifier = Modifier.align(Alignment.TopEnd),
-        )
-
         TvPlayerControlsOverlay(
             visible = controllerVisible,
             focus = focus,
