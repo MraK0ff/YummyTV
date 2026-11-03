@@ -37,7 +37,7 @@ import su.afk.yummy.tv.domain.search.usecase.GetCachedSearchPageUseCase
 import su.afk.yummy.tv.domain.search.usecase.SearchUseCase
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.search.SearchState.Event
-import su.afk.yummy.tv.feature.search.navigator.SearchSearchOpener
+import su.afk.yummy.tv.feature.search.navigator.SearchOpener
 
 class SearchViewModelTest : BaseUnitTest() {
 
@@ -53,7 +53,7 @@ class SearchViewModelTest : BaseUnitTest() {
     private val showTitleYear = MutableStateFlow(false)
     private val titleCardLayout = MutableStateFlow(TitleCardLayout.TILE)
     private val detailsKey: NavKey = mockk()
-    private val searchOpener = SearchSearchOpener(nav)
+    private val searchOpener = SearchOpener(nav)
     private val historyRepository: SearchHistoryRepository = mockk()
     private val history = MutableStateFlow<List<String>>(emptyList())
 
@@ -84,7 +84,7 @@ class SearchViewModelTest : BaseUnitTest() {
         searchSettings = searchSettings,
         accountSettingsStore = mockk<YaniAccountSettingsStore> { every { yaniContentLanguage } returns emptyFlow() },
         appearanceSettingsStore = mockk<AppearanceSettingsStore> {
-            every { showSearchTitleYear } returns showTitleYear
+            every { showCatalogTitleYear } returns showTitleYear
             every { titleCardLayout } returns this@SearchViewModelTest.titleCardLayout
         },
         searchOpener = searchOpener,
