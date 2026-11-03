@@ -3,6 +3,7 @@ package su.afk.yummy.tv.core.navigation.root
 enum class RootTab {
     ACCOUNT,
     CATALOG,
+    SEARCH,
     HOME,
     POSTS,
     COLLECTIONS,
