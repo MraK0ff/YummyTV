@@ -3,7 +3,7 @@ package su.afk.yummy.tv.core.designsystem.insets
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.view.View
 import android.view.WindowManager
@@ -36,7 +36,7 @@ import androidx.core.view.WindowInsetsCompat
 data class AdaptiveWindowInfo(
     val windowWidthPx: Int = 0,
     val windowHeightPx: Int = 0,
-    val orientation: Int = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED,
+    val orientation: Int = Configuration.ORIENTATION_UNDEFINED,
     val isFullscreen: Boolean = false,
     val hasDisplayCutout: Boolean = false,
     val cutoutBounds: List<Rect> = emptyList(),
@@ -77,9 +77,9 @@ fun AdaptiveWindowInsetsProvider(content: @Composable () -> Unit) {
             val cutoutInsets = insets?.getInsets(WindowInsetsCompat.Type.displayCutout()) ?: Insets.NONE
             val waterfall = cutout?.waterfallInsets ?: Insets.NONE
             val safe = maxInsets(maxInsets(systemBars, cutoutInsets), waterfall)
-            val bounds = cutout?.boundingRects?.map(Rect::Rect).orEmpty()
-            val fullscreen = activity?.window?.attributes?.flags
-                ?.and(WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0
+            val bounds = cutout?.boundingRects?.map { Rect(it) }.orEmpty()
+            val fullscreen = ((activity?.window?.attributes?.flags ?: 0) and
+                WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0
 
             val next = AdaptiveWindowInfo(
                 windowWidthPx = decorView.width,
