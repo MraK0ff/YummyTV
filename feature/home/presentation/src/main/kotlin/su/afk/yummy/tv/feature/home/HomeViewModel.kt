@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.preferences.settings.currentUserId
@@ -230,6 +231,10 @@ class HomeViewModel @Inject internal constructor(
 
             HomeState.Event.ScheduleSelected -> {
                 nav.navigate(scheduleNavigator.getScheduleDest())
+            }
+
+            HomeState.Event.NewsSelected -> {
+                nav.switchRoot(root = RootTab.POSTS, reselectPopToRoot = true)
             }
 
             HomeState.Event.ReviewsSelected -> {
