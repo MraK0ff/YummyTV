@@ -109,15 +109,14 @@ fun AdaptiveWindowInsetsProvider(content: @Composable () -> Unit) {
             if (next != info) info = next
         }
 
-        val insetsListener: (View, WindowInsetsCompat) -> WindowInsetsCompat = { _, insets ->
-            update(insets)
-            insets
-        }
         val layoutListener = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             update(ViewCompat.getRootWindowInsets(decorView))
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(decorView, insetsListener)
+        ViewCompat.setOnApplyWindowInsetsListener(decorView) { _, insets ->
+            update(insets)
+            insets
+        }
         decorView.addOnLayoutChangeListener(layoutListener)
         update(ViewCompat.getRootWindowInsets(decorView))
         ViewCompat.requestApplyInsets(decorView)
