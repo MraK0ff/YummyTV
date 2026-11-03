@@ -21,7 +21,7 @@ interface PlayerSettingsStore {
     val adaptiveVideoQualityEnabled: Flow<Boolean>
     val autoSkipOpeningsEndings: Flow<Boolean>
 
-    /** Задержка перед автопропуском опенинга/эндинга, сек (1..15). */
+    /** Задержка перед автопропуском опенинга/эндинга, сек; 0 — мгновенно, 1..15 — с задержкой. */
     val autoSkipDelaySeconds: Flow<Int>
 
     /** Показывать участок опенинга на полосе прогресса плеера. */
