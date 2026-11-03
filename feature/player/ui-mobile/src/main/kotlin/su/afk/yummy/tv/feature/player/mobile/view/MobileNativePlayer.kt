@@ -685,7 +685,7 @@ internal fun MobileNativePlayer(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .adaptiveSafeDrawingPadding(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
-                .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 112.dp else 20.dp),
+                .padding(bottom = if (overlay.visible && !isInPictureInPictureMode) 128.dp else 36.dp),
         )
 
         MobilePlayerSkipToast(
@@ -708,7 +708,7 @@ internal fun MobileNativePlayer(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .adaptiveSafeDrawingPadding(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-                .padding(top = 12.dp),
+                .padding(top = 28.dp),
         )
 
         MobilePlayerGestureIndicator(
