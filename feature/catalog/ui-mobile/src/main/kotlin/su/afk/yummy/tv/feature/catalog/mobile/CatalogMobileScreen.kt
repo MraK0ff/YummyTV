@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -15,29 +16,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.designsystem.components.YummyLoadingIndicator
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
-import su.afk.yummy.tv.domain.home.model.HomeFeedItem
-import su.afk.yummy.tv.feature.home.HomeState
-import su.afk.yummy.tv.feature.home.mapper.toHomeEventOrNull
+import su.afk.yummy.tv.feature.catalog.SeasonalCatalogState
 import su.afk.yummy.tv.feature.home.mobile.view.HomeHeroCarousel
 import su.afk.yummy.tv.feature.home.presentation.R
 
 @Composable
 fun CatalogMobileScreen(
-    state: HomeState.State,
-    onEvent: (HomeState.Event) -> Unit,
+    state: SeasonalCatalogState.State,
+    onEvent: (SeasonalCatalogState.Event) -> Unit,
 ) {
-    LaunchedEffect(Unit) {
-        onEvent(HomeState.Event.ScreenResumed)
-    }
-
     val feed = state.feed
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             feed == null && state.isLoading -> YummyLoadingIndicator()
-            feed == null -> Text(
-                text = stringResource(R.string.home_load_error),
-                modifier = Modifier.padding(24.dp),
-            )
+            feed == null -> Column(modifier = Modifier.padding(24.dp)) {
+                Text(text = stringResource(R.string.home_load_error))
+                TextButton(onClick = { onEvent(SeasonalCatalogState.Event.RetrySelected) }) {
+                    Text(text = stringResource(su.afk.yummy.tv.core.designsystem.R.string.common_retry))
+                }
+            }
             feed.heroItems.isEmpty() -> Text(
                 text = stringResource(R.string.home_season_title),
                 modifier = Modifier.padding(24.dp),
@@ -58,8 +55,8 @@ fun CatalogMobileScreen(
                         )
                         HomeHeroCarousel(
                             items = feed.heroItems,
-                            onItemSelected = { item: HomeFeedItem ->
-                                item.action.toHomeEventOrNull()?.let(onEvent)
+                            onItemSelected = { item ->
+                                onEvent(SeasonalCatalogState.Event.ItemSelected(item.action))
                             },
                         )
                     }
