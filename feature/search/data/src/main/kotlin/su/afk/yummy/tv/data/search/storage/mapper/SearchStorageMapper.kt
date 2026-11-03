@@ -14,12 +14,12 @@ import su.afk.yummy.tv.core.storage.search.SearchTypeEntry
 import su.afk.yummy.tv.core.utils.poster.animePosterOrNull
 import su.afk.yummy.tv.data.search.dto.YaniSearchGenresDto
 import su.afk.yummy.tv.data.search.dto.YaniSearchItemDto
-import su.afk.yummy.tv.domain.catalog.model.SearchAnimeType
-import su.afk.yummy.tv.domain.catalog.model.SearchFilterOptions
-import su.afk.yummy.tv.domain.catalog.model.SearchGenre
-import su.afk.yummy.tv.domain.catalog.model.SearchGenreGroup
-import su.afk.yummy.tv.domain.catalog.model.SearchItem
-import su.afk.yummy.tv.domain.catalog.model.SearchPage
+import su.afk.yummy.tv.domain.search.model.SearchAnimeType
+import su.afk.yummy.tv.domain.search.model.SearchFilterOptions
+import su.afk.yummy.tv.domain.search.model.SearchGenre
+import su.afk.yummy.tv.domain.search.model.SearchGenreGroup
+import su.afk.yummy.tv.domain.search.model.SearchItem
+import su.afk.yummy.tv.domain.search.model.SearchPage
 
 internal fun List<YaniSearchItemDto>.toSearchPageCache(
     pageKey: String,
