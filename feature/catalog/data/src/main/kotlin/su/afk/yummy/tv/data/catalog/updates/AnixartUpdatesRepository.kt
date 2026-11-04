@@ -15,7 +15,7 @@ class AnixartUpdatesRepository(
     private val anixartApi: AnixartUpdatesApi,
     private val yaniSearchApi: YaniSearchApi,
 ) : UpdatesFeedRepository {
-    private val matchCache = ConcurrentHashMap<String, Int>()
+    private val matchCache = ConcurrentHashMap<String, YummyMatch>()
 
     override suspend fun load(): List<UpdatesFeedItem> {
         val releases = buildList {
@@ -33,10 +33,10 @@ class AnixartUpdatesRepository(
             releases.map { release ->
                 async {
                     val key = "${release.id}:${release.year}:${normalize(release.title)}"
-                    val cachedId = matchCache[key]
-                    val match = if (cachedId != null) null else semaphore.withPermit { findYummyAnime(release) }
-                    val animeId = cachedId ?: match?.animeId ?: return@async null
-                    matchCache[key] = animeId
+                    val match = matchCache[key] ?: semaphore.withPermit { findYummyAnime(release) }
+                        ?: return@async null
+                    matchCache[key] = match
+                    val animeId = match.animeId
                     UpdatesFeedItem(
                         anixartId = release.id,
                         animeId = animeId,
@@ -45,7 +45,7 @@ class AnixartUpdatesRepository(
                         episodesReleased = release.episodesReleased,
                         episodesTotal = release.episodesTotal,
                         lastUpdateAt = release.lastUpdateAt,
-                        posterUrl = match?.posterUrl,
+                        posterUrl = match.posterUrl,
                     )
                 }
             }.awaitAll().filterNotNull()
