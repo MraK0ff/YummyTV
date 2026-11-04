@@ -8,14 +8,19 @@ import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
 import su.afk.yummy.tv.source.anistar.data.dto.AnistarMirrorResponseDto
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Клиент AniStar. Поиск выполняется напрямую на сайте, а не через серверный индекс YummyTV:
  * так новые тайтлы и серии становятся видны сразу после публикации на AniStar.
  */
+@Singleton
 internal class AnistarApi @Inject constructor(
     @param:UnauthenticatedJsonClient private val client: HttpClient,
 ) {
+    @Volatile
+    private var currentMirror: String = SITE_URL
+
     suspend fun search(query: String): AnistarSearchPage {
         val response = client.get("$SITE_URL/index.php") {
             url.parameters.append("do", "search")
@@ -28,6 +33,7 @@ internal class AnistarApi @Inject constructor(
         if (!response.status.isSuccess()) throw IOException("AniStar search: HTTP \${response.status.value}")
         val requestUrl = response.request.url
         val mirror = "\${requestUrl.protocol.name}://\${requestUrl.host}"
+        currentMirror = mirror
         return AnistarSearchPage(response.bodyAsText(), mirror)
     }
 
@@ -40,11 +46,13 @@ internal class AnistarApi @Inject constructor(
             url.parameters.append("id", newsId.toString())
         }
         if (!response.status.isSuccess()) throw IOException("AniStar player: HTTP \${response.status.value}")
+        val requestUrl = response.request.url
+        currentMirror = "\${requestUrl.protocol.name}://\${requestUrl.host}"
         return response.bodyAsText()
     }
 
     /** Совместимость с резолвером потоков: зеркало теперь выбирается самим клиентом. */
-    suspend fun getMirror(): AnistarMirrorResponseDto = AnistarMirrorResponseDto(SITE_URL)
+    suspend fun getMirror(): AnistarMirrorResponseDto = AnistarMirrorResponseDto(currentMirror)
 
     private companion object {
         const val SITE_URL = "https://v31.astar.bz"
