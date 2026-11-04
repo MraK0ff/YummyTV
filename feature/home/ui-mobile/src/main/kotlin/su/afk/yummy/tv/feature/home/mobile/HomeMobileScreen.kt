@@ -227,10 +227,12 @@ fun HomeMobileScreen(
                     val feed = state.feed
 
                     // Плашки и поиск в одном item: иначе spacedBy(24) растягивает зазор между ними
-                    item(key = "status") {
-                        Column(modifier = Modifier.mobileContentMaxWidth()) {
-                            OfflineBanner(isOffline = isOffline)
-                            InfoBanner(message = state.statusMessage)
+                    if (isOffline || state.statusMessage != null) {
+                        item(key = "status") {
+                            Column(modifier = Modifier.mobileContentMaxWidth()) {
+                                OfflineBanner(isOffline = isOffline)
+                                InfoBanner(message = state.statusMessage)
+                            }
                         }
                     }
 
