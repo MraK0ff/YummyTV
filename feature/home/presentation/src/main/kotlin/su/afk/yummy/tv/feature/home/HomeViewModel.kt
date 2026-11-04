@@ -46,6 +46,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetRecentlyAiredScheduleUseCase
+import su.afk.yummy.tv.domain.home.usecase.TrackMyNewEpisodesUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveHomeContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveLibraryNewEpisodeAnimeIdsUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveWatchedEpisodesUseCase
@@ -97,6 +98,7 @@ class HomeViewModel @Inject internal constructor(
     private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase,
     private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase,
     private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase,
+    private val trackMyNewEpisodes: TrackMyNewEpisodesUseCase,
     private val appClock: AppClock,
     private val stringProvider: StringProvider,
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
@@ -137,6 +139,9 @@ class HomeViewModel @Inject internal constructor(
 
     /** Онгоинги с серией за последние дни из расписания; фильтруются по [libraryAnimeIds]. */
     private var recentlyAired: List<HomeFeedItem> = emptyList()
+
+    /** Latest raw schedule snapshot; durable history is merged separately. */
+    private var recentScheduleItems: List<HomeFeedItem> = emptyList()
 
     /** Просмотренные серии: id тайтла → номера серий. Ими помечаются карточки новых серий. */
     private var watchedEpisodes: Map<Int, Set<Int>> = emptyMap()
@@ -331,6 +336,7 @@ class HomeViewModel @Inject internal constructor(
             .onEach { ids ->
                 libraryAnimeIds = ids
                 applyHiddenRecommendations()
+                if (recentScheduleItems.isNotEmpty()) trackMyNewEpisodes()
             }
             .launchIn(viewModelScope)
 
@@ -349,14 +355,37 @@ class HomeViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
     }
 
-    /** Расписание кэшируется на час, поэтому лишней нагрузки на API это не даёт; ошибка не мешает главной. */
+    /**
+     * The schedule is cached for an hour. Its latest snapshot is merged into Room history so
+     * MY_NEW_EPISODES keeps one newest episode per anime and stable ordering across app restarts.
+     */
     private fun loadRecentlyAired() {
         viewModelScope.launch {
             runSuspendCatching { getRecentlyAiredSchedule(appClock.nowMillis() / 1_000L) }
                 .onSuccess { items ->
-                    recentlyAired = items
-                    applyHiddenRecommendations()
+                    recentScheduleItems = items
+                    trackMyNewEpisodes()
                 }
+                .onFailure {
+                    // Reading the durable history still works offline; a schedule error must not
+                    // clear or hide cards already discovered in previous sessions.
+                    trackMyNewEpisodes(scheduleItems = emptyList())
+                }
+        }
+    }
+
+    private fun trackMyNewEpisodes(scheduleItems: List<HomeFeedItem> = recentScheduleItems) {
+        viewModelScope.launch {
+            runSuspendCatching {
+                trackMyNewEpisodes(
+                    recentlyAired = scheduleItems,
+                    libraryAnimeIds = libraryAnimeIds,
+                    nowSeconds = appClock.nowMillis() / 1_000L,
+                )
+            }.onSuccess { history ->
+                recentlyAired = history
+                applyHiddenRecommendations()
+            }
         }
     }
 
