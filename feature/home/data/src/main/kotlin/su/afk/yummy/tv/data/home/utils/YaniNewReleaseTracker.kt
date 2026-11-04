@@ -124,13 +124,16 @@ internal class YaniNewReleaseTracker {
  */
 internal fun String?.toRegularEpisodeNumber(): Int? {
     val value = this?.trim()?.takeIf { it.isNotEmpty() } ?: return null
-    val episodePattern = Regex(
-        """^\d+(?:[.,]\d+)?(?:\s*(?:серия|серии|эпизод|episode|ep\.?)?)?$""",
-        RegexOption.IGNORE_CASE,
-    )
-    if (!value.matches(episodePattern)) return null
-    val numeric = Regex("""^\d+(?:[.,]\d+)?""").find(value)?.value ?: return null
-    val decimal = numeric.replace(',', '.').toBigDecimalOrNull() ?: return null
+    val match = REGULAR_EPISODE_PATTERN.matchEntire(value) ?: return null
+    val whole = match.groupValues[1]
+    val fraction = match.groupValues[2]
+    val normalized = if (fraction.isEmpty()) whole else "$whole.$fraction"
+    val decimal = normalized.toBigDecimalOrNull() ?: return null
     if (decimal.stripTrailingZeros().scale() > 0) return null
     return runCatching { decimal.intValueExact() }.getOrNull()?.takeIf { it > 0 }
 }
+
+private val REGULAR_EPISODE_PATTERN = Regex(
+    """^(\\d+)\\s*(?:[.,]\\s*(\\d+))?\\s*(?:серия|серии|эпизод|эп\\.?|episode|ep\\.?)?$""",
+    RegexOption.IGNORE_CASE,
+)
