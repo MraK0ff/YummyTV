@@ -5,6 +5,9 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.utils.io.readAvailable
+import java.io.ByteArrayOutputStream
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -34,8 +37,25 @@ class AniStarTorrentProvider @Inject constructor(
             headers.snapshot().forEach { (name, value) -> header(name, value) }
         }
         if (!response.status.isSuccess()) throw IOException("AniStar torrent download HTTP " + response.status.value)
-        val bytes: ByteArray = response.body()
-        if (bytes.isEmpty() || bytes.size > MAX_TORRENT_FILE_BYTES) throw IOException("Invalid torrent file size")
+        val declaredLength = response.headers[io.ktor.http.HttpHeaders.ContentLength]?.toLongOrNull()
+        if (declaredLength != null && declaredLength > MAX_TORRENT_FILE_BYTES) {
+            throw IOException("Torrent file exceeds 8 MiB limit")
+        }
+
+        val channel = response.bodyAsChannel()
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(8 * 1024)
+        while (true) {
+            val count = channel.readAvailable(buffer, 0, buffer.size)
+            if (count == -1) break
+            if (count == 0) continue
+            if (output.size() + count > MAX_TORRENT_FILE_BYTES) {
+                throw IOException("Torrent file exceeds 8 MiB limit")
+            }
+            output.write(buffer, 0, count)
+        }
+        val bytes = output.toByteArray()
+        if (bytes.isEmpty()) throw IOException("Empty torrent file")
         bytes
     }
 
