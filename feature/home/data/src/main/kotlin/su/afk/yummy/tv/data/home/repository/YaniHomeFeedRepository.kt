@@ -16,6 +16,7 @@ import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.common.episode.episodeNumberOrNull
 import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+import su.afk.yummy.tv.core.model.anime.AnimePoster
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
@@ -23,6 +24,7 @@ import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
 import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
+import su.afk.yummy.tv.core.storage.home.HomeMyNewEpisodeEntry
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_NEW_RELEASES
 import su.afk.yummy.tv.core.storage.home.isFresh
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
@@ -37,6 +39,8 @@ import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeedCache
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
+import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeed as toStoredHomeFeed
 
@@ -68,6 +72,70 @@ class YaniHomeFeedRepository(
     }
 
     override suspend fun refreshHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = true)
+
+    override suspend fun trackMyNewEpisodes(
+        recentlyAired: List<HomeFeedItem>,
+        libraryAnimeIds: Set<Int>,
+        nowSeconds: Long,
+    ): List<HomeFeedItem> = withContext(Dispatchers.IO) {
+        val history = homeFeedStore.getMyNewEpisodeHistory()
+        val candidates = recentlyAired
+            .asSequence()
+            .filter { it.id in libraryAnimeIds }
+            .mapNotNull { item ->
+                val episode = item.episodeNumber?.takeIf { it > 0 } ?: return@mapNotNull null
+                val airedAt = item.airedAtSeconds ?: return@mapNotNull null
+                item.copy(episodeNumber = episode, airedAtSeconds = airedAt)
+            }
+            .groupBy { it.id }
+            .mapValues { (_, items) ->
+                items.maxWithOrNull(
+                    compareBy<HomeFeedItem> { it.episodeNumber ?: 0 }
+                        .thenBy { it.airedAtSeconds ?: 0L }
+                        .thenBy { it.title }
+                        .thenBy { it.poster?.mega.orEmpty() },
+                )
+            }
+            .mapNotNull { it.value }
+        if (candidates.isEmpty()) {
+            return@withContext history.sortedBy { it.position }.map { it.toHomeFeedItem() }
+        }
+
+        val isInitialSnapshot = history.isEmpty()
+        val merged = history.associateBy { it.animeId }.toMutableMap()
+        candidates.forEach { item ->
+            val animeId = item.id
+            val episode = requireNotNull(item.episodeNumber)
+            val previous = merged[animeId]
+            when {
+                previous == null -> {
+                    merged[animeId] = item.toHistoryEntry(
+                        firstSeenAt = nowSeconds,
+                        lastUpdatedAt = if (isInitialSnapshot) 0L else nowSeconds,
+                        position = if (isInitialSnapshot) merged.size else -1,
+                    )
+                }
+                episode > previous.episodeNumber -> {
+                    merged[animeId] = item.toHistoryEntry(
+                        firstSeenAt = previous.firstSeenAt,
+                        lastUpdatedAt = nowSeconds,
+                        position = previous.position,
+                    )
+                }
+                // Same episode or an older schedule snapshot: do not replace metadata or ordering.
+                else -> Unit
+            }
+        }
+
+        val ordered = merged.values.sortedWith(
+            compareByDescending<HomeMyNewEpisodeEntry> { it.lastUpdatedAt > 0L }
+                .thenByDescending { it.lastUpdatedAt }
+                .thenBy { it.position }
+                .thenBy { it.animeId },
+        ).mapIndexed { index, entry -> entry.copy(position = index) }
+        homeFeedStore.saveMyNewEpisodeHistory(ordered)
+        ordered.map { it.toHomeFeedItem() }
+    }
 
     override suspend fun removeCachedContinueWatching(animeId: Int) {
         withContext(Dispatchers.IO) {
@@ -274,3 +342,53 @@ private fun HomeFeedCache?.toLegacyReleaseHistory(now: Long): List<HomeNewReleas
         }
         .toList()
 }
+
+
+private fun HomeFeedItem.toHistoryEntry(
+    firstSeenAt: Long,
+    lastUpdatedAt: Long,
+    position: Int,
+): HomeMyNewEpisodeEntry {
+    val poster = poster
+    return HomeMyNewEpisodeEntry(
+        animeId = id,
+        title = title,
+        description = description,
+        episodeNumber = requireNotNull(episodeNumber),
+        airedAtSeconds = requireNotNull(airedAtSeconds),
+        posterSmallUrl = poster?.small,
+        posterMediumUrl = poster?.medium,
+        posterBigUrl = poster?.big,
+        posterFullsizeUrl = poster?.fullsize,
+        posterMegaUrl = poster?.mega,
+        firstSeenAt = firstSeenAt,
+        lastUpdatedAt = lastUpdatedAt,
+        position = position,
+    )
+}
+
+private fun HomeMyNewEpisodeEntry.toHomeFeedItem(): HomeFeedItem =
+    HomeFeedItem(
+        id = animeId,
+        title = title,
+        description = description,
+        poster = if (
+            posterSmallUrl != null || posterMediumUrl != null || posterBigUrl != null ||
+            posterFullsizeUrl != null || posterMegaUrl != null
+        ) {
+            AnimePoster(
+                small = posterSmallUrl,
+                medium = posterMediumUrl,
+                big = posterBigUrl,
+                fullsize = posterFullsizeUrl,
+                mega = posterMegaUrl,
+            )
+        } else {
+            null
+        },
+        rating = null,
+        year = null,
+        action = HomeFeedItemAction.OpenSeries(animeId),
+        episodeNumber = episodeNumber,
+        airedAtSeconds = airedAtSeconds,
+    )
