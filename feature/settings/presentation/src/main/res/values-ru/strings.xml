@@ -331,4 +331,8 @@
     <string name="settings_home_section_announcements">Скоро</string>
     <string name="settings_home_section_collections">Подборки</string>
     <string name="settings_home_sections_reset_hint">Вернуть исходный порядок блоков главной</string>
+    <string name="settings_home_sections_navigation_hint">Выберите блоки главной страницы и настройте их порядок</string>
+    <string name="settings_home_sections_visibility_title">Видимость блоков</string>
+    <string name="settings_home_section_blogger_videos">От блогеров</string>
+    <string name="settings_home_section_more">Ещё</string>
 </resources>
