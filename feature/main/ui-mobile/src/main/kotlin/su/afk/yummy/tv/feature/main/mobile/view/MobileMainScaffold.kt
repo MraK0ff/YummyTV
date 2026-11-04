@@ -43,6 +43,9 @@ internal fun <T> MobileMainScaffold(
     onProfileSelected: () -> Unit,
     onNotificationsSelected: () -> Unit,
     onSettingsSelected: () -> Unit,
+    isProfileSelected: Boolean,
+    isNotificationsSelected: Boolean,
+    isSettingsSelected: Boolean,
     onDestinationSelected: (T) -> Unit,
     toastMessage: String?,
     showSeasonalOverlay: Boolean = true,
@@ -112,6 +115,9 @@ internal fun <T> MobileMainScaffold(
                             onProfileClick = onProfileSelected,
                             onNotificationsClick = onNotificationsSelected,
                             onSettingsClick = onSettingsSelected,
+                            isProfileSelected = isProfileSelected,
+                            isNotificationsSelected = isNotificationsSelected,
+                            isSettingsSelected = isSettingsSelected,
                         )
                     }
                     Box(modifier = Modifier.weight(1f).fillMaxSize()) {
