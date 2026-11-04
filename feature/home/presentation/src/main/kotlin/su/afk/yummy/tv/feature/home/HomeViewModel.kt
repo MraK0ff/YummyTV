@@ -137,7 +137,7 @@ class HomeViewModel @Inject internal constructor(
     /** Тайтлы из выбранных в настройках списков — из них собирается секция новых серий. */
     private var libraryAnimeIds: Set<Int> = emptySet()
 
-    /** Онгоинги с серией за последние дни из расписания; фильтруются по [libraryAnimeIds]. */
+    /** Сохранённые последние серии из расписания; фильтруются по [libraryAnimeIds]. */
     private var recentlyAired: List<HomeFeedItem> = emptyList()
 
     /** Latest raw schedule snapshot; durable history is merged separately. */
