@@ -31,7 +31,7 @@ import su.afk.yummy.tv.core.designsystem.focus.TvRetryButton
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.presentation.R
 
-/** Действия над серией по удержанию OK на карточке: пока это только отметка о просмотре. */
+/** Действия над серией по удержанию OK на карточке: управление статусом просмотра. */
 @Composable
 internal fun EpisodeActionsTvDialog(
     action: EpisodesState.EpisodeAction,
