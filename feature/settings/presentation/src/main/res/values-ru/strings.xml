@@ -81,6 +81,10 @@
     <string name="settings_player_orientation_left_hint">Всегда альбомная ориентация (влево), даже если поворот экрана заблокирован в системе</string>
     <string name="settings_player_orientation_right">Вправо</string>
     <string name="settings_player_orientation_right_hint">Всегда альбомная ориентация (вправо), даже если поворот экрана заблокирован в системе</string>
+    <string name="settings_player_orientation_sensor_landscape">Альбомная (датчик)</string>
+    <string name="settings_player_orientation_sensor_landscape_hint">Всегда альбомная ориентация, сторона (влево или вправо) выбирается по датчику</string>
+    <string name="settings_player_orientation_portrait">Вертикально</string>
+    <string name="settings_player_orientation_portrait_hint">Всегда вертикальная ориентация, даже если в системе включён автоповорот</string>
     <string name="settings_adaptive_video_quality_title">Адаптивное качество</string>
     <string name="settings_adaptive_video_quality_hint">Подстраивается под устройство и сеть: понижается при подвисаниях, возвращается при улучшении. Выше предпочитаемого качества не поднимается</string>
     <string name="settings_preferred_video_quality_title">Предпочитаемое качество</string>
@@ -176,6 +180,12 @@
     <string name="settings_volume_stabilization_label">Стабилизация громкости</string>
     <string name="settings_volume_stabilization_enabled">Выравнивает громкие и тихие сцены: тихие диалоги громче, громкие моменты тише</string>
     <string name="settings_volume_stabilization_disabled">Звук играет со своим исходным динамическим диапазоном</string>
+    <string name="settings_audio_focus_label">Отключить аудиофокус</string>
+    <string name="settings_audio_focus_enabled">Плеер не реагирует на перехват фокуса другими приложениями. Включите, если воспроизведение само ставится на паузу</string>
+    <string name="settings_audio_focus_disabled">Плеер ставится на паузу или приглушается, когда фокус забирают другие приложения</string>
+    <string name="settings_audio_focus_confirm_title">Отключить аудиофокус?</string>
+    <string name="settings_audio_focus_confirm_message">Без аудиофокуса видео не будет останавливаться при звонках и звуке других приложений, не будет приглушаться уведомлениями и может играть поверх них. На некоторых устройствах это может работать некорректно. Отключайте, только если воспроизведение само ставится на паузу.</string>
+    <string name="settings_audio_focus_confirm">Отключить</string>
     <string name="settings_player_gesture_tutorial_reset">Повторить обучение жестам</string>
     <string name="settings_player_gesture_tutorial_reset_hint">Показать обучалку при следующем открытии видео</string>
     <string name="settings_player_gesture_tutorial_reset_done">Обучалка будет показана при следующем открытии видео</string>
