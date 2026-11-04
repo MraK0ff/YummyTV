@@ -51,10 +51,9 @@ class AccountNavRegistrar @Inject constructor() : IMobileAccountEntry {
             }
             entry<AccountNotificationsDestination> {
                 val viewModel = hiltViewModel<AccountViewModel>()
-                ScreenNavigator(viewModel) { state, effect, onEvent ->
+                ScreenNavigator(viewModel) { state, _, onEvent ->
                     NotificationsMobileScreen(
                         state = state,
-                        effect = effect,
                         onEvent = onEvent,
                         onBack = nav::back,
                     )
