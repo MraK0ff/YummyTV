@@ -80,7 +80,7 @@ class TorrServerClient @Inject constructor(
                 MultiPartFormDataContent(
                     formData {
                         append("file", bytes, Headers.build {
-                            append(HttpHeaders.ContentDisposition, "filename=\"$safeName\"")
+                            append(HttpHeaders.ContentDisposition, "form-data; name=\"file\"; filename=\"$safeName\"")
                             append(HttpHeaders.ContentType, "application/x-bittorrent")
                         })
                         if (!title.isNullOrBlank()) append("title", title)
