@@ -861,7 +861,8 @@ class DetailsViewModel @AssistedInject internal constructor(
 
     private fun loadAniStarTorrents() {
         val source = torrentSources.firstOrNull()
-        val title = currentState.details?.title?.takeIf(String::isNotBlank)
+        val details = currentState.details
+        val title = details?.title?.takeIf(String::isNotBlank)
         if (source == null || title == null) {
             setState { copy(showAniStarTorrentDialog = true, aniStarTorrentError = "AniStar torrent source is unavailable") }
             return
@@ -873,7 +874,14 @@ class DetailsViewModel @AssistedInject internal constructor(
         }
         viewModelScope.launch {
             try {
-                val results = source.search(title)
+                var results: List<AnimeTorrent> = emptyList()
+                val searchTitles = (listOf(title) + details.otherTitles)
+                    .filter(String::isNotBlank)
+                    .distinct()
+                for (candidate in searchTitles) {
+                    results = source.search(candidate)
+                    if (results.isNotEmpty()) break
+                }
                 setState { copy(isAniStarTorrentLoading = false, aniStarTorrents = results.toImmutableList()) }
                 if (results.isEmpty()) setState { copy(aniStarTorrentError = "No torrents found for this title") }
             } catch (cancelled: CancellationException) {
@@ -908,13 +916,24 @@ class DetailsViewModel @AssistedInject internal constructor(
             return
         }
         setState { copy(showAniStarTorrentDialog = false) }
-        navigateToPlayer(PlayerVideoSource(
-            id = 0,
-            episode = file.path.substringAfterLast('/').ifBlank { file.path },
-            dubbing = "TorrServer",
-            player = "TorrServer",
-            iframeUrl = sourceUrl,
-        ))
+        val details = currentState.details
+        nav.navigate(
+            playerNavigationHandler.getPlayerDestination(
+                video = PlayerVideoSource(
+                    id = 0,
+                    episode = file.path.substringAfterLast('/').ifBlank { file.path },
+                    dubbing = "TorrServer",
+                    player = "TorrServer",
+                    iframeUrl = sourceUrl,
+                ),
+                animeTitle = details?.title.orEmpty(),
+                // Torrent playback is an external source, not a Yani episode graph. Keeping
+                // animeId=0 prevents the player from replacing this source with the regular graph.
+                animeId = 0,
+                posterUrl = details.playerPosterUrl(),
+                screenshotByEpisode = emptyMap(),
+            ),
+        )
     }
 
     private fun configureTorrServer(baseUrl: String, username: String, password: String) {

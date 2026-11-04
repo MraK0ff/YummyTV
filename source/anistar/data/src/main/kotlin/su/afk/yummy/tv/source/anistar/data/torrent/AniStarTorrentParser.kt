@@ -18,21 +18,43 @@ internal object AniStarTorrentParser {
         if (blocks.isNotEmpty()) {
             return blocks.mapNotNull { block ->
                 val anchor = block.selectFirst("a[href]") ?: return@mapNotNull null
-                val link = anchor.absUrl("href")
-                if (!isHttpUrl(link)) return@mapNotNull null
+                val rawHref = anchor.attr("href")
+                val href = anchor.absUrl("href")
                 val name = block.selectFirst(".info_d1")?.text()?.trim()
                     ?.takeIf(String::isNotBlank)
                     ?: anchor.text().trim().takeIf(String::isNotBlank)
                     ?: return@mapNotNull null
-                AniStarTorrent(
-                    title = name,
-                    url = link,
-                    size = extractSize(block),
-                    seeders = block.selectFirst(".li_distribute")?.text()?.toIntOrNull(),
-                    leechers = block.selectFirst(".li_swing")?.text()?.toIntOrNull(),
-                    downloads = block.selectFirst(".li_download")?.text()?.toIntOrNull(),
-                )
-            }
+                when {
+                    isMagnetUri(rawHref) -> AniStarTorrent(
+                        title = name,
+                        url = pageUrl,
+                        size = extractSize(block),
+                        seeders = block.selectFirst(".li_distribute")?.text()?.toIntOrNull(),
+                        leechers = block.selectFirst(".li_swing")?.text()?.toIntOrNull(),
+                        downloads = block.selectFirst(".li_download")?.text()?.toIntOrNull(),
+                        magnetUri = rawHref,
+                    )
+                    rawHref.substringBefore('?').endsWith(".torrent", ignoreCase = true) && isHttpUrl(href) ->
+                        AniStarTorrent(
+                            title = name,
+                            url = pageUrl,
+                            size = extractSize(block),
+                            seeders = block.selectFirst(".li_distribute")?.text()?.toIntOrNull(),
+                            leechers = block.selectFirst(".li_swing")?.text()?.toIntOrNull(),
+                            downloads = block.selectFirst(".li_download")?.text()?.toIntOrNull(),
+                            torrentFileUrl = href,
+                        )
+                    isHttpUrl(href) -> AniStarTorrent(
+                        title = name,
+                        url = href,
+                        size = extractSize(block),
+                        seeders = block.selectFirst(".li_distribute")?.text()?.toIntOrNull(),
+                        leechers = block.selectFirst(".li_swing")?.text()?.toIntOrNull(),
+                        downloads = block.selectFirst(".li_download")?.text()?.toIntOrNull(),
+                    )
+                    else -> null
+                }
+            }.distinctBy { "${it.url}|${it.magnetUri}|${it.torrentFileUrl}" }
         }
 
         // AniStar exposes its torrent list through the #torrent_all section. Some site layouts
@@ -44,19 +66,20 @@ internal object AniStarTorrentParser {
             torrentSection.parent()?.select("a[href]") ?: emptyList()
         }
         return links.mapNotNull { anchor ->
+            val rawHref = anchor.attr("href")
             val href = anchor.absUrl("href")
             val label = anchor.text().trim()
             if (label.isBlank()) return@mapNotNull null
-            if (href.startsWith("magnet:", ignoreCase = true) && isMagnetUri(href)) {
+            if (isMagnetUri(rawHref)) {
                 AniStarTorrent(
                     title = label,
                     url = pageUrl,
                     size = null,
                     seeders = null,
                     leechers = null,
-                    magnetUri = href,
+                    magnetUri = rawHref,
                 )
-            } else if (href.substringBefore('?').endsWith(".torrent", ignoreCase = true) && isHttpUrl(href)) {
+            } else if (rawHref.substringBefore('?').endsWith(".torrent", ignoreCase = true) && isHttpUrl(href)) {
                 AniStarTorrent(
                     title = label,
                     url = pageUrl,
@@ -76,7 +99,7 @@ internal object AniStarTorrentParser {
             } else {
                 null
             }
-        }.distinctBy(AniStarTorrent::url)
+        }.distinctBy { "${it.url}|${it.magnetUri}|${it.torrentFileUrl}" }
     }
 
     fun parseSearchResultPage(html: String, pageUrl: String, title: String): String? {
