@@ -66,6 +66,8 @@ import su.afk.yummy.tv.core.storage.document.DocumentCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedDao
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
+import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
+import su.afk.yummy.tv.core.storage.home.HomeMyNewEpisodeEntry
 import su.afk.yummy.tv.core.storage.library.LibraryDao
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibrarySyncStateEntry
@@ -109,6 +111,8 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         AnimeTrailerEntry::class,
         HomeFeedCacheEntry::class,
         HomeFeedItemEntry::class,
+        HomeNewReleaseEntry::class,
+        HomeMyNewEpisodeEntry::class,
         AnimeScheduleCacheEntry::class,
         AnimeScheduleItemEntry::class,
         SearchPageEntry::class,
@@ -159,7 +163,7 @@ import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
         WatchLaterEntry::class,
         PendingMutationEntry::class,
     ],
-    version = 69,
+    version = 71,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {

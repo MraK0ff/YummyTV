@@ -5,11 +5,22 @@ import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 
 interface HomeFeedRepository {
     suspend fun getHomeFeed(): HomeFeed
     suspend fun getCachedHomeFeed(): HomeFeed?
     suspend fun refreshHomeFeed(): HomeFeed
+
+    /**
+     * Merges recently aired episodes into durable per-anime history for MY_NEW_EPISODES.
+     * Existing entries remain available when they disappear from the recent schedule window.
+     */
+    suspend fun trackMyNewEpisodes(
+        recentlyAired: List<HomeFeedItem>,
+        libraryAnimeIds: Set<Int>,
+        nowSeconds: Long,
+    ): List<HomeFeedItem>
     suspend fun removeCachedContinueWatching(animeId: Int)
     suspend fun getContinueWatchingVideoIds(animeId: Int): List<Int>
     suspend fun migrateContinueWatchingProgress(migration: ContinueWatchingProgressMigration)
