@@ -61,6 +61,12 @@ abstract class HomeFeedDao {
         watchSignature: String,
     )
 
+    @Query("SELECT * FROM home_new_release_history ORDER BY position")
+    abstract suspend fun getNewReleaseHistory(): List<HomeNewReleaseEntry>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun saveNewReleaseHistory(entries: List<HomeNewReleaseEntry>)
+
     @Query(
         """
         DELETE FROM home_feed_items
