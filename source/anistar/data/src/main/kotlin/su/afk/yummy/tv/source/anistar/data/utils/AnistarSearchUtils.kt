@@ -3,7 +3,7 @@ package su.afk.yummy.tv.source.anistar.data.utils
 /**
  * Извлекает ID новости из стандартной ссылки DLE (/12345-title.html) и выбирает
  * наиболее похожий результат. Ссылки на "Смотреть", баннеры и посторонние блоки
- * отсекаются оценкой названия; категории Hentai исключены.
+ * отсекаются оценкой названия; категории с контентом для взрослых исключены.
  */
 internal data class AnistarSearchCandidate(
     val newsId: Long,
@@ -18,7 +18,7 @@ private val ANISTAR_ANCHOR = Regex(
 private val NEWS_ID_IN_PATH = Regex("""(?:^|/)(\d+)-[^/?#]*\.html(?:[?#]|$)""", RegexOption.IGNORE_CASE)
 private val NEWS_ID_IN_QUERY = Regex("""(?:newsid|news_id)=(\d+)""", RegexOption.IGNORE_CASE)
 private val YEAR_IN_CONTEXT = Regex("""(?:год\s+выпуска|год)\s*[:：]\s*((?:19|20)\d{2})""", RegexOption.IGNORE_CASE)
-private val HENTAI_MARKER = Regex("""hentai|хентай""", RegexOption.IGNORE_CASE)
+private val ADULT_CATEGORY_MARKER = Regex("""hentai|хентай|ecchi|эччи""", RegexOption.IGNORE_CASE)
 private val HTML_TAGS = Regex("""<[^>]+>""")
 private val NON_WORD = Regex("""[^\p{L}\p{N}]+""")
 
@@ -47,7 +47,7 @@ internal fun findBestAnistarCandidate(
         val contextStart = (anchor.range.first - CONTEXT_RADIUS).coerceAtLeast(0)
         val contextEnd = (anchor.range.last + CONTEXT_RADIUS).coerceAtMost(html.length)
         val context = html.substring(contextStart, contextEnd)
-        if (HENTAI_MARKER.containsMatchIn(context)) return@mapNotNull null
+        if (ADULT_CATEGORY_MARKER.containsMatchIn(context)) return@mapNotNull null
 
         val normalizedCandidate = normalizeTitle(title)
         val score = normalizedTitles.maxOfOrNull { similarity(it, normalizedCandidate) } ?: 0.0
