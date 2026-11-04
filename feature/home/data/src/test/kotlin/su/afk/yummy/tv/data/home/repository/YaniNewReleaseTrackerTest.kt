@@ -5,7 +5,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
 import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 
 class YaniNewReleaseTrackerTest {
