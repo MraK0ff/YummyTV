@@ -26,7 +26,7 @@ class HomeStorageMapperTest {
                 new = listOf(anime(3)),
                 recommends = listOf(anime(4)),
             ),
-        ).toHomeFeedCache(language = "ru", watchSignature = "", cachedAt = 0L)
+        ).toHomeFeedCache(language = "ru", watchSignature = "", cachedAt = 0L, newReleaseHistory = emptyList())
             .toHomeFeed(stringProvider)
 
         assertEquals(
