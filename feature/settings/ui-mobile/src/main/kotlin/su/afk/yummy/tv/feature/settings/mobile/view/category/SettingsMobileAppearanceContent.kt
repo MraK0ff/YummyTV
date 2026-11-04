@@ -180,7 +180,7 @@ internal fun SettingsMobileAppearanceContent(
             }
             SettingsMobileActionRow(
                 label = stringResource(R.string.settings_home_sections_reset),
-                hint = stringResource(R.string.settings_library_tabs_reset_hint),
+                hint = stringResource(R.string.settings_home_sections_reset_hint),
                 enabled = true,
                 onClick = { onEvent(SettingsState.Event.HomeSectionOrderReset) },
             )
@@ -198,7 +198,6 @@ internal fun SettingsMobileAppearanceContent(
     }
 }
 
-@androidx.compose.runtime.Composable
 private fun HomeSectionKind.labelRes(): Int = when (this) {
     HomeSectionKind.MY_NEW_EPISODES -> R.string.settings_home_section_my_new_episodes
     HomeSectionKind.NEW_RELEASES -> R.string.settings_home_section_new_releases
