@@ -8,6 +8,7 @@
     <string name="main_tab_history">History</string>
     <string name="main_tab_catalog">Catalog</string>
     <string name="main_tab_schedule">Schedule</string>
+    <string name="main_tab_updates">Updates</string>
     <string name="main_tab_collections">Collections</string>
     <string name="main_settings_content_description">Settings</string>
     <string name="main_account_content_description">Account</string>
