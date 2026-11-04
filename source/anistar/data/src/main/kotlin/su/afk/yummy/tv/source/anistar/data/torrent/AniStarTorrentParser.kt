@@ -18,10 +18,10 @@ internal object AniStarTorrentParser {
         RegexOption.IGNORE_CASE,
     )
     private val title = Regex("""class\s*=\s*["'][^"']*info_d1[^"']*["'][^>]*>(.*?)<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
-    private val size = Regex("""Размер\s*:\s*<[^>]*>\s*(.*?)\s*<""", RegexOption.IGNORE_CASE or RegexOption.DOT_MATCHES_ALL)
-    private val seeders = Regex("""class\s*=\s*["'][^"']*li_distribute[^"']*["'][^>]*>\s*(.*?)\s*<""", RegexOption.IGNORE_CASE or RegexOption.DOT_MATCHES_ALL)
-    private val leechers = Regex("""class\s*=\s*["'][^"']*li_swing[^"']*["'][^>]*>\s*(.*?)\s*<""", RegexOption.IGNORE_CASE or RegexOption.DOT_MATCHES_ALL)
-    private val downloads = Regex("""class\s*=\s*["'][^"']*li_download[^"']*["'][^>]*>\s*(.*?)\s*<""", RegexOption.IGNORE_CASE or RegexOption.DOT_MATCHES_ALL)
+    private val size = Regex("""Размер\s*:\s*<[^>]*>\s*(.*?)\s*<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
+    private val seeders = Regex("""class\s*=\s*["'][^"']*li_distribute[^"']*["'][^>]*>\s*(.*?)\s*<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
+    private val leechers = Regex("""class\s*=\s*["'][^"']*li_swing[^"']*["'][^>]*>\s*(.*?)\s*<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
+    private val downloads = Regex("""class\s*=\s*["'][^"']*li_download[^"']*["'][^>]*>\s*(.*?)\s*<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
     private val tags = Regex("""<[^>]+>""")
     private val whitespace = Regex("""\s+""")
 
@@ -45,7 +45,7 @@ internal object AniStarTorrentParser {
     fun parseTorrentPage(html: String, pageUrl: String): AniStarTorrentPage {
         val magnetUri = magnet.find(html)?.value?.let(::decode)
         val torrentUrl = download.find(html)?.groupValues?.get(1)?.let(::decode)?.let { resolve(pageUrl, it) }
-        val pageTitle = Regex("""<title[^>]*>(.*?)</title>""", RegexOption.IGNORE_CASE or RegexOption.DOT_MATCHES_ALL)
+        val pageTitle = Regex("""<title[^>]*>(.*?)</title>""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
             .find(html)?.groupValues?.get(1)?.let(::plainText)
         return AniStarTorrentPage(pageTitle, magnetUri, torrentUrl)
     }
