@@ -7,7 +7,7 @@ data class AniStarTorrent(
     val size: String?,
     val seeders: Int?,
     val leechers: Int?,
-    val downloads: Int?,
+    val downloads: Int? = null,
     val magnetUri: String? = null,
     val torrentFileUrl: String? = null,
 )
