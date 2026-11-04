@@ -21,7 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import su.afk.yummy.tv.domain.catalog.updates.UpdatesFeedItem
 import su.afk.yummy.tv.feature.catalog.UpdatesFeedViewModel
 import java.text.DateFormat
