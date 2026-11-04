@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.source.anistar.data.torrent
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
@@ -26,6 +27,18 @@ class AniStarTorrentProvider @Inject constructor(
         AniStarTorrentParser.parseList(response.bodyAsText(), listUrl)
     }
 
+
+    suspend fun downloadTorrentFile(torrent: AniStarTorrent): ByteArray = withContext(Dispatchers.IO) {
+        val url = torrent.torrentFileUrl ?: throw IOException("Torrent file URL is missing")
+        val response = client.get(url) {
+            headers.snapshot().forEach { (name, value) -> header(name, value) }
+        }
+        if (!response.status.isSuccess()) throw IOException("AniStar torrent download HTTP " + response.status.value)
+        val bytes: ByteArray = response.body()
+        if (bytes.isEmpty() || bytes.size > MAX_TORRENT_FILE_BYTES) throw IOException("Invalid torrent file size")
+        bytes
+    }
+
     suspend fun resolve(torrent: AniStarTorrent): AniStarTorrent = withContext(Dispatchers.IO) {
         val response = client.get(torrent.url) {
             headers.snapshot().forEach { (name, value) -> header(name, value) }
@@ -41,6 +54,7 @@ class AniStarTorrentProvider @Inject constructor(
             torrentFileUrl = page.torrentFileUrl,
         )
     }
+    private companion object { const val MAX_TORRENT_FILE_BYTES = 8 * 1024 * 1024 }
 }
 
 /**
