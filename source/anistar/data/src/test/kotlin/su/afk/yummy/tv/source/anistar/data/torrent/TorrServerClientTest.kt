@@ -23,7 +23,7 @@ class TorrServerClientTest : BaseUnitTest() {
             "https://torr.example:8090/play/0123456789abcdef0123456789abcdef/2",
             client.playbackUrl("0123456789abcdef0123456789abcdef", 2),
         )
-        assertEquals("https://torr.example:8090", configurationStore.savedBaseUrl)
+        assertEquals("https://torr.example:8090", configurationStore.saved?.baseUrl)
     }
 
     @Test

@@ -128,6 +128,13 @@ class TorrServerClient @Inject constructor(
         return "${configuration.baseUrl}/play/$hash/$fileIndex"
     }
 
+    fun playbackHeaders(): Map<String, String> = buildMap {
+        if (configuration.username.isNotBlank()) {
+            val token = "${configuration.username}:${configuration.password}"
+            put("Authorization", "Basic " + Base64.encodeToString(token.toByteArray(Charsets.UTF_8), Base64.NO_WRAP))
+        }
+    }
+
     private fun parseHash(body: String): String {
         val json = runCatching { Json.parseToJsonElement(body) }.getOrElse {
             throw IOException("Invalid TorrServer response", it)
