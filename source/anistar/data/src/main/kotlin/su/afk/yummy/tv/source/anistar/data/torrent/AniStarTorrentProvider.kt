@@ -32,20 +32,37 @@ class AniStarTorrentProvider @Inject constructor(
 
 
     /** Searches a title page first, then reads the torrent section exposed on that page. */
+    /** Searches title pages on both published AniStar mirrors, then reads the torrent section. */
     suspend fun searchTorrents(title: String): List<AniStarTorrent> = withContext(Dispatchers.IO) {
         require(title.isNotBlank()) { "Anime title is required" }
         val encoded = java.net.URLEncoder.encode(title.trim(), "UTF-8")
-        val searchUrl = "https://v31.astar.bz/?do=search&subaction=search&story=$encoded"
-        val response = client.get(searchUrl) {
-            headers.snapshot().forEach { (name, value) -> header(name, value) }
+        var lastError: IOException? = null
+        for (mirror in ANI_STAR_MIRRORS) {
+            try {
+                val searchUrl = "$mirror/?do=search&subaction=search&story=$encoded"
+                val response = client.get(searchUrl) {
+                    headers.snapshot().forEach { (name, value) -> header(name, value) }
+                }
+                if (!response.status.isSuccess()) {
+                    lastError = IOException("AniStar search HTTP ${response.status.value}")
+                    continue
+                }
+                val html = response.bodyAsText()
+                val pageUrl = response.request.url.toString()
+                val titlePageUrl = AniStarTorrentParser.parseSearchResultPage(html, pageUrl, title)
+                    ?: continue
+                val torrents = getTorrents(titlePageUrl)
+                if (torrents.isNotEmpty()) return@withContext torrents
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                lastError = error as? IOException ?: IOException("AniStar torrent search failed", error)
+            }
         }
-        if (!response.status.isSuccess()) throw IOException("AniStar search HTTP ${response.status.value}")
-        val html = response.bodyAsText()
-        val pageUrl = response.request.url.toString()
-        val titlePageUrl = AniStarTorrentParser.parseSearchResultPage(html, pageUrl, title)
-            ?: return@withContext emptyList()
-        getTorrents(titlePageUrl)
+        lastError?.let { throw it }
+        emptyList()
     }
+
 
     suspend fun downloadTorrentFile(torrent: AniStarTorrent): ByteArray = withContext(Dispatchers.IO) {
         val url = torrent.torrentFileUrl ?: throw IOException("Torrent file URL is missing")
@@ -91,7 +108,10 @@ class AniStarTorrentProvider @Inject constructor(
             torrentFileUrl = page.torrentFileUrl,
         )
     }
-    private companion object { const val MAX_TORRENT_FILE_BYTES = 8 * 1024 * 1024 }
+    private companion object {
+        const val MAX_TORRENT_FILE_BYTES = 8 * 1024 * 1024
+        val ANI_STAR_MIRRORS = listOf("https://v31.astar.bz", "https://anistar.org")
+    }
 }
 
 /**
