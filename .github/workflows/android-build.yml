@@ -50,6 +50,14 @@ jobs:
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
 
+      - name: Upload generated Room schema
+        uses: actions/upload-artifact@v7
+        with:
+          name: room-schema-70
+          path: core/storage/schemas/su.afk.yummy.tv.core.storage.db.AppDatabase/70.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Re-sign APK with the standard Android testkey
         shell: bash
         run: |
