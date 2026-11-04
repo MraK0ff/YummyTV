@@ -2,7 +2,6 @@ package su.afk.yummy.tv.source.anistar.data.torrent
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import java.net.URI
 
 /**
  * HTML-парсер каталога и страницы раздачи AniStar.
@@ -48,13 +47,13 @@ internal object AniStarTorrentParser {
     }
 
     private fun extractSize(block: Element): String? {
-        val text = block.text()
-        val match = Regex("""Размер\\s*:\\s*([^|]+?)(?:\\s{2,}|$)""", RegexOption.IGNORE_CASE)
-            .find(text)?.groupValues?.getOrNull(1)?.trim()
+        val ownText = block.getAllElements()
+            .asSequence()
+            .map { it.ownText() }
+            .firstOrNull { it.contains("Размер", ignoreCase = true) }
+            .orEmpty()
+        val match = Regex("""Размер\s*:\s*(.+)""", RegexOption.IGNORE_CASE)
+            .find(ownText)?.groupValues?.getOrNull(1)?.trim()
         return match?.takeIf(String::isNotBlank)
     }
-
-    private fun resolve(base: String, value: String): String = runCatching {
-        URI(base).resolve(value).toString()
-    }.getOrDefault(value)
 }
