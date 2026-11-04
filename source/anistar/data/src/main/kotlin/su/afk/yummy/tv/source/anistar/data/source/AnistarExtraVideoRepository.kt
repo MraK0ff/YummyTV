@@ -43,9 +43,9 @@ internal class AnistarExtraVideoRepository @Inject constructor(
 
     override suspend fun videos(details: AnimeDetails): List<AnimeVideo> {
         val names = (listOf(details.title) + details.otherTitles.orEmpty())
-            .map(String::trim)
+            .map { it.trim() }
             .filter { it.length >= MIN_QUERY_LENGTH }
-            .distinctBy(String::lowercase)
+            .distinctBy { it.lowercase() }
             .take(MAX_TITLE_ALIASES)
         if (names.isEmpty()) return emptyList()
 
