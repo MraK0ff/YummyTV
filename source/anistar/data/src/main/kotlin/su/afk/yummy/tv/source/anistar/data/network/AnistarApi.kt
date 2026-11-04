@@ -33,7 +33,7 @@ internal class AnistarApi @Inject constructor(
         if (!response.status.isSuccess()) {
             throw IOException("AniStar search: HTTP " + response.status.value)
         }
-        val requestUrl = response.request.url
+        val requestUrl = response.call.request.url
         val mirror = requestUrl.protocol.name + "://" + requestUrl.host
         currentMirror = mirror
         return AnistarSearchPage(response.bodyAsText(), mirror)
@@ -50,7 +50,7 @@ internal class AnistarApi @Inject constructor(
         if (!response.status.isSuccess()) {
             throw IOException("AniStar player: HTTP " + response.status.value)
         }
-        val requestUrl = response.request.url
+        val requestUrl = response.call.request.url
         currentMirror = requestUrl.protocol.name + "://" + requestUrl.host
         return response.bodyAsText()
     }
