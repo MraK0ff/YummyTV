@@ -2,12 +2,11 @@ package su.afk.yummy.tv.data.home.repository
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 import su.afk.yummy.tv.data.home.utils.YaniNewReleaseTracker
 import su.afk.yummy.tv.data.home.utils.toRegularEpisodeNumber
-import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 
 class YaniNewReleaseTrackerTest {
 
@@ -97,7 +96,7 @@ class YaniNewReleaseTrackerTest {
         )
 
         assertEquals(2, result.size)
-        assertNotEquals(result[0].animeId, result[1].animeId)
+        assertEquals(setOf(1, 2), result.map { it.animeId }.toSet())
     }
 
     @Test
