@@ -21,6 +21,8 @@ import su.afk.yummy.tv.feature.details.details.model.SubscriptionOption
 import su.afk.yummy.tv.feature.details.details.model.VideosUiState
 import su.afk.yummy.tv.feature.details.mapper.mergeScreenshotSources
 import su.afk.yummy.tv.feature.details.model.DetailsWatchProgressIndex
+import su.afk.yummy.tv.domain.details.torrent.AnimeTorrent
+import su.afk.yummy.tv.domain.details.torrent.AnimeTorrentFile
 
 class DetailsState {
     @Immutable
@@ -67,6 +69,13 @@ class DetailsState {
         val episodePushPromptAvailable: Boolean = false,
         /** Показывать ТВ-подсказку «нажмите вниз — там доп. секции», пока её не закрыли. */
         val showSectionsHint: Boolean = false,
+        val showAniStarTorrentDialog: Boolean = false,
+        val isAniStarTorrentLoading: Boolean = false,
+        val aniStarTorrents: ImmutableList<AnimeTorrent> = persistentListOf(),
+        val aniStarTorrentFiles: ImmutableList<AnimeTorrentFile> = persistentListOf(),
+        val selectedTorrentTitle: String? = null,
+        val aniStarTorrentError: String? = null,
+        val torrServerStatus: String? = null,
     ) : UiState {
         /** Скриншоты для ряда и галереи: TMDB, Tenrai и Yani по очереди у каждой карточки ([mergeScreenshotSources]). */
         val screenshots: List<AnimeScreenshot>
@@ -213,6 +222,13 @@ class DetailsState {
 
         /** Пользователь закрыл подсказку про секции кнопкой «Хорошо, запомнил». */
         data object SectionsHintDismissed : Event
+
+        data object AniStarTorrentsSelected : Event
+        data class AniStarTorrentSelected(val torrent: AnimeTorrent) : Event
+        data class AniStarTorrentFileSelected(val file: AnimeTorrentFile) : Event
+        data class TorrServerConfigurationSelected(val baseUrl: String, val username: String, val password: String) : Event
+        data object TorrServerConnectionCheckSelected : Event
+        data object AniStarTorrentsDismissed : Event
     }
 
     sealed interface Effect : UiEffect {

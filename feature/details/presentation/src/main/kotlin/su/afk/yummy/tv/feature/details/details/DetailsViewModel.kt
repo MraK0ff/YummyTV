@@ -8,6 +8,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -31,6 +32,9 @@ import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.AppLifecycleSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.EpisodePushSettingsStore
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
+import su.afk.yummy.tv.domain.details.torrent.AnimeTorrent
+import su.afk.yummy.tv.domain.details.torrent.AnimeTorrentFile
+import su.afk.yummy.tv.domain.details.torrent.AnimeTorrentSource
 import su.afk.yummy.tv.feature.bloggers.IBloggerVideosNavigator
 import su.afk.yummy.tv.feature.collection.ICollectionNavigator
 import su.afk.yummy.tv.feature.comments.ICommentsNavigator
@@ -89,6 +93,7 @@ class DetailsViewModel @AssistedInject internal constructor(
     private val analytics: DetailsAnalytics,
     private val appLifecycleSettingsStore: AppLifecycleSettingsStore,
     private val episodePushSettingsStore: EpisodePushSettingsStore,
+    private val torrentSources: Set<@JvmSuppressWildcards AnimeTorrentSource>,
 ) : BaseViewModel<DetailsState.State, DetailsState.Event, DetailsState.Effect>() {
 
     @AssistedFactory
@@ -362,6 +367,16 @@ class DetailsViewModel @AssistedInject internal constructor(
 
             DetailsState.Event.SectionsHintDismissed -> viewModelScope.launch {
                 appLifecycleSettingsStore.dismissDetailsSectionsHint()
+            }
+
+            DetailsState.Event.AniStarTorrentsSelected -> loadAniStarTorrents()
+            is DetailsState.Event.AniStarTorrentSelected -> addAniStarTorrent(event.torrent)
+            is DetailsState.Event.AniStarTorrentFileSelected -> playAniStarTorrentFile(event.file)
+            is DetailsState.Event.TorrServerConfigurationSelected ->
+                configureTorrServer(event.baseUrl, event.username, event.password)
+            DetailsState.Event.TorrServerConnectionCheckSelected -> checkTorrServerConnection()
+            DetailsState.Event.AniStarTorrentsDismissed -> setState {
+                copy(showAniStarTorrentDialog = false, isAniStarTorrentLoading = false, aniStarTorrentError = null)
             }
         }
     }
@@ -842,6 +857,89 @@ class DetailsViewModel @AssistedInject internal constructor(
                     playerName = option.playerName,
                 )
             }
+    }
+
+    private fun loadAniStarTorrents() {
+        val source = torrentSources.firstOrNull()
+        val title = currentState.details?.title?.takeIf(String::isNotBlank)
+        if (source == null || title == null) {
+            setState { copy(showAniStarTorrentDialog = true, aniStarTorrentError = "AniStar torrent source is unavailable") }
+            return
+        }
+        setState {
+            copy(showAniStarTorrentDialog = true, isAniStarTorrentLoading = true,
+                aniStarTorrents = persistentListOf(), aniStarTorrentFiles = persistentListOf(),
+                selectedTorrentTitle = null, aniStarTorrentError = null, torrServerStatus = null)
+        }
+        viewModelScope.launch {
+            try {
+                val results = source.search(title)
+                setState { copy(isAniStarTorrentLoading = false, aniStarTorrents = results.toImmutableList()) }
+                if (results.isEmpty()) setState { copy(aniStarTorrentError = "No torrents found for this title") }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                setState { copy(isAniStarTorrentLoading = false, aniStarTorrentError = error.message ?: "AniStar search failed") }
+            }
+        }
+    }
+
+    private fun addAniStarTorrent(torrent: AnimeTorrent) {
+        val source = torrentSources.firstOrNull() ?: return
+        setState { copy(isAniStarTorrentLoading = true, aniStarTorrentFiles = persistentListOf(),
+            selectedTorrentTitle = torrent.title, aniStarTorrentError = null) }
+        viewModelScope.launch {
+            try {
+                val files = source.add(torrent)
+                setState { copy(isAniStarTorrentLoading = false, aniStarTorrentFiles = files.toImmutableList()) }
+                if (files.isEmpty()) setState { copy(aniStarTorrentError = "TorrServer returned no playable files") }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                setState { copy(isAniStarTorrentLoading = false, aniStarTorrentError = error.message ?: "Unable to add torrent to TorrServer") }
+            }
+        }
+    }
+
+    private fun playAniStarTorrentFile(file: AnimeTorrentFile) {
+        val source = torrentSources.firstOrNull() ?: return
+        val sourceUrl = runCatching { source.playerSource(file.hash, file.index) }.getOrElse {
+            setState { copy(aniStarTorrentError = it.message ?: "Invalid torrent file") }
+            return
+        }
+        setState { copy(showAniStarTorrentDialog = false) }
+        navigateToPlayer(PlayerVideoSource(
+            id = 0,
+            episode = file.path.substringAfterLast('/').ifBlank { file.path },
+            dubbing = "TorrServer",
+            player = "TorrServer",
+            iframeUrl = sourceUrl,
+        ))
+    }
+
+    private fun configureTorrServer(baseUrl: String, username: String, password: String) {
+        val source = torrentSources.firstOrNull() ?: return
+        try {
+            source.configureServer(baseUrl, username, password)
+            setState { copy(torrServerStatus = "TorrServer settings saved", aniStarTorrentError = null) }
+        } catch (error: Exception) {
+            setState { copy(torrServerStatus = null, aniStarTorrentError = error.message ?: "Invalid TorrServer settings") }
+        }
+    }
+
+    private fun checkTorrServerConnection() {
+        val source = torrentSources.firstOrNull() ?: return
+        setState { copy(isAniStarTorrentLoading = true, torrServerStatus = null, aniStarTorrentError = null) }
+        viewModelScope.launch {
+            try {
+                val response = source.checkServerConnection()
+                setState { copy(isAniStarTorrentLoading = false, torrServerStatus = response.ifBlank { "TorrServer connection successful" }) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                setState { copy(isAniStarTorrentLoading = false, aniStarTorrentError = error.message ?: "TorrServer connection failed") }
+            }
+        }
     }
 
     private fun navigateToPlayer(video: AnimeVideo) {

@@ -4,14 +4,20 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.align
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +26,7 @@ import su.afk.yummy.tv.core.designsystem.error.asString
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.feature.details.details.model.DetailsScreenState
+import su.afk.yummy.tv.feature.details.details.torrent.AniStarTorrentDialog
 import su.afk.yummy.tv.feature.details.details.view.DetailsBody
 import su.afk.yummy.tv.feature.details.details.view.DetailsTvSkeleton
 import su.afk.yummy.tv.feature.details.details.view.LibraryListPickerOverlay
@@ -206,5 +213,13 @@ fun DetailsTvScreen(
                 },
             )
         }
+
+        if (details != null) {
+            Button(
+                onClick = { onEvent(DetailsState.Event.AniStarTorrentsSelected) },
+                modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
+            ) { Text("AniStar Torrents") }
+        }
+        AniStarTorrentDialog(state = state, onEvent = onEvent)
     }
 }
