@@ -93,31 +93,6 @@ class TorrServerClient @Inject constructor(
         return parseHash(response.bodyAsText())
     }
 
-    /** Получает список файлов раздачи после загрузки метаданных TorrServer. */
-    suspend fun getTorrentFiles(hash: String): List<TorrServerFile> {
-        require(hash.matches(Regex("[A-Fa-f0-9]{20,64}"))) { "Invalid torrent hash" }
-        val request = TorrServerGetRequest(action = "get", hash = hash)
-        val response = client.post("${configuration.baseUrl}/torrents") {
-            auth()
-            contentType(ContentType.Application.Json)
-            setBody(Json.encodeToString(TorrServerGetRequest.serializer(), request))
-        }
-        if (response.status.value == 404) return emptyList()
-        if (!response.status.isSuccess()) {
-            throw IOException("TorrServer get torrent HTTP ${response.status.value}")
-        }
-        val root = runCatching { Json.parseToJsonElement(response.bodyAsText()).jsonObject }
-            .getOrElse { throw IOException("Invalid TorrServer torrent response", it) }
-        val files = root["file_stats"] as? kotlinx.serialization.json.JsonArray ?: return emptyList()
-        return files.mapNotNull { element ->
-            val file = runCatching { element.jsonObject }.getOrNull() ?: return@mapNotNull null
-            val id = file["id"]?.jsonPrimitive?.content?.toIntOrNull() ?: return@mapNotNull null
-            val filePath = file["path"]?.jsonPrimitive?.content?.takeIf(String::isNotBlank)
-                ?: return@mapNotNull null
-            val length = file["length"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
-            TorrServerFile(id = id, path = filePath, sizeBytes = length)
-        }.sortedBy(TorrServerFile::id)
-    }
     /** URL потока TorrServer. Magnet никогда не передаётся напрямую ExoPlayer. */
     fun playbackUrl(hash: String, fileIndex: Int = 0): String {
         require(hash.matches(Regex("[A-Fa-f0-9]{20,64}")))
@@ -168,14 +143,3 @@ private data class TorrServerAddRequest(
     val title: String = "",
 )
 
-@Serializable
-private data class TorrServerGetRequest(
-    val action: String,
-    val hash: String,
-)
-
-data class TorrServerFile(
-    val id: Int,
-    val path: String,
-    val sizeBytes: Long,
-)
