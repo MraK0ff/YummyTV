@@ -186,7 +186,7 @@
     <string name="settings_cache_size_max">Maximum</string>
     <string name="settings_cache_size_mb">%1$d MB</string>
     <string name="settings_cache_size_300">300 MB</string>
-    <string name="settings_content_language_title">Language</string>
+    <string name="settings_content_language_title">Content language</string>
     <string name="settings_content_language_russian">Russian</string>
     <string name="settings_content_language_english">English</string>
     <string name="settings_content_language_ukrainian">Ukrainian</string>
@@ -335,4 +335,6 @@
     <string name="settings_home_sections_visibility_title">Visible sections</string>
     <string name="settings_home_section_blogger_videos">From bloggers</string>
     <string name="settings_home_section_more">More</string>
+    <string name="settings_interface_language_title">Interface language</string>
+    <string name="settings_interface_language_system">System default</string>
 </resources>
