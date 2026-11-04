@@ -28,11 +28,6 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileNavigationLayout
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
 
-/**
- * Корневой каркас мобильного UI: на компактной ширине — нижний бар, на планшете, развёрнутом
- * складном и в широком окне — боковая рейка. [showBottomBar] и [showRail] задаются раздельно:
- * бар занимает высоту контента и уходит вне корня таба, рейка остаётся рядом с деталями.
- */
 @Composable
 internal fun <T> MobileMainScaffold(
     selectedDestination: T,
@@ -40,6 +35,8 @@ internal fun <T> MobileMainScaffold(
     showBottomBar: Boolean,
     showRail: Boolean,
     showGlobalHeader: Boolean,
+    avatarUrl: String,
+    unreadNotificationsCount: Int,
     onProfileSelected: () -> Unit,
     onNotificationsSelected: () -> Unit,
     onSettingsSelected: () -> Unit,
@@ -70,11 +67,7 @@ internal fun <T> MobileMainScaffold(
 
     val surface = MaterialTheme.colorScheme.surface
     NavigationSuiteScaffoldLayout(
-        navigationSuiteType = if (isRail) {
-            NavigationSuiteType.NavigationRail
-        } else {
-            NavigationSuiteType.NavigationBar
-        },
+        navigationSuiteType = if (isRail) NavigationSuiteType.NavigationRail else NavigationSuiteType.NavigationBar,
         state = suiteState,
         navigationSuite = {
             if (isRail) {
@@ -96,8 +89,6 @@ internal fun <T> MobileMainScaffold(
         },
     ) {
         CompositionLocalProvider(LocalMobileNavigationLayout provides layout) {
-            // Низ контента уже занят баром вместе с системным инсетом: без консьюма imePadding
-            // в экранах табов отступал бы на полную высоту клавиатуры и оставлял пустую полосу.
             val barInsets = if (layout == MobileNavigationLayout.BottomBar) {
                 WindowInsets.navigationBars.add(WindowInsets(bottom = MobileBottomBarDefaults.BarHeight))
             } else {
@@ -112,6 +103,8 @@ internal fun <T> MobileMainScaffold(
                 Column(modifier = Modifier.fillMaxSize()) {
                     if (showGlobalHeader) {
                         MobileGlobalHeader(
+                            avatarUrl = avatarUrl,
+                            unreadNotificationsCount = unreadNotificationsCount,
                             onProfileClick = onProfileSelected,
                             onNotificationsClick = onNotificationsSelected,
                             onSettingsClick = onSettingsSelected,
