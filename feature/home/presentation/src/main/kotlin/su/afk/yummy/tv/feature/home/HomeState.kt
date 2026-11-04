@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.UiEffect
 import su.afk.yummy.tv.core.mvi.UiEvent
@@ -37,6 +38,9 @@ class HomeState {
         val statusMessage: String? = null,
         /** Предложение добавить preview-канал «Новинки» на главный экран ТВ. */
         val previewChannelPromptVisible: Boolean = false,
+        /** Пользовательский порядок и видимость всех управляемых блоков Home. */
+        val homeSectionOrder: ImmutableList<String> = listOf("MY_NEW_EPISODES", "NEW_RELEASES", "NEW_TITLES", "RECOMMENDATIONS", "ANNOUNCEMENTS", "COLLECTIONS", "BLOGGER_VIDEOS", "MORE").toImmutableList(),
+        val hiddenHomeSections: Set<String> = emptySet(),
         val bloggerVideos: ImmutableList<BloggerVideo> = persistentListOf(),
         val isBloggerVideosLoading: Boolean = true,
         val bloggerVideosError: UiText? = null,

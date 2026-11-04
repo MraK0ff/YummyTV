@@ -11,6 +11,19 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.utils.isEpisodeWatched
 import java.util.concurrent.TimeUnit
 
+/** Применяет пользовательскую видимость и порядок к секциям ленты. Неизвестные секции сохраняются.
+ * Новые секции, отсутствующие в сохранённом порядке, добавляются в конец.
+ */
+internal fun HomeFeed.withHomeSectionPreferences(
+    order: List<String>,
+    hidden: Set<String>,
+): HomeFeed {
+    val visible = sections.filterNot { it.type.name in hidden }
+    if (visible.isEmpty()) return copy(sections = emptyList())
+    val rank = order.withIndex().associate { it.value to it.index }
+    return copy(sections = visible.sortedWith(compareBy { rank[it.type.name] ?: Int.MAX_VALUE }))
+}
+
 /** Убирает из блока рекомендаций тайтлы, скрытые пользователем. */
 internal fun HomeFeed.withoutHiddenRecommendations(hiddenIds: Set<Int>): HomeFeed {
     if (hiddenIds.isEmpty()) return this

@@ -91,6 +91,8 @@ class SettingsState {
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val libraryTabOrder: ImmutableList<LibraryTabKind> =
             SettingsStore.defaultLibraryTabOrder.toImmutableList(),
+        val homeSectionOrder: ImmutableList<HomeSectionKind> = HomeSectionKind.entries.toImmutableList(),
+        val hiddenHomeSections: Set<HomeSectionKind> = emptySet(),
         val videoExportDirectoryName: String? = null,
         val cacheStorageEntries: ImmutableList<CacheStorageEntry> = persistentListOf(),
         val cacheStorageTotalBytes: Long = 0L,
@@ -265,6 +267,18 @@ class SettingsState {
 
         /** Пользователь сбросил порядок вкладок библиотеки к стандартному. */
         data object LibraryTabOrderReset : Event
+
+        /** Пользователь переместил секцию главной вверх или вниз. */
+        data class HomeSectionMoved(val section: HomeSectionKind, val direction: DetailsButtonMoveDirection) : Event
+
+        /** Пользователь включил или выключил секцию главной. */
+        data class HomeSectionVisibilityToggled(val section: HomeSectionKind) : Event
+
+        /** Пользователь сбросил порядок секций главной. */
+        data object HomeSectionOrderReset : Event
+
+        /** Пользователь открыл отдельную страницу управления секциями Home. */
+        data object HomeSectionsSelected : Event
 
         /** Пользователь открыл категорию настроек (мобильный интерфейс). */
         data class CategorySelected(val category: SettingsCategory) : Event

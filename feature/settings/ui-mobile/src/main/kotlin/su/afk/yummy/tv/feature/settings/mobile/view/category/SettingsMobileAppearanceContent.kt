@@ -2,6 +2,7 @@ package su.afk.yummy.tv.feature.settings.mobile.view.category
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -50,6 +51,11 @@ internal fun SettingsMobileAppearanceContent(
                 value = state.navTransitionStyle.label(),
                 hint = state.navTransitionStyle.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.NAV_TRANSITION) },
+            )
+            SettingsMobileNavigationRow(
+                label = stringResource(R.string.settings_home_sections_title),
+                hint = stringResource(R.string.settings_home_sections_navigation_hint),
+                onClick = { onEvent(SettingsState.Event.HomeSectionsSelected) },
             )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_seasonal_decorations),
@@ -131,16 +137,6 @@ internal fun SettingsMobileAppearanceContent(
             )
         }
         SettingsMobileSection(title = stringResource(R.string.settings_section_new_episodes)) {
-            SettingsMobileToggleRow(
-                label = stringResource(R.string.settings_new_episodes_section),
-                hint = if (state.newEpisodesSectionEnabled) {
-                    stringResource(R.string.settings_new_episodes_section_enabled)
-                } else {
-                    stringResource(R.string.settings_disabled)
-                },
-                enabled = state.newEpisodesSectionEnabled,
-                onClick = { onEvent(SettingsState.Event.NewEpisodesSectionToggled) },
-            )
             // Список источников без включённого блока ни на что не влияет.
             if (state.newEpisodesSectionEnabled) {
                 SettingsMobileOptionRow(
@@ -152,3 +148,4 @@ internal fun SettingsMobileAppearanceContent(
         }
     }
 }
+

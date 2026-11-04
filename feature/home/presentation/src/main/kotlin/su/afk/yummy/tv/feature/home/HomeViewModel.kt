@@ -67,6 +67,7 @@ import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
+import su.afk.yummy.tv.feature.home.utils.withHomeSectionPreferences
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.getPlayerDest
@@ -149,6 +150,9 @@ class HomeViewModel @Inject internal constructor(
     /** Блок новых серий выключен в настройках — секция не собирается вовсе. */
     private var newEpisodesSectionEnabled: Boolean = true
 
+    private var homeSectionOrder: List<String> = emptyList()
+    private var hiddenHomeSections: Set<String> = emptySet()
+
     private var loadJob: Job? = null
 
     /** «Продолжить просмотр» как пришло из источника, до скрытия ожидающих удаления. */
@@ -173,6 +177,7 @@ class HomeViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
         observeLibraryAnimeIds()
         loadRecentlyAired()
+        observeHomeSectionPreferences()
         observeHiddenRecommendations()
         observeSupportPrompt()
         observeAnnouncement()
@@ -474,9 +479,39 @@ class HomeViewModel @Inject internal constructor(
     private fun applyHiddenRecommendations() {
         val feed = rawFeed ?: return
         val hiddenIds = currentState.hiddenRecommendationIds
-        setState {
-            copy(feed = feed.toVisibleFeed(hiddenIds))
-        }
+        val visibleFeed = feed.toVisibleFeed(hiddenIds)
+            .withHomeSectionPreferences(homeSectionOrder, hiddenHomeSections)
+        setState { copy(feed = visibleFeed) }
+    }
+
+    /** Подписка на настройки порядка и видимости секций главной ленты. */
+    private fun observeHomeSectionPreferences() {
+        combine(settingsStore.homeSectionOrder, settingsStore.hiddenHomeSections) { order, hidden ->
+            order to hidden
+        }.onEach { (order, hidden) ->
+            val defaultOrder = listOf(
+                "MY_NEW_EPISODES",
+                "NEW_RELEASES",
+                "NEW_TITLES",
+                "RECOMMENDATIONS",
+                "ANNOUNCEMENTS",
+                "COLLECTIONS",
+                "BLOGGER_VIDEOS",
+                "MORE",
+            )
+            // Старые сохранённые списки содержат только шесть feed-секций.
+            // Добавляем новые пункты в конец, не теряя пользовательский порядок.
+            val completeOrder = order + defaultOrder.filterNot { it in order }
+            homeSectionOrder = completeOrder
+            hiddenHomeSections = hidden
+            setState {
+                copy(
+                    homeSectionOrder = completeOrder.toImmutableList(),
+                    hiddenHomeSections = hidden,
+                )
+            }
+            applyHiddenRecommendations()
+        }.launchIn(viewModelScope)
     }
 
     /** Следит за тем, когда окно поддержки проекта станет доступно к показу. */
@@ -901,7 +936,8 @@ class HomeViewModel @Inject internal constructor(
         setState {
             copy(
                 isLoading = isLoading,
-                feed = feed.toVisibleFeed(hiddenRecommendationIds),
+                feed = feed.toVisibleFeed(hiddenRecommendationIds)
+                    .withHomeSectionPreferences(homeSectionOrder, hiddenHomeSections),
             )
         }
     }

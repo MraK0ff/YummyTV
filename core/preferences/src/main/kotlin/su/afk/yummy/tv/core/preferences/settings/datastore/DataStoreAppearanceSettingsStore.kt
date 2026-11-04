@@ -24,6 +24,8 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryS
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.librarySortKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.homeSectionOrderKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.hiddenHomeSectionsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalAnnouncedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalDecorationsEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
@@ -57,6 +59,12 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
 
     override val newEpisodesSectionEnabled: Flow<Boolean> =
         store.boolean(newEpisodesSectionEnabledKey, true)
+
+    override val homeSectionOrder: Flow<List<String>> = store.string(homeSectionOrderKey).map { raw ->
+        raw.split(HOME_SECTION_ORDER_SEPARATOR).filter(String::isNotBlank)
+    }
+
+    override val hiddenHomeSections: Flow<Set<String>> = store.stringSet(hiddenHomeSectionsKey)
 
     override val newEpisodesSources: Flow<Set<NewEpisodesSource>> =
         store.stringSet(newEpisodesSourcesKey).map { it.toNewEpisodesSources() }
@@ -117,6 +125,16 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
         store.edit { prefs -> prefs[seasonalAnnouncedKey] = key }
     }
 
+    override suspend fun setHomeSectionOrder(order: List<String>) {
+        store.edit { prefs ->
+            prefs[homeSectionOrderKey] = order.distinct().joinToString(HOME_SECTION_ORDER_SEPARATOR)
+        }
+    }
+
+    override suspend fun setHiddenHomeSections(hidden: Set<String>) {
+        store.edit { prefs -> prefs[hiddenHomeSectionsKey] = hidden }
+    }
+
     override suspend fun setNewEpisodesSectionEnabled(enabled: Boolean) =
         store.setBoolean(newEpisodesSectionEnabledKey, enabled)
 
@@ -158,6 +176,7 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
     }
 
     internal companion object {
+        const val HOME_SECTION_ORDER_SEPARATOR = ","
         /**
          * Безопасный запасной вариант, пока качество не выбрано: на первичной настройке оно
          * определяется реальной пробой декодирования AVIF/WebP на устройстве.

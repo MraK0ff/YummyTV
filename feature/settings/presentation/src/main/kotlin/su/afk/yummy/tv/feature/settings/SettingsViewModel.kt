@@ -32,6 +32,7 @@ import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestination
+import su.afk.yummy.tv.feature.settings.navigator.SettingsHomeSectionsDestination
 import su.afk.yummy.tv.feature.settings.utils.groupedByThree
 import su.afk.yummy.tv.feature.settings.utils.movedLibraryTab
 import javax.inject.Inject
@@ -121,6 +122,24 @@ class SettingsViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
         appLifecycleSettingsStore.notificationPermissionRequested
             .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
+            .launchIn(viewModelScope)
+        settingsStore.homeSectionOrder
+            .onEach { storedOrder ->
+                val parsed = storedOrder.mapNotNull { key ->
+                    runCatching { HomeSectionKind.valueOf(key) }.getOrNull()
+                }.distinct()
+                val completeOrder = (parsed + HomeSectionKind.entries.filterNot { it in parsed })
+                    .toImmutableList()
+                setState { copy(homeSectionOrder = completeOrder) }
+            }
+            .launchIn(viewModelScope)
+        settingsStore.hiddenHomeSections
+            .onEach { hidden ->
+                val parsed = hidden.mapNotNull { key ->
+                    runCatching { HomeSectionKind.valueOf(key) }.getOrNull()
+                }.toSet()
+                setState { copy(hiddenHomeSections = parsed) }
+            }
             .launchIn(viewModelScope)
         settingsStore.playerSubtitleStyle
             .onEach { style -> setState { copy(subtitleStyle = style) } }
@@ -446,6 +465,28 @@ class SettingsViewModel @Inject internal constructor(
             SettingsState.Event.LibraryTabOrderReset -> viewModelScope.launch {
                 analytics.eventLibraryTabOrderReset()
                 settingsStore.setLibraryTabOrder(SettingsStore.defaultLibraryTabOrder)
+            }
+
+            SettingsState.Event.HomeSectionsSelected -> {
+                nav.navigate(SettingsHomeSectionsDestination)
+            }
+
+            is SettingsState.Event.HomeSectionMoved -> viewModelScope.launch {
+                val nextOrder = currentState.homeSectionOrder.movedHomeSection(
+                    event.section,
+                    event.direction,
+                )
+                settingsStore.setHomeSectionOrder(nextOrder.map { it.name })
+            }
+
+            is SettingsState.Event.HomeSectionVisibilityToggled -> viewModelScope.launch {
+                val hidden = currentState.hiddenHomeSections.toMutableSet()
+                if (!hidden.add(event.section)) hidden.remove(event.section)
+                settingsStore.setHiddenHomeSections(hidden.mapTo(mutableSetOf()) { it.name })
+            }
+
+            SettingsState.Event.HomeSectionOrderReset -> viewModelScope.launch {
+                settingsStore.setHomeSectionOrder(HomeSectionKind.entries.map { it.name })
             }
 
             is SettingsState.Event.CategorySelected -> {

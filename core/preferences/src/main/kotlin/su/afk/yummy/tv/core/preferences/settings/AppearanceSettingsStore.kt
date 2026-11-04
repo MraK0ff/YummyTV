@@ -38,6 +38,12 @@ interface AppearanceSettingsStore {
     val seasonalDecorationsEnabled: Flow<Boolean>
 
     /** Показывать ли на главной блок новых серий из списков пользователя. */
+    /** Стабильный пользовательский порядок секций главной ленты. */
+    val homeSectionOrder: Flow<List<String>>
+
+    /** Секции главной ленты, отключённые пользователем. */
+    val hiddenHomeSections: Flow<Set<String>>
+
     val newEpisodesSectionEnabled: Flow<Boolean>
 
     /** Списки, по которым блок новых серий отбирает тайтлы. */
@@ -73,6 +79,9 @@ interface AppearanceSettingsStore {
     suspend fun setBackgroundStyle(style: BackgroundStyle)
     suspend fun setNavTransitionStyle(style: NavTransitionStyle)
     suspend fun setLibraryTabOrder(order: List<LibraryTabKind>)
+    suspend fun setHomeSectionOrder(order: List<String>)
+    suspend fun setHiddenHomeSections(hidden: Set<String>)
+
     suspend fun setNewEpisodesSectionEnabled(enabled: Boolean)
     suspend fun setSeasonalDecorationsEnabled(enabled: Boolean)
 
