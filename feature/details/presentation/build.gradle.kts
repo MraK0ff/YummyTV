@@ -35,6 +35,7 @@ dependencies {
     implementation(project(":feature:watch-later:domain"))
 
     implementation(libs.bundles.compose.presentation)
+    implementation(libs.compose.foundation)
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
