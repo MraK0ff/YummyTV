@@ -12,15 +12,15 @@ internal data class AnistarSearchCandidate(
 )
 
 private val ANISTAR_ANCHOR = Regex(
-    """<a\\b[^>]*?href\\s*=\\s*(['"])(.*?)\\1[^>]*>(.*?)</a>""",
+    """<a\b[^>]*?href\s*=\s*(['"])(.*?)\1[^>]*>(.*?)</a>""",
     setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
 )
-private val NEWS_ID_IN_PATH = Regex("""(?:^|/)(\\d+)-[^/?#]*\\.html(?:[?#]|$)""", RegexOption.IGNORE_CASE)
-private val NEWS_ID_IN_QUERY = Regex("""(?:newsid|news_id)=(\\d+)""", RegexOption.IGNORE_CASE)
-private val YEAR_IN_CONTEXT = Regex("""(?:год\\s+выпуска|год)\\s*[:：]\\s*((?:19|20)\\d{2})""", RegexOption.IGNORE_CASE)
+private val NEWS_ID_IN_PATH = Regex("""(?:^|/)(\d+)-[^/?#]*\.html(?:[?#]|$)""", RegexOption.IGNORE_CASE)
+private val NEWS_ID_IN_QUERY = Regex("""(?:newsid|news_id)=(\d+)""", RegexOption.IGNORE_CASE)
+private val YEAR_IN_CONTEXT = Regex("""(?:год\s+выпуска|год)\s*[:：]\s*((?:19|20)\d{2})""", RegexOption.IGNORE_CASE)
 private val HENTAI_MARKER = Regex("""hentai|хентай""", RegexOption.IGNORE_CASE)
 private val HTML_TAGS = Regex("""<[^>]+>""")
-private val NON_WORD = Regex("""[^\\p{L}\\p{N}]+""")
+private val NON_WORD = Regex("""[^\p{L}\p{N}]+""")
 
 internal fun findBestAnistarCandidate(
     html: String,
@@ -38,10 +38,12 @@ internal fun findBestAnistarCandidate(
         if (newsId <= 0) return@mapNotNull null
 
         val title = decodeHtml(HTML_TAGS.replace(anchor.groupValues[3], " "))
-            .replace(Regex("""\\s+"""), " ")
+            .replace(Regex("""\s+"""), " ")
             .trim()
         if (title.isBlank()) return@mapNotNull null
 
+        // Проверяем локальный фрагмент карточки: категория другого результата
+        // на той же странице не должна скрывать подходящий тайтл.
         val contextStart = (anchor.range.first - CONTEXT_RADIUS).coerceAtLeast(0)
         val contextEnd = (anchor.range.last + CONTEXT_RADIUS).coerceAtMost(html.length)
         val context = html.substring(contextStart, contextEnd)
@@ -59,10 +61,7 @@ internal fun findBestAnistarCandidate(
         }
         if (adjustedScore < MIN_ADJUSTED_SCORE) return@mapNotNull null
 
-        ScoredCandidate(
-            candidate = AnistarSearchCandidate(newsId, title, year),
-            score = adjustedScore,
-        )
+        ScoredCandidate(AnistarSearchCandidate(newsId, title, year), adjustedScore)
     }.maxByOrNull { it.score }?.candidate
 }
 
@@ -94,7 +93,7 @@ private fun normalizeTitle(value: String): String =
         .lowercase()
         .replace(NON_WORD, " ")
         .trim()
-        .replace(Regex("""\\s+"""), " ")
+        .replace(Regex("""\s+"""), " ")
 
 private fun decodeHtml(value: String): String = value
     .replace("&amp;", "&", ignoreCase = true)
@@ -102,11 +101,11 @@ private fun decodeHtml(value: String): String = value
     .replace("&#39;", "'", ignoreCase = true)
     .replace("&apos;", "'", ignoreCase = true)
     .replace("&nbsp;", " ", ignoreCase = true)
-    .replace(Regex("""&#(\\d+);""")) { match ->
+    .replace(Regex("""&#(\d+);""")) { match ->
         match.groupValues[1].toIntOrNull()?.takeIf { it in 0..0xFFFF }?.toChar()?.toString() ?: match.value
     }
 
-private const val CONTEXT_RADIUS = 1_800
+private const val CONTEXT_RADIUS = 450
 private const val MIN_TITLE_SCORE = 0.78
 private const val MIN_ADJUSTED_SCORE = 0.75
 private const val YEAR_MATCH_BONUS = 0.04
