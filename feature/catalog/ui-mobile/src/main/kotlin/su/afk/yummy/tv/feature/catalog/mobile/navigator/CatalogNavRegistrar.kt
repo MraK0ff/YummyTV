@@ -7,8 +7,11 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.ScreenNavigator
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.feature.catalog.IMobileCatalogEntry
 import su.afk.yummy.tv.feature.catalog.CatalogViewModel
+import su.afk.yummy.tv.feature.catalog.UpdatesFeedViewModel
 import su.afk.yummy.tv.feature.catalog.mobile.CatalogMobileScreen
+import su.afk.yummy.tv.feature.catalog.mobile.UpdatesFeedScreen
 import su.afk.yummy.tv.feature.catalog.navigator.CatalogDestination
+import su.afk.yummy.tv.feature.catalog.navigator.UpdatesFeedDestination
 import javax.inject.Inject
 
 class CatalogNavRegistrar @Inject constructor() : IMobileCatalogEntry {
@@ -24,6 +27,9 @@ class CatalogNavRegistrar @Inject constructor() : IMobileCatalogEntry {
                         onEvent = onEvent
                     )
                 }
+            }
+            entry<UpdatesFeedDestination> {
+                UpdatesFeedScreen(hiltViewModel<UpdatesFeedViewModel>())
             }
         }
 }
