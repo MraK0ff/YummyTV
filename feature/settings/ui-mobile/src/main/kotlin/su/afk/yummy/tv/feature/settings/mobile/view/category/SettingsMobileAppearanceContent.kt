@@ -9,9 +9,7 @@ import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
-import su.afk.yummy.tv.feature.settings.HomeSectionKind
 import su.afk.yummy.tv.feature.settings.SettingsState
-import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.common.utils.hint
 import su.afk.yummy.tv.feature.settings.common.utils.icon
 import su.afk.yummy.tv.feature.settings.common.utils.label
@@ -19,8 +17,6 @@ import su.afk.yummy.tv.feature.settings.common.utils.newEpisodesSourcesValue
 import su.afk.yummy.tv.feature.settings.mobile.model.SettingsMobilePicker
 import su.afk.yummy.tv.feature.settings.mobile.utils.hint
 import su.afk.yummy.tv.feature.settings.mobile.utils.label
-import su.afk.yummy.tv.feature.settings.mobile.view.DetailsOrderRow
-import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileActionRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileIconChoice
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileIconChoiceRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
@@ -55,6 +51,11 @@ internal fun SettingsMobileAppearanceContent(
                 value = state.navTransitionStyle.label(),
                 hint = state.navTransitionStyle.hint(),
                 onClick = { onPickerRequested(SettingsMobilePicker.NAV_TRANSITION) },
+            )
+            SettingsMobileNavigationRow(
+                label = stringResource(R.string.settings_home_sections_title),
+                hint = stringResource(R.string.settings_home_sections_navigation_hint),
+                onClick = { onEvent(SettingsState.Event.HomeSectionsSelected) },
             )
             SettingsMobileToggleRow(
                 label = stringResource(R.string.settings_seasonal_decorations),
@@ -135,57 +136,6 @@ internal fun SettingsMobileAppearanceContent(
                 onClick = { onEvent(SettingsState.Event.LibraryTabOrderSelected) },
             )
         }
-        SettingsMobileSection(title = stringResource(R.string.settings_home_sections_title)) {
-            androidx.compose.material3.Text(
-                text = stringResource(R.string.settings_home_sections_hint),
-                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = androidx.compose.ui.Modifier.padding(horizontal = 16.dp),
-            )
-            state.homeSectionOrder.forEachIndexed { index, section ->
-                DetailsOrderRow(
-                    label = stringResource(section.labelRes()),
-                    position = index + 1,
-                    canMoveUp = index > 0,
-                    canMoveDown = index < state.homeSectionOrder.lastIndex,
-                    onMoveUp = {
-                        onEvent(SettingsState.Event.HomeSectionMoved(section, DetailsButtonMoveDirection.UP))
-                    },
-                    onMoveDown = {
-                        onEvent(SettingsState.Event.HomeSectionMoved(section, DetailsButtonMoveDirection.DOWN))
-                    },
-                )
-            }
-            HomeSectionKind.entries.forEach { section ->
-                val enabled = if (section == HomeSectionKind.MY_NEW_EPISODES) {
-                    state.newEpisodesSectionEnabled
-                } else {
-                    section !in state.hiddenHomeSections
-                }
-                SettingsMobileToggleRow(
-                    label = stringResource(section.labelRes()),
-                    hint = if (enabled) {
-                        stringResource(R.string.settings_home_section_enabled)
-                    } else {
-                        stringResource(R.string.settings_disabled)
-                    },
-                    enabled = enabled,
-                    onClick = {
-                        if (section == HomeSectionKind.MY_NEW_EPISODES) {
-                            onEvent(SettingsState.Event.NewEpisodesSectionToggled)
-                        } else {
-                            onEvent(SettingsState.Event.HomeSectionVisibilityToggled(section))
-                        }
-                    },
-                )
-            }
-            SettingsMobileActionRow(
-                label = stringResource(R.string.settings_home_sections_reset),
-                hint = stringResource(R.string.settings_home_sections_reset_hint),
-                enabled = true,
-                onClick = { onEvent(SettingsState.Event.HomeSectionOrderReset) },
-            )
-        }
         SettingsMobileSection(title = stringResource(R.string.settings_section_new_episodes)) {
             // Список источников без включённого блока ни на что не влияет.
             if (state.newEpisodesSectionEnabled) {
@@ -199,11 +149,3 @@ internal fun SettingsMobileAppearanceContent(
     }
 }
 
-private fun HomeSectionKind.labelRes(): Int = when (this) {
-    HomeSectionKind.MY_NEW_EPISODES -> R.string.settings_home_section_my_new_episodes
-    HomeSectionKind.NEW_RELEASES -> R.string.settings_home_section_new_releases
-    HomeSectionKind.NEW_TITLES -> R.string.settings_home_section_new_titles
-    HomeSectionKind.RECOMMENDATIONS -> R.string.settings_home_section_recommendations
-    HomeSectionKind.ANNOUNCEMENTS -> R.string.settings_home_section_announcements
-    HomeSectionKind.COLLECTIONS -> R.string.settings_home_section_collections
-}
