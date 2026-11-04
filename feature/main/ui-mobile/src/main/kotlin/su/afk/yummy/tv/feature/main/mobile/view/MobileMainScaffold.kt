@@ -3,6 +3,8 @@ package su.afk.yummy.tv.feature.main.mobile.view
 import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalOverlay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -38,6 +40,10 @@ internal fun <T> MobileMainScaffold(
     menuItems: List<MobileMenuItem<T>>,
     showBottomBar: Boolean,
     showRail: Boolean,
+    showGlobalHeader: Boolean,
+    onProfileSelected: () -> Unit,
+    onNotificationsSelected: () -> Unit,
+    onSettingsSelected: () -> Unit,
     onDestinationSelected: (T) -> Unit,
     toastMessage: String?,
     showSeasonalOverlay: Boolean = true,
@@ -101,12 +107,23 @@ internal fun <T> MobileMainScaffold(
                     .consumeWindowInsets(barInsets)
                     .background(MaterialTheme.colorScheme.background),
             ) {
-                content()
-                if (showSeasonalOverlay) SeasonalOverlay()
-                GlobalToastOverlay(
-                    text = toastMessage,
-                    modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),
-                )
+                Column(modifier = Modifier.fillMaxSize()) {
+                    if (showGlobalHeader) {
+                        MobileGlobalHeader(
+                            onProfileClick = onProfileSelected,
+                            onNotificationsClick = onNotificationsSelected,
+                            onSettingsClick = onSettingsSelected,
+                        )
+                    }
+                    Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+                        content()
+                        if (showSeasonalOverlay) SeasonalOverlay()
+                        GlobalToastOverlay(
+                            text = toastMessage,
+                            modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),
+                        )
+                    }
+                }
             }
         }
     }
