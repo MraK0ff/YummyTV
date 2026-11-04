@@ -1,74 +1,60 @@
 package su.afk.yummy.tv.source.anistar.data.torrent
 
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import java.net.URI
 
 /**
- * Толерантный HTML-парсер списка и страницы раздачи AniStar.
- * Селекторы ограничены контейнером .torrent, отсутствующие поля остаются null.
+ * HTML-парсер каталога и страницы раздачи AniStar.
+ * Jsoup учитывает вложенные элементы и HTML entities, поэтому вложенная разметка карточки
+ * не обрезается так, как это происходит при разборе HTML регулярными выражениями.
  */
 internal object AniStarTorrentParser {
-    private val torrentBlocks = Regex(
-        """<([a-z][a-z0-9]*)\b[^>]*class\s*=\s*["'][^"']*\btorrent\b[^"']*["'][^>]*>(.*?)</\1\s*>""",
-        setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
-    )
-    private val href = Regex("""href\s*=\s*["']([^"']+)["']""", RegexOption.IGNORE_CASE)
-    private val magnet = Regex("""magnet:\?[^"'\s<>]+""", RegexOption.IGNORE_CASE)
-    private val download = Regex(
-        """(?:href|data-url)\s*=\s*["']([^"']+\.torrent(?:\?[^"']*)?)["']""",
-        RegexOption.IGNORE_CASE,
-    )
-    private val title = Regex("""class\s*=\s*["'][^"']*info_d1[^"']*["'][^>]*>(.*?)<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
-    private val size = Regex("""Размер\s*:\s*<[^>]*>\s*(.*?)\s*<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
-    private val seeders = Regex("""class\s*=\s*["'][^"']*li_distribute[^"']*["'][^>]*>\s*(.*?)\s*<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
-    private val leechers = Regex("""class\s*=\s*["'][^"']*li_swing[^"']*["'][^>]*>\s*(.*?)\s*<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
-    private val downloads = Regex("""class\s*=\s*["'][^"']*li_download[^"']*["'][^>]*>\s*(.*?)\s*<""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
-    private val tags = Regex("""<[^>]+>""")
-    private val whitespace = Regex("""\s+""")
 
-    fun parseList(html: String, pageUrl: String): List<AniStarTorrent> =
-        torrentBlocks.findAll(html).mapNotNull { match ->
-            val block = match.groupValues[2]
-            val link = href.find(block)?.groupValues?.get(1)?.let { resolve(pageUrl, decode(it)) } ?: return@mapNotNull null
-            val name = title.find(block)?.groupValues?.get(1)?.let(::plainText)
-                ?: href.find(block)?.groupValues?.get(1)?.let(::decode)
+    fun parseList(html: String, pageUrl: String): List<AniStarTorrent> {
+        val document = Jsoup.parse(html, pageUrl)
+        return document.select(".torrent").mapNotNull { block ->
+            val link = block.selectFirst("a[href]")?.absUrl("href")
+                ?.takeIf(String::isNotBlank) ?: return@mapNotNull null
+            val name = block.selectFirst(".info_d1")?.text()?.trim()
+                ?.takeIf(String::isNotBlank)
+                ?: block.selectFirst("a[href]")?.text()?.trim()?.takeIf(String::isNotBlank)
                 ?: return@mapNotNull null
+
             AniStarTorrent(
                 title = name,
                 url = link,
-                size = size.find(block)?.groupValues?.get(1)?.let(::plainText)?.takeIf(String::isNotBlank),
-                seeders = seeders.find(block)?.groupValues?.get(1)?.let(::integer),
-                leechers = leechers.find(block)?.groupValues?.get(1)?.let(::integer),
-                downloads = downloads.find(block)?.groupValues?.get(1)?.let(::integer),
+                size = extractSize(block),
+                seeders = block.selectFirst(".li_distribute")?.text()?.toIntOrNull(),
+                leechers = block.selectFirst(".li_swing")?.text()?.toIntOrNull(),
+                downloads = block.selectFirst(".li_download")?.text()?.toIntOrNull(),
             )
-        }.toList()
-
-    fun parseTorrentPage(html: String, pageUrl: String): AniStarTorrentPage {
-        val magnetUri = magnet.find(html)?.value?.let(::decode)
-        val torrentUrl = download.find(html)?.groupValues?.get(1)?.let(::decode)?.let { resolve(pageUrl, it) }
-        val pageTitle = Regex("""<title[^>]*>(.*?)</title>""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
-            .find(html)?.groupValues?.get(1)?.let(::plainText)
-        return AniStarTorrentPage(pageTitle, magnetUri, torrentUrl)
+        }
     }
 
-    private fun integer(value: String): Int? = plainText(value)
-        .replace(Regex("""[^\d]"""), "")
-        .toIntOrNull()
+    fun parseTorrentPage(html: String, pageUrl: String): AniStarTorrentPage {
+        val document = Jsoup.parse(html, pageUrl)
+        val magnetUri = document.selectFirst("a[href^=magnet:]")?.attr("href")
+            ?.takeIf(String::isNotBlank)
+        val torrentUrl = document.select("a[href]").firstOrNull { anchor ->
+            anchor.attr("href").substringBefore('?').endsWith(".torrent", ignoreCase = true)
+        }?.absUrl("href")?.takeIf(String::isNotBlank)
+        val pageTitle = document.title().trim().takeIf(String::isNotBlank)
+        return AniStarTorrentPage(
+            title = pageTitle,
+            magnetUri = magnetUri,
+            torrentFileUrl = torrentUrl,
+        )
+    }
 
-    private fun plainText(value: String): String = decode(tags.replace(value, " "))
-        .replace(whitespace, " ")
-        .trim()
+    private fun extractSize(block: Element): String? {
+        val text = block.text()
+        val match = Regex("""Размер\\s*:\\s*([^|]+?)(?:\\s{2,}|$)""", RegexOption.IGNORE_CASE)
+            .find(text)?.groupValues?.getOrNull(1)?.trim()
+        return match?.takeIf(String::isNotBlank)
+    }
 
     private fun resolve(base: String, value: String): String = runCatching {
         URI(base).resolve(value).toString()
     }.getOrDefault(value)
-
-    private fun decode(value: String): String = value
-        .replace("&amp;", "&", ignoreCase = true)
-        .replace("&quot;", "\"")
-        .replace("&#39;", "'")
-        .replace("&apos;", "'")
-        .replace("&nbsp;", " ")
-        .replace(Regex("""&#(\d+);""")) { m ->
-            m.groupValues[1].toIntOrNull()?.takeIf { it in 0..0x10FFFF }?.let { String(Character.toChars(it)) } ?: m.value
-        }
 }
