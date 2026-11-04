@@ -149,6 +149,9 @@ class HomeViewModel @Inject internal constructor(
     /** Блок новых серий выключен в настройках — секция не собирается вовсе. */
     private var newEpisodesSectionEnabled: Boolean = true
 
+    private var homeSectionOrder: List<String> = emptyList()
+    private var hiddenHomeSections: Set<String> = emptySet()
+
     private var loadJob: Job? = null
 
     /** «Продолжить просмотр» как пришло из источника, до скрытия ожидающих удаления. */
@@ -173,6 +176,7 @@ class HomeViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
         observeLibraryAnimeIds()
         loadRecentlyAired()
+        observeHomeSectionPreferences()
         observeHiddenRecommendations()
         observeSupportPrompt()
         observeAnnouncement()
@@ -474,9 +478,20 @@ class HomeViewModel @Inject internal constructor(
     private fun applyHiddenRecommendations() {
         val feed = rawFeed ?: return
         val hiddenIds = currentState.hiddenRecommendationIds
-        setState {
-            copy(feed = feed.toVisibleFeed(hiddenIds))
-        }
+        val visibleFeed = feed.toVisibleFeed(hiddenIds)
+            .withHomeSectionPreferences(homeSectionOrder, hiddenHomeSections)
+        setState { copy(feed = visibleFeed) }
+    }
+
+    /** Подписка на настройки порядка и видимости секций главной ленты. */
+    private fun observeHomeSectionPreferences() {
+        combine(settingsStore.homeSectionOrder, settingsStore.hiddenHomeSections) { order, hidden ->
+            order to hidden
+        }.onEach { (order, hidden) ->
+            homeSectionOrder = order
+            hiddenHomeSections = hidden
+            applyHiddenRecommendations()
+        }.launchIn(viewModelScope)
     }
 
     /** Следит за тем, когда окно поддержки проекта станет доступно к показу. */
