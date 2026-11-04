@@ -130,7 +130,7 @@ internal fun String?.toRegularEpisodeNumber(): Int? {
     )
     if (!value.matches(episodePattern)) return null
     val numeric = Regex("""^\d+(?:[.,]\d+)?""").find(value)?.value ?: return null
-    val decimal = numeric.toBigDecimalOrNull() ?: return null
+    val decimal = numeric.replace(',', '.').toBigDecimalOrNull() ?: return null
     if (decimal.stripTrailingZeros().scale() > 0) return null
     return runCatching { decimal.intValueExact() }.getOrNull()?.takeIf { it > 0 }
 }
