@@ -8,4 +8,6 @@ enum class HomeSectionKind {
     RECOMMENDATIONS,
     ANNOUNCEMENTS,
     COLLECTIONS,
+    BLOGGER_VIDEOS,
+    MORE,
 }
