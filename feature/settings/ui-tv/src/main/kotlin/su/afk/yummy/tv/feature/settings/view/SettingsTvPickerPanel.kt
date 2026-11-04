@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
@@ -46,6 +47,7 @@ import su.afk.yummy.tv.feature.settings.common.utils.newEpisodesSourcesValue
 @Composable
 internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = when (this) {
     SettingsTvPicker.INTERFACE_MODE -> state.interfaceMode.label()
+    SettingsTvPicker.INTERFACE_LANGUAGE -> state.interfaceLanguage.label()
     SettingsTvPicker.CONTENT_LANGUAGE -> state.contentLanguage.label()
     SettingsTvPicker.THEME -> state.appTheme.label()
     SettingsTvPicker.BACKGROUND -> state.backgroundStyle.label()
@@ -113,6 +115,14 @@ internal fun SettingsTvPickerPanel(
                     onClose()
                     onInterfaceModeSelected(it)
                 },
+            )
+
+            SettingsTvPicker.INTERFACE_LANGUAGE -> PickerOptions(
+                values = AppInterfaceLanguage.entries,
+                selected = state.interfaceLanguage,
+                labelOf = { it.label() },
+                focusRequester = entryFocusRequester,
+                onSelected = { select(SettingsState.Event.InterfaceLanguageSelected(it)) },
             )
 
             SettingsTvPicker.CONTENT_LANGUAGE -> PickerOptions(
