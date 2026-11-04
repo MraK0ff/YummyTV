@@ -13,8 +13,11 @@ import su.afk.yummy.tv.data.catalog.network.YaniSearchApi
 import su.afk.yummy.tv.data.catalog.repository.DataStoreSearchHistoryRepository
 import su.afk.yummy.tv.data.catalog.repository.YaniSearchRepository
 import su.afk.yummy.tv.data.catalog.storage.searchHistoryDataStore
+import su.afk.yummy.tv.data.catalog.updates.AnixartUpdatesApi
+import su.afk.yummy.tv.data.catalog.updates.AnixartUpdatesRepository
 import su.afk.yummy.tv.domain.catalog.repository.SearchHistoryRepository
 import su.afk.yummy.tv.domain.catalog.repository.SearchRepository
+import su.afk.yummy.tv.domain.catalog.updates.UpdatesFeedRepository
 import javax.inject.Singleton
 
 @Module
@@ -25,6 +28,18 @@ object CatalogDataModule {
     @Singleton
     fun provideYaniSearchApi(clientProvider: YaniHttpClientProvider): YaniSearchApi =
         YaniSearchApi(clientProvider)
+
+    @Provides
+    @Singleton
+    fun provideAnixartUpdatesApi(clientProvider: YaniHttpClientProvider): AnixartUpdatesApi =
+        AnixartUpdatesApi(clientProvider)
+
+    @Provides
+    @Singleton
+    fun provideUpdatesFeedRepository(
+        anixartApi: AnixartUpdatesApi,
+        yaniSearchApi: YaniSearchApi,
+    ): UpdatesFeedRepository = AnixartUpdatesRepository(anixartApi, yaniSearchApi)
 
     @Provides
     @Singleton
