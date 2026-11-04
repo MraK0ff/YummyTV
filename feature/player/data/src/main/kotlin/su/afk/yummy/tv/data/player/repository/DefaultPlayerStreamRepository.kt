@@ -4,22 +4,17 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import su.afk.yummy.tv.core.common.player.isExtraSourceUrl
 import su.afk.yummy.tv.data.player.extractor.PlayerStreamExtractor
-import su.afk.yummy.tv.data.player.extractor.SessionAwarePlayerStreamExtractor
-import su.afk.yummy.tv.domain.player.model.AllohaStreamSession
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
-import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
+import su.afk.yummy.tv.core.common.player.ResolveProgress
 import su.afk.yummy.tv.domain.player.repository.PlayerStreamRepository
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 internal class DefaultPlayerStreamRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val extractors: Set<@JvmSuppressWildcards PlayerStreamExtractor>,
-    private val allohaSessionManager: AllohaPlaybackSessionRepository,
 ) : PlayerStreamRepository {
-
-    private val sessionAwareExtractors: List<SessionAwarePlayerStreamExtractor> =
-        extractors.filterIsInstance<SessionAwarePlayerStreamExtractor>()
 
     private val resolveCache = object : LinkedHashMap<String, CachedStream>(
         RESOLVE_CACHE_MAX_ENTRIES,
@@ -35,40 +30,36 @@ internal class DefaultPlayerStreamRepository @Inject constructor(
         val url = request.iframeUrl
         val extractor = extractors.firstOrNull { it.supports(url) }
             ?: return PlayerStreamResolveResult.Unsupported
-        // Session-aware стримы (сейчас только Alloha) живут внутри playback-сессии (прокси,
-        // ротация подписанных манифестов), их кэшировать по URL нельзя — сессией управляет
-        // AllohaPlaybackSessionRepository.
-        if (extractor is SessionAwarePlayerStreamExtractor) return extractor.extract(
-            request,
-            context
-        )
-
         // Источники модулей (`source://`) сами решают, когда нужен новый доступ: ссылку в общий кэш не кладём.
-        if (url.isExtraSourceUrl()) return extractor.extract(request, context)
+        if (url.isExtraSourceUrl()) return extractWithProgress(extractor, request)
 
         val cacheKey = "$url|${request.autoQualityLabel}"
         if (!request.forceRefresh) {
             cachedStream(cacheKey)?.let { return it }
         }
 
-        val result = extractor.extract(request, context)
+        val result = extractWithProgress(extractor, request)
         if (result is PlayerStreamResolveResult.Stream) {
             rememberStream(cacheKey, result)
         }
         return result
     }
 
-    override suspend fun openAllohaSession(request: PlayerStreamRequest): AllohaStreamSession? {
-        val extractor = sessionAwareExtractors.firstOrNull { it.supports(request.iframeUrl) }
-            ?: return null
-        return if (request.reusePlaybackSession) {
-            allohaSessionManager.find(request.iframeUrl)
-                ?: extractor.openSession(request, context)
-                    ?.let(allohaSessionManager::activate)
-        } else {
-            extractor.openSession(request, context)
-        }
-    }
+    /**
+     * Экстракторы без собственных шагов (Rutube, Sibnet, VK, источники `source://`…) получают шаги от
+     * сетевого плагина: он читает [ResolveProgress] из контекста корутины.
+     */
+    private suspend fun extractWithProgress(
+        extractor: PlayerStreamExtractor,
+        request: PlayerStreamRequest,
+    ): PlayerStreamResolveResult =
+        withContext(
+            ResolveProgress(
+                onStatus = request.onStatus,
+                onDetail = request.onDetail,
+                emitsSteps = !extractor.reportsOwnProgress,
+            ),
+        ) { extractor.extract(request, context) }
 
     // Ключ включает autoQualityLabel, поэтому удаляется весь набор записей источника.
     override fun invalidateResolveCache(iframeUrl: String) {

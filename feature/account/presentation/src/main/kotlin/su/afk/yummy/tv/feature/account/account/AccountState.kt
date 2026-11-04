@@ -23,6 +23,8 @@ class AccountState {
         /** false, пока не пришёл первый снапшот сессии: экран ещё не знает, авторизован ли пользователь. */
         val isSessionResolved: Boolean = false,
         val isSignedIn: Boolean = false,
+        /** Пункты аккаунта показываются отдельными кнопками, а не сгруппированы (настройка). */
+        val shortcutsExpanded: Boolean = false,
         val userId: Int = 0,
         val nickname: String = "",
         val avatarUrl: String = "",
@@ -40,6 +42,9 @@ class AccountState {
         val expandedNotificationIds: PersistentSet<Int> = persistentSetOf(),
         val isStatsLoading: Boolean = false,
         val isNotificationsLoading: Boolean = false,
+        val isNotificationsLoadingMore: Boolean = false,
+        /** Последняя страница оказалась полной — на сервере могут быть ещё уведомления. */
+        val hasMoreNotifications: Boolean = false,
         val isCaptchaRequired: Boolean = false,
         val captchaSiteKey: String = YANI_HCAPTCHA_SITE_KEY,
         val captchaChallengeId: Int = 0,
@@ -101,9 +106,8 @@ class AccountState {
 
         /** Пользователь открыл скачанные серии на устройстве. */
         data object DownloadedEpisodesSelected : Event
-
         data object WatchLaterSelected : Event
-        data object MessagesSelected : Event
+
 
         /** Экран показан — перечитываем уведомления, если их кэш успел устареть. */
         data object ScreenShown : Event
@@ -115,6 +119,9 @@ class AccountState {
 
         /** Переход к FAQ из быстрых действий аккаунта. */
         data object FaqSelected : Event
+
+        /** Переход к глоссарию аниме-терминов из быстрых действий аккаунта. */
+        data object GlossarySelected : Event
 
         /** Переход к информационным страницам сайта из быстрых действий аккаунта. */
         data object SitePagesSelected : Event
@@ -145,6 +152,9 @@ class AccountState {
 
         /** Пользователь удалил все уведомления. */
         data object AllNotificationsDeleteSelected : Event
+
+        /** Пользователь запросил следующую страницу уведомлений. */
+        data object NotificationsLoadMoreSelected : Event
 
         /** Пользователь удалил уведомление с указанным идентификатором. */
         data class NotificationDeleteSelected(val id: Int) : Event

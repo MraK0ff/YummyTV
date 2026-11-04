@@ -18,11 +18,15 @@ import su.afk.yummy.tv.domain.anime.usecase.GetCachedAnimeVideosUseCase
 class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
 
     private val tmdb: TmdbEpisodePreviews = mockk()
-    private val tenrai: TenraiEpisodeThumbnails = mockk()
     private val cachedVideos: GetCachedAnimeVideosUseCase = mockk()
     private val kodik: ResolveKodikThumbnailUrlUseCase = mockk()
 
-    private fun resolver() = DefaultEpisodeThumbnailResolver(tmdb, tenrai, cachedVideos, kodik)
+    init {
+        // по умолчанию своей копии кадра нет; нужные тесты переопределяют
+        coEvery { tmdb.mirrorUrl(any(), any()) } returns null
+    }
+
+    private fun resolver() = DefaultEpisodeThumbnailResolver(tmdb, cachedVideos, kodik)
 
     @Test
     fun `tmdb wins over everything else`() = runTest {
@@ -31,38 +35,35 @@ class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
         val url = resolver().resolveUrl(EpisodeThumbnail(ANIME_ID, "1", IFRAME, IMAGE))
 
         assertEquals(TMDB, url)
-        coVerify(exactly = 0) { tenrai.previewUrl(any(), any()) }
-        coVerify(exactly = 0) { kodik(any()) }
-    }
-
-    @Test
-    fun `tenrai is used when tmdb has no frame`() = runTest {
-        coEvery { tmdb.previewUrl(ANIME_ID, "1") } returns null
-        coEvery { tenrai.previewUrl(ANIME_ID, "1") } returns TENRAI
-
-        val url = resolver().resolveUrl(EpisodeThumbnail(ANIME_ID, "1", IFRAME, IMAGE))
-
-        assertEquals(TENRAI, url)
         coVerify(exactly = 0) { kodik(any()) }
     }
 
     @Test
     fun `candidates keep the priority order and kodik is resolved only when reached`() = runTest {
         coEvery { tmdb.previewUrl(ANIME_ID, "1") } returns TMDB
-        coEvery { tenrai.previewUrl(ANIME_ID, "1") } returns TENRAI
         coEvery { kodik(IFRAME) } returns KODIK_THUMB
         val candidates = resolver().candidateUrls(EpisodeThumbnail(ANIME_ID, "1", IFRAME, IMAGE))
 
-        assertEquals(listOf(TMDB, TENRAI), candidates.take(2).toList())
+        assertEquals(listOf(TMDB), candidates.take(1).toList())
         coVerify(exactly = 0) { kodik(any()) }
         // готовая картинка записи у известной серии в цепочке не участвует
-        assertEquals(listOf(TMDB, TENRAI, KODIK_THUMB), candidates.toList())
+        assertEquals(listOf(TMDB, KODIK_THUMB), candidates.toList())
+    }
+
+    @Test
+    fun `own avif copy goes right after tmdb and before kodik`() = runTest {
+        coEvery { tmdb.previewUrl(ANIME_ID, "1") } returns TMDB
+        coEvery { tmdb.mirrorUrl(ANIME_ID, "1") } returns MIRROR
+        coEvery { kodik(IFRAME) } returns KODIK_THUMB
+
+        val candidates = resolver().candidateUrls(EpisodeThumbnail(ANIME_ID, "1", IFRAME, IMAGE))
+
+        assertEquals(listOf(TMDB, MIRROR, KODIK_THUMB), candidates.toList())
     }
 
     @Test
     fun `direct image of the record is skipped for a known episode`() = runTest {
         coEvery { tmdb.previewUrl(ANIME_ID, "1") } returns null
-        coEvery { tenrai.previewUrl(ANIME_ID, "1") } returns null
         coEvery { kodik(IFRAME) } returns KODIK_THUMB
 
         val url = resolver().resolveUrl(EpisodeThumbnail(ANIME_ID, "1", IFRAME, IMAGE))
@@ -78,13 +79,11 @@ class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
 
         assertEquals(listOf(IMAGE, KODIK_THUMB), candidates.toList())
         coVerify(exactly = 0) { tmdb.previewUrl(any(), any()) }
-        coVerify(exactly = 0) { tenrai.previewUrl(any(), any()) }
     }
 
     @Test
     fun `kodik is the fallback for the screen iframe`() = runTest {
         coEvery { tmdb.previewUrl(ANIME_ID, "1") } returns null
-        coEvery { tenrai.previewUrl(ANIME_ID, "1") } returns null
         coEvery { kodik(IFRAME) } returns KODIK_THUMB
 
         assertEquals(KODIK_THUMB, resolver().resolveUrl(EpisodeThumbnail(ANIME_ID, "1", IFRAME)))
@@ -93,7 +92,6 @@ class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
     @Test
     fun `without iframe the kodik video of the episode comes from cached videos`() = runTest {
         coEvery { tmdb.previewUrl(ANIME_ID, "01") } returns null
-        coEvery { tenrai.previewUrl(ANIME_ID, "01") } returns null
         coEvery { cachedVideos(ANIME_ID) } returns listOf(
             video(episode = "2", iframe = "//kodikplayer.com/other"),
             video(episode = "1", iframe = IFRAME),
@@ -107,7 +105,6 @@ class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
     fun `nothing known gives null without network`() = runTest {
         assertNull(resolver().resolveUrl(EpisodeThumbnail()))
         coVerify(exactly = 0) { tmdb.previewUrl(any(), any()) }
-        coVerify(exactly = 0) { tenrai.previewUrl(any(), any()) }
     }
 
     private fun video(episode: String, iframe: String) = mockk<AnimeVideo>(relaxed = true) {
@@ -118,8 +115,8 @@ class DefaultEpisodeThumbnailResolverTest : BaseUnitTest() {
 
     private companion object {
         const val ANIME_ID = 5
+        const val MIRROR = "https://static.afk.su/img/still/abc.avif"
         const val TMDB = "https://image.tmdb.org/t/p/w300/tmdb.jpg"
-        const val TENRAI = "https://cdn.example/tenrai.jpg"
         const val IMAGE = "https://i.kodikres.com/screenshots/1.jpg"
         const val IFRAME = "//kodikplayer.com/season/1/a/720p?episode=1"
         const val KODIK_THUMB = "https://kodik.example/thumb.jpg"

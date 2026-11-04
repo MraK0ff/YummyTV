@@ -10,9 +10,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
-import su.afk.yummy.tv.domain.player.repository.AllohaPlaybackSessionRepository
 import su.afk.yummy.tv.feature.player.common.utils.PLAYER_SERVICE_LOG_TAG
 import su.afk.yummy.tv.feature.player.common.utils.createPlayerSessionActivityIntent
 import javax.inject.Inject
@@ -26,9 +29,6 @@ import javax.inject.Inject
 class PlayerMediaSessionService : MediaSessionService() {
     @Inject
     internal lateinit var playbackConfig: PlayerPlaybackConfig
-
-    @Inject
-    internal lateinit var allohaSessionManager: AllohaPlaybackSessionRepository
 
     @Inject
     internal lateinit var settingsStore: PlayerSettingsStore
@@ -67,6 +67,17 @@ class PlayerMediaSessionService : MediaSessionService() {
             initialAudioSessionId = exoPlayer.audioSessionId,
         )
         volumeStabilization = stabilization
+        // Начальное значение уже учтено при сборке плеера; дальше смена настройки действует сразу.
+        settingsStore.audioFocusDisabled
+            .distinctUntilChanged()
+            .drop(1)
+            .onEach { disabled ->
+                exoPlayer.setAudioAttributes(
+                    PlayerExoPlayerFactory.MEDIA_AUDIO_ATTRIBUTES,
+                    /* handleAudioFocus = */ !disabled,
+                )
+            }
+            .launchIn(serviceScope)
         val castPlayer = castPlayerFactory.createOrNull(this, exoPlayer)
         mediaSession = MediaSession.Builder(this, castPlayer ?: exoPlayer)
             .setSessionActivity(createPlayerSessionActivityIntent())
@@ -130,7 +141,6 @@ class PlayerMediaSessionService : MediaSessionService() {
         analyticsTracker.log(PLAYER_SERVICE_LOG_TAG) {
             "Service onDestroy stopping=${stopState.isStopping}"
         }
-        allohaSessionManager.closeActive()
         serviceScope.cancel()
         volumeStabilization?.release()
         volumeStabilization = null

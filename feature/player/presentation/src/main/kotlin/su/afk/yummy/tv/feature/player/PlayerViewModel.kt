@@ -1,5 +1,8 @@
 package su.afk.yummy.tv.feature.player
 
+import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.feature.player.utils.withResolveDetail
+import su.afk.yummy.tv.feature.player.utils.withResolveStep
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -19,17 +22,18 @@ import su.afk.yummy.tv.core.error.api.StringProvider
 import su.afk.yummy.tv.core.model.settings.PlayerMobileVideoTransformSettings
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.mvi.BaseViewModel
-import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.network.connectivity.NetworkConnectivityMonitor
 import su.afk.yummy.tv.feature.player.PlayerViewModel.Companion.CHANGE_PLAYER_HINT_DELAY_MS
 import su.afk.yummy.tv.feature.player.behavior.AllohaSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.DefaultSourceBehavior
 import su.afk.yummy.tv.feature.player.behavior.PlayerSourceBehavior
 import su.afk.yummy.tv.feature.player.delegate.PlayerNavigationDelegate
+import su.afk.yummy.tv.feature.player.host.PlayerHostNavigation
 import su.afk.yummy.tv.feature.player.delegate.PlayerOfflineSourceLoader
 import su.afk.yummy.tv.feature.player.delegate.PlayerPreferencesBinder
 import su.afk.yummy.tv.feature.player.handler.PlayerArtworkHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerDisplaySettingsHandler
+import su.afk.yummy.tv.feature.player.handler.PlayerEpisodeFlagsHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerEpisodeProgressHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerFinalEpisodeActionHandler
 import su.afk.yummy.tv.feature.player.handler.PlayerLibraryAutoListHandler
@@ -79,7 +83,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     @Assisted private val dest: PlayerDestination,
     override val errorHandler: ErrorHandler,
     override val retryStorage: RetryStorage,
-    private val nav: INavigationManager,
+    private val nav: PlayerHostNavigation,
     private val sourceStreamHandler: PlayerSourceStreamHandler,
     private val playbackProgressHandler: PlayerPlaybackProgressHandler,
     private val preferences: PlayerPreferencesBinder,
@@ -90,6 +94,7 @@ class PlayerViewModel @AssistedInject internal constructor(
     private val destinationStateMapper: PlayerDestinationStateMapper,
     private val sourceSelectionHandler: PlayerSourceSelectionHandler,
     private val episodeProgressHandler: PlayerEpisodeProgressHandler,
+    private val episodeFlagsHandler: PlayerEpisodeFlagsHandler,
     private val offlineSources: PlayerOfflineSourceLoader,
     private val navigation: PlayerNavigationDelegate,
     private val strings: StringProvider,
@@ -126,7 +131,6 @@ class PlayerViewModel @AssistedInject internal constructor(
         override fun loadStream(request: PlayerStreamLoadRequest) = this@PlayerViewModel.loadStream(
             resumeMode = request.resumeMode,
             refreshSourcesOnFailure = request.refreshSourcesOnFailure,
-            forceFreshAllohaSession = request.forceFreshAllohaSession,
             selectedQualityOverride = request.selectedQualityOverride,
             forceRefresh = request.forceRefresh,
         )
@@ -139,8 +143,6 @@ class PlayerViewModel @AssistedInject internal constructor(
         override fun cancelStreamLoad() {
             extractionJob?.cancel()
         }
-
-        override fun closeSourceSessions() = this@PlayerViewModel.closeSourceSessions()
 
         override fun invalidateStreamCache() =
             sourceStreamHandler.invalidateStreamCache(activeIframeUrl(currentState))
@@ -165,6 +167,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         } else {
             loadFinalEpisodeAction(dest.animeId)
             episodeProgressHandler.observe(host, dest.animeId)
+            episodeFlagsHandler.observe(host, dest.animeId)
             displaySettings.observeActive(host)
             loadSourceGraph()
             loadStream()
@@ -211,7 +214,6 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     private fun loadDestination(newDest: PlayerDestination) {
         if (newDest == activeDest) return
-        closeSourceSessions()
         resetSourceBehaviors()
         // Результаты старой серии отменяем, а не сверяем с activeDest: его переписывает и
         // syncBackStackDestination, и такая сверка выбрасывала граф, пришедший позже потока.
@@ -249,6 +251,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         loadFinalEpisodeAction(newDest.animeId)
         displaySettings.observeActive(host, force = true)
         episodeProgressHandler.observe(host, newDest.animeId)
+        episodeFlagsHandler.observe(host, newDest.animeId)
         if (newDest.downloadId > 0L) {
             loadDownloadedDestination(newDest.downloadId)
         } else if (newDest.localFileUri.isNotBlank()) {
@@ -263,7 +266,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         when (event) {
             is PlayerState.Event.NavigateToDestination -> loadDestination(event.destination)
 
-            PlayerState.Event.Back -> navigation.back(host, beforeLeave = ::closeSourceSessions)
+            PlayerState.Event.Back -> navigation.back(host)
 
             PlayerState.Event.MobileGestureTutorialDismissed ->
                 preferences.dismissMobileGestureTutorial(host)
@@ -290,13 +293,12 @@ class PlayerViewModel @AssistedInject internal constructor(
                     loadDownloadedDestination(activeDest.downloadId)
                 } else if (activeSourceBehavior()?.onRetryRequested() != true) {
                     setState { copy(retryKey = retryKey + 1) }
-                    closeSourceSessions()
                     loadStream(refreshSourcesOnFailure = true, forceRefresh = true)
                 }
             }
 
             PlayerState.Event.TvAppBackgrounded ->
-                navigation.returnToDetailsAfterTvBackground(host, beforeLeave = ::closeSourceSessions)
+                navigation.returnToDetailsAfterTvBackground(host)
 
             PlayerState.Event.RateTitle -> {
                 analytics.eventRateTitle(currentState.animeId)
@@ -362,7 +364,6 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             PlayerState.Event.PrevEpisode -> {
-                closeSourceSessions()
                 analytics.eventPrevEpisode(currentState.animeId)
                 applySourceSelection(
                     sourceSelectionHandler.previousEpisode(currentState),
@@ -373,7 +374,6 @@ class PlayerViewModel @AssistedInject internal constructor(
 
             is PlayerState.Event.EpisodeSelected -> {
                 val nextState = sourceSelectionHandler.selectEpisode(currentState, event.episodeIndex)
-                if (nextState != null) closeSourceSessions()
                 applySourceSelection(
                     nextState,
                     sourceScopeChanged = true,
@@ -397,7 +397,6 @@ class PlayerViewModel @AssistedInject internal constructor(
                     )
                     return
                 }
-                closeSourceSessions()
                 analytics.eventNextEpisode(currentState, event.source)
                 val nextState = nextInDubbing
                     ?: sourceSelectionHandler.nextEpisodeInOtherDubbing(currentState)
@@ -411,7 +410,6 @@ class PlayerViewModel @AssistedInject internal constructor(
             }
 
             is PlayerState.Event.NextEpisodeSourceSelected -> {
-                closeSourceSessions()
                 analytics.eventNextEpisode(currentState, PlayerNextEpisodeSource.UnavailableDialog)
                 val nextState = sourceSelectionHandler.nextEpisodeFromSource(currentState, event.selection)
                 applySourceSelection(
@@ -441,7 +439,6 @@ class PlayerViewModel @AssistedInject internal constructor(
                     index = event.index,
                     currentPosMs = event.currentPosMs,
                 ) ?: return
-                closeSourceSessions()
                 analytics.eventDubbingSelected(
                     state = currentState,
                     index = event.index,
@@ -463,7 +460,6 @@ class PlayerViewModel @AssistedInject internal constructor(
                     index = balancerIndex,
                     currentPosMs = event.currentPosMs,
                 ) ?: return
-                closeSourceSessions()
                 analytics.eventBalancerSelected(
                     state = currentState,
                     index = balancerIndex,
@@ -614,16 +610,11 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun activeSourceBehavior(): PlayerSourceBehavior? =
         sourceBehaviors.firstOrNull { it.handles(currentState) }
 
-    private fun closeSourceSessions() {
-        sourceBehaviors.forEach { it.close() }
-    }
-
     private fun resetSourceBehaviors() {
         sourceBehaviors.forEach { it.reset() }
     }
 
     private fun loadDownloadedDestination(downloadId: Long) {
-        closeSourceSessions()
         changePlayerHint.cancel()
         viewModelScope.launch {
             val item = offlineSources.findDownloaded(downloadId)
@@ -655,7 +646,7 @@ class PlayerViewModel @AssistedInject internal constructor(
         // Как в сетевой ветке: поток гасим сразу и сразу переключаем выбранную серию. Иначе плеер ещё
         // держит позицию прежней серии, а отчёт прогресса уже строится по новой и пишет её не туда.
         setState { sourceStreamHandler.preparingStreamLoad(state, PlayerStreamResumeMode.SelectedSourceOnly) }
-        if (nav.backStack.lastOrNull() is PlayerDestination) nav.replace(destination)
+        if (nav.isPlayerCurrent) nav.replacePlayer(destination)
         loadDownloadedDestination(downloadId)
     }
 
@@ -665,7 +656,6 @@ class PlayerViewModel @AssistedInject internal constructor(
      * но с отдельным локальным data-source (флаг [PlayerState.State.isLocalFile]).
      */
     private fun loadLocalFileDestination(uri: String, title: String) {
-        closeSourceSessions()
         changePlayerHint.cancel()
         setState { offlineSources.localFile(this, uri, title) }
     }
@@ -711,11 +701,11 @@ class PlayerViewModel @AssistedInject internal constructor(
         if (destination == activeDest) return
         // Ключ и activeDest двигаются только вместе: разъехавшись, они дадут повторный
         // NavigateToDestination со старой серией, если запись пересоздадут.
-        if (nav.backStack.lastOrNull() !is PlayerDestination) return
+        if (!nav.isPlayerCurrent) return
         // activeDest обновляем до replace: экран пришлёт NavigateToDestination с новым ключом,
         // и loadDestination должен схлопнуться на guard, а не перезапустить загрузку.
         activeDest = destination
-        nav.replace(destination)
+        nav.replacePlayer(destination)
     }
 
     private fun saveContinueTarget(state: PlayerState.State) {
@@ -878,7 +868,6 @@ class PlayerViewModel @AssistedInject internal constructor(
     private fun loadStream(
         resumeMode: PlayerStreamResumeMode = PlayerStreamResumeMode.PreserveCurrent,
         refreshSourcesOnFailure: Boolean = true,
-        forceFreshAllohaSession: Boolean = false,
         selectedQualityOverride: String? = null,
         forceRefresh: Boolean = false,
     ) {
@@ -908,6 +897,7 @@ class PlayerViewModel @AssistedInject internal constructor(
                     preserveCurrentStream = preserveStreamDuringRecovery,
                 )
             }
+            val resolveStartedAtMs = System.currentTimeMillis()
             val s = currentState
             val pendingResume = s.dubbingResumeMs.takeIf { canPreserveCurrent && it > 0L }
                 ?: destinationResumeMs
@@ -919,10 +909,15 @@ class PlayerViewModel @AssistedInject internal constructor(
                     destinationResumeMs = destinationResumeMs,
                     resumeMode = resumeMode,
                     refreshSourcesOnFailure = refreshSourcesOnFailure,
-                    reuseAllohaPlaybackSession = !forceFreshAllohaSession,
                     selectedQualityOverride = selectedQualityOverride,
                     forceRefresh = forceRefresh,
                     retryAttempts = sourceBehaviors.maxOfOrNull { it.retryAttempts } ?: 0,
+                    onStatus = { status ->
+                        setState { withResolveStep(status, System.currentTimeMillis() - resolveStartedAtMs) }
+                    },
+                    onDetail = { detail ->
+                        setState { withResolveDetail(detail, System.currentTimeMillis() - resolveStartedAtMs) }
+                    },
                 )
             ) {
                 is PlayerStreamLoadResult.RefreshSources -> {
@@ -937,9 +932,6 @@ class PlayerViewModel @AssistedInject internal constructor(
     private suspend fun applyResolvedStream(result: PlayerStreamLoadResult.State) {
         val resolveFailed = result.state.playerError != null ||
             result.state.kodikBlockedError != null
-        if (!resolveFailed) {
-            sourceBehaviors.forEach { it.onStreamActivated(result) }
-        }
         if (resolveFailed && sourceBehaviors.any { it.retriesFailedResolve() }) return
         // Все поведения должны закрыть своё восстановление, поэтому не any { }.
         val completedRecovery = sourceBehaviors.fold(false) { completed, behavior ->
@@ -971,6 +963,8 @@ class PlayerViewModel @AssistedInject internal constructor(
                 },
                 isPlaybackRecovering = completedRecovery && !resolveFailed,
                 showChangePlayerHint = false,
+                resolveStatus = null,
+                resolveLog = persistentListOf(),
             )
         }
         if (resolveFailed) return
@@ -993,7 +987,6 @@ class PlayerViewModel @AssistedInject internal constructor(
 
     override fun onCleared() {
         resetSourceBehaviors()
-        sourceBehaviors.forEach { it.close(immediately = false) }
         changePlayerHint.cancel()
         super.onCleared()
     }

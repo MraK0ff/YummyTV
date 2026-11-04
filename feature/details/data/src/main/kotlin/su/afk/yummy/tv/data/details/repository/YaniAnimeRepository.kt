@@ -1,5 +1,6 @@
 package su.afk.yummy.tv.data.details.repository
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -52,12 +53,12 @@ import su.afk.yummy.tv.data.details.mapper.ExtraVideosCachePayload
 import su.afk.yummy.tv.data.details.mapper.toAnimeDetails
 import su.afk.yummy.tv.data.details.mapper.toAnimeEpisodeInfoByNumber
 import su.afk.yummy.tv.data.details.mapper.toAnimeTmdbImages
-import su.afk.yummy.tv.data.details.mapper.toOrderedFrameUrls
 import su.afk.yummy.tv.data.details.mapper.toEpisodeFlagsByNumber
 import su.afk.yummy.tv.data.details.mapper.toExtraVideosCachePayload
-import su.afk.yummy.tv.data.details.mapper.toThumbnailUrlByNumber
+import su.afk.yummy.tv.data.details.mapper.toMalEpisodesDto
 import su.afk.yummy.tv.data.details.network.MalEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YaniAnimeApi
+import su.afk.yummy.tv.data.details.network.YummyEpisodeFlagsApi
 import su.afk.yummy.tv.data.details.network.YummyEpisodesApi
 import su.afk.yummy.tv.data.details.storage.mapper.toAccountUserRatingEntry
 import su.afk.yummy.tv.data.details.storage.mapper.toAnimeDetailsCache
@@ -96,19 +97,22 @@ private const val ANIME_RECOMMENDATIONS_CACHE_NAMESPACE = "anime-recommendations
 // v4: запрос нёс смещение серий предыдущих сезонов франшизы (?offset=), оно входило в ключ.
 // v5: смещение считает сервер, ключ без него.
 private const val ANIME_EPISODE_INFO_CACHE_NAMESPACE = "anime-episode-info-v5"
-// Сколько кадров Tenrai (по одному на серию) отдавать для ряда «Скриншоты».
-private const val EPISODE_FRAMES_LIMIT = 10
 private const val ANIME_EPISODE_INFO_TTL_MS = 7 * 24 * 60 * 60 * 1000L
 
 // v2: документ теперь содержит и картинки серий; кэш с одними пометками их не отдаст.
-private const val MAL_EPISODES_CACHE_NAMESPACE = "anime-mal-episodes-v2"
+private const val MAL_EPISODES_CACHE_NAMESPACE = "anime-mal-episodes-v3"
 private const val ANIME_EPISODE_FLAGS_FINISHED_TTL_MS = 30 * 24 * 60 * 60 * 1000L
 private const val ANIME_EPISODE_FLAGS_ONGOING_TTL_MS = 24 * 60 * 60 * 1000L
+
+// Резерв с нашего API кэшируется недолго и отдельно: как только Tenrai оживёт, снова берутся его данные.
+private const val MAL_EPISODES_BACKUP_CACHE_NAMESPACE = "anime-mal-episodes-backup-v1"
+private const val ANIME_EPISODE_FLAGS_BACKUP_TTL_MS = 24 * 60 * 60 * 1000L
 
 class YaniAnimeRepository(
     private val api: YaniAnimeApi,
     private val episodesApi: YummyEpisodesApi,
     private val episodeFlagsApi: MalEpisodeFlagsApi,
+    private val episodeFlagsBackupApi: YummyEpisodeFlagsApi,
     private val animeStorage: AnimeStorage,
     private val accountStorage: AccountStorage,
     private val settingsStore: YaniAccountSettingsStore,
@@ -386,12 +390,8 @@ class YaniAnimeRepository(
             }
         }
 
-    override suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames = coroutineScope {
-        // TMDB и Tenrai не зависят друг от друга: ждать один ради другого незачем.
-        val tmdb = async { getAnimeTmdbImages(animeId).firstEpisodeStillUrls }
-        val tenrai = async { getAnimeEpisodeThumbnails(animeId).toOrderedFrameUrls(EPISODE_FRAMES_LIMIT) }
-        AnimeEpisodeFrames(tmdbStillUrls = tmdb.await(), tenraiFrameUrls = tenrai.await())
-    }
+    override suspend fun getAnimeEpisodeFrames(animeId: Int): AnimeEpisodeFrames =
+        AnimeEpisodeFrames(tmdbStillUrls = getAnimeTmdbImages(animeId).firstEpisodeStillUrls)
 
     /**
      * Один документ YummyTV API на тайтл: из него берутся и названия серий, и картинки TMDB. Смещение серий франшизы,
@@ -414,12 +414,8 @@ class YaniAnimeRepository(
         send(episodes?.toEpisodeFlagsByNumber().orEmpty())
     }
 
-    override suspend fun getAnimeEpisodeThumbnails(animeId: Int): Map<String, String> =
-        // Превью — необязательная надстройка: есть запасной источник.
-        loadMalEpisodes(animeId)?.toThumbnailUrlByNumber().orEmpty()
-
     /**
-     * Серии тайтла из MyAnimeList (пометки и картинки в одном документе). Пометки и превью одного тайтла просит один и тот же
+     * Серии тайтла из MyAnimeList. Пометки одного тайтла просит один и тот же
      * экран одновременно, поэтому загрузки одного тайтла идут по очереди — второй вызов уже читает кэш; разные тайтлы
      * друг друга не ждут (скорость запросов ограничивает сам API-клиент). [onFirstPage] вызывается, только если этот вызов
      * сам качает длинный список с сети.
@@ -435,14 +431,29 @@ class YaniAnimeRepository(
                 // Статус в ключе: когда тайтл дошёл до последней серии, неполный кэш идущего не залёживается на полгода.
                 val finished = details.episodes.isFullyAired()
                 malEpisodesLocks.getOrPut(malId) { Mutex() }.withLock {
-                    documentCache.getOrFetchJson<MalEpisodesDto>(
-                        cacheKey = "$MAL_EPISODES_CACHE_NAMESPACE:$malId:${if (finished) "finished" else "ongoing"}",
-                        ttlMs = if (finished) ANIME_EPISODE_FLAGS_FINISHED_TTL_MS else ANIME_EPISODE_FLAGS_ONGOING_TTL_MS,
-                        fetch = { episodeFlagsApi.getEpisodes(malId, onFirstPage) },
-                    )
+                    try {
+                        documentCache.getOrFetchJson<MalEpisodesDto>(
+                            cacheKey = "$MAL_EPISODES_CACHE_NAMESPACE:$malId:${if (finished) "finished" else "ongoing"}",
+                            ttlMs = if (finished) ANIME_EPISODE_FLAGS_FINISHED_TTL_MS else ANIME_EPISODE_FLAGS_ONGOING_TTL_MS,
+                            fetch = { episodeFlagsApi.getEpisodes(malId, onFirstPage) },
+                        )
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        // Tenrai не ответил (и свежего кэша нет): пометки берём из резерва на нашем API.
+                        loadBackupMalEpisodes(malId)
+                    }
                 }
             }.getOrNull()
         }
+
+    /** Пометки из копии Tenrai на YummyTV API (без картинок серий). */
+    private suspend fun loadBackupMalEpisodes(malId: Int): MalEpisodesDto =
+        documentCache.getOrFetchJson<MalEpisodesDto>(
+            cacheKey = "$MAL_EPISODES_BACKUP_CACHE_NAMESPACE:$malId",
+            ttlMs = ANIME_EPISODE_FLAGS_BACKUP_TTL_MS,
+            fetch = { episodeFlagsBackupApi.getFlags(malId).toMalEpisodesDto() },
+        )
 
     override suspend fun getAnimeTrailers(animeId: Int): List<AnimeTrailer> =
         withContext(Dispatchers.IO) {

@@ -10,6 +10,7 @@ import su.afk.yummy.tv.core.designsystem.baseScreen.BaseBottomSheet
 import su.afk.yummy.tv.core.designsystem.mobile.state.MobileMessage
 import su.afk.yummy.tv.core.designsystem.utils.balancerFallbackIcon
 import su.afk.yummy.tv.core.designsystem.utils.balancerLogoRes
+import su.afk.yummy.tv.core.designsystem.utils.dubbingDisplayName
 import su.afk.yummy.tv.core.model.anime.AnimeVideo
 import su.afk.yummy.tv.feature.details.episodes.EpisodesState
 import su.afk.yummy.tv.feature.details.mobile.details.model.MobilePickerItem
@@ -32,7 +33,7 @@ internal fun EpisodeDownloadBalancerSheet(
                     R.string.details_balancer_title,
                     selection.episode,
                 ),
-                subtitle = selection.dubbing,
+                subtitle = selection.dubbing.dubbingDisplayName(),
             )
         },
     ) {
@@ -44,9 +45,9 @@ internal fun EpisodeDownloadBalancerSheet(
             )
         } else {
             val items = remember(selection.options) {
-                selection.options.map { option ->
+                selection.options.mapIndexed { index, option ->
                     MobilePickerItem(
-                        key = "${option.video.id}|${option.video.iframeUrl}",
+                        key = "${option.video.id}|${option.video.iframeUrl}|$index",
                         title = option.title,
                         logoName = option.title,
                         logoRes = balancerLogoRes(option.title),
