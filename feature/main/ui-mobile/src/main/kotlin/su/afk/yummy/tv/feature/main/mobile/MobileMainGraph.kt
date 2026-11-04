@@ -29,6 +29,7 @@ import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
 import su.afk.yummy.tv.feature.main.MainState
 import su.afk.yummy.tv.feature.account.navigator.AccountNotificationsDestination
+import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.main.MainViewModel
 import su.afk.yummy.tv.feature.main.api.MainGraph
 import su.afk.yummy.tv.feature.main.mobile.model.mobileMenuItems
@@ -47,6 +48,7 @@ class MobileMainGraph @Inject internal constructor(
     private val navManager: INavigationManager,
     private val backStackHost: BackStackHost,
     private val navigationHolder: MobileNavigationHolder,
+    private val catalogSearchOpener: ICatalogSearchOpener,
 ) : MainGraph {
 
     @Composable
@@ -103,6 +105,7 @@ class MobileMainGraph @Inject internal constructor(
                         showGlobalHeader = atTabRoot && !isRequiredUpdateDestination && !isFullscreenDestination,
                         avatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
                         unreadNotificationsCount = state.unreadNotificationsCount,
+                        onSearchSelected = { catalogSearchOpener.openSearch() },
                         onProfileSelected = {
                             onEvent(MainState.Event.RootSelected(RootTab.ACCOUNT, popToRootOnReselect = true))
                         },
@@ -112,6 +115,7 @@ class MobileMainGraph @Inject internal constructor(
                         onSettingsSelected = {
                             onEvent(MainState.Event.RootSelected(RootTab.SETTINGS, popToRootOnReselect = true))
                         },
+                        isSearchSelected = navManager.currentRoot == RootTab.CATALOG,
                         isProfileSelected = navManager.currentRoot == RootTab.ACCOUNT,
                         isNotificationsSelected = currentDestination is AccountNotificationsDestination,
                         isSettingsSelected = navManager.currentRoot == RootTab.SETTINGS,
