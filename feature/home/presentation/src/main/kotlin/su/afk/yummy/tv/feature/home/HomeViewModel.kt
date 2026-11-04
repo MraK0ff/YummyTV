@@ -98,7 +98,7 @@ class HomeViewModel @Inject internal constructor(
     private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase,
     private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase,
     private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase,
-    private val trackMyNewEpisodes: TrackMyNewEpisodesUseCase,
+    private val trackMyNewEpisodesUseCase: TrackMyNewEpisodesUseCase,
     private val appClock: AppClock,
     private val stringProvider: StringProvider,
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
@@ -377,7 +377,7 @@ class HomeViewModel @Inject internal constructor(
     private fun trackMyNewEpisodes(scheduleItems: List<HomeFeedItem> = recentScheduleItems) {
         viewModelScope.launch {
             runSuspendCatching {
-                trackMyNewEpisodes(
+                trackMyNewEpisodesUseCase(
                     recentlyAired = scheduleItems,
                     libraryAnimeIds = libraryAnimeIds,
                     nowSeconds = appClock.nowMillis() / 1_000L,
