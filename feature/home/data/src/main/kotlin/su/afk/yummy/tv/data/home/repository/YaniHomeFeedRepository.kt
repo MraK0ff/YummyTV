@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
+import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
 import su.afk.yummy.tv.core.storage.home.isFresh
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
@@ -169,10 +170,18 @@ class YaniHomeFeedRepository(
         analyticsTracker.log(TAG) { "Fetch feed language=$languageCode watchSignature=$watchSignature" }
         val dto = api.getFeed()
         analyticsTracker.log(TAG) { "Feed dto ${dto.summaryForLog()}" }
+        val now = System.currentTimeMillis()
+        val releaseHistory = YaniNewReleaseTracker().merge(
+            videos = dto.response.newVideos,
+            history = homeFeedStore.getNewReleaseHistory(),
+            now = now,
+        )
+        homeFeedStore.saveNewReleaseHistory(releaseHistory)
         val cache = dto.toHomeFeedCache(
             language = languageCode,
             watchSignature = watchSignature,
-            cachedAt = System.currentTimeMillis(),
+            cachedAt = now,
+            newReleaseHistory = releaseHistory,
         )
         homeFeedStore.saveFeed(cache)
         analyticsTracker.log(TAG) {
