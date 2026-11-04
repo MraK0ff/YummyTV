@@ -18,7 +18,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
-    implementation(libs.jsoup)
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test.network)
