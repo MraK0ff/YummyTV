@@ -1,6 +1,8 @@
 package su.afk.yummy.tv.feature.main.mobile.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,13 +33,14 @@ internal fun MobileGlobalHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
             .statusBarsPadding()
             .height(56.dp)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AppBrandIcon(modifier = Modifier.size(34.dp))
-        androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+        Spacer(Modifier.weight(1f))
         IconButton(onClick = onProfileClick) {
             Icon(
                 imageVector = Icons.Outlined.PersonOutline,
