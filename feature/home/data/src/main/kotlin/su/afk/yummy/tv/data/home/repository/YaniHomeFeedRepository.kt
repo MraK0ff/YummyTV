@@ -22,6 +22,8 @@ import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
+import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
+import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_NEW_RELEASES
 import su.afk.yummy.tv.core.storage.home.isFresh
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
@@ -31,6 +33,7 @@ import su.afk.yummy.tv.data.home.mapper.localContinueWatchingItems
 import su.afk.yummy.tv.data.home.mapper.withLocalOverrides
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.data.home.utils.YaniNewReleaseTracker
+import su.afk.yummy.tv.data.home.utils.toRegularEpisodeNumber
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeContinueWatchingItem
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeedCache
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
@@ -173,9 +176,16 @@ class YaniHomeFeedRepository(
         val dto = api.getFeed()
         analyticsTracker.log(TAG) { "Feed dto ${dto.summaryForLog()}" }
         val now = System.currentTimeMillis()
+        val storedHistory = homeFeedStore.getNewReleaseHistory()
+        // Upgrade path: the previous app cached one card per anime but did not persist its
+        // episode number. Keep those cards as zero-episode baselines until the API sees them
+        // again, instead of dropping titles that temporarily disappeared from /feed.
+        val historyForMerge = storedHistory.ifEmpty {
+            previousCache.toLegacyReleaseHistory(now)
+        }
         val releaseHistory = YaniNewReleaseTracker().merge(
             videos = dto.response.newVideos,
-            history = homeFeedStore.getNewReleaseHistory(),
+            history = historyForMerge,
             now = now,
         )
         homeFeedStore.saveNewReleaseHistory(releaseHistory)
@@ -185,20 +195,26 @@ class YaniHomeFeedRepository(
             cachedAt = now,
             newReleaseHistory = releaseHistory,
         )
-        // On upgrade, an old feed cache may contain cards but no episode history yet. Keep those
-        // cards until a valid baseline can be established; an empty or malformed feed must not
-        // erase previously displayed releases.
-        val legacyReleases = previousCache?.items
+        // Keep upgrade-era cards whose episode number was not present in the old cache. They
+        // remain in their original positions until a valid feed record establishes a baseline.
+        val legacyCardsByAnimeId = previousCache?.items
             ?.filter { it.container == HOME_FEED_CONTAINER_NEW_RELEASES }
+            ?.associateBy { it.itemId }
             .orEmpty()
-        val cache = if (releaseHistory.isEmpty() && legacyReleases.isNotEmpty()) {
-            mappedCache.copy(
-                items = mappedCache.items.filterNot { it.container == HOME_FEED_CONTAINER_NEW_RELEASES } +
-                    legacyReleases,
-            )
-        } else {
-            mappedCache
-        }
+        val orderedReleaseCards = releaseHistory.sortedBy { it.position }.mapNotNull { entry ->
+            if (entry.episodeNumber > 0) {
+                mappedCache.items.firstOrNull {
+                    it.container == HOME_FEED_CONTAINER_NEW_RELEASES && it.itemId == entry.animeId
+                }
+            } else {
+                legacyCardsByAnimeId[entry.animeId]
+            }
+        }.mapIndexed { index, item -> item.copy(position = index) }
+        val cache = mappedCache.copy(
+            items = mappedCache.items.filterNot {
+                it.container == HOME_FEED_CONTAINER_NEW_RELEASES
+            } + orderedReleaseCards,
+        )
         homeFeedStore.saveFeed(cache)
         analyticsTracker.log(TAG) {
             val feed = cache.toStoredHomeFeed(stringProvider)
@@ -222,3 +238,39 @@ class YaniHomeFeedRepository(
 
     private fun feedCacheSignature(): String = FEED_CACHE_SIGNATURE_VERSION
 }
+
+
+/**
+ * The previous home cache already deduplicated /feed videos by anime, but didn't persist ep_title.
+ * Preserve those cards as a baseline (episode 0) until the first valid feed item is seen.
+ */
+private fun HomeFeedCache?.toLegacyReleaseHistory(now: Long): List<HomeNewReleaseEntry> =
+    this?.items
+        ?.asSequence()
+        ?.filter { it.container == HOME_FEED_CONTAINER_NEW_RELEASES }
+        ?.sortedBy { it.position }
+        ?.distinctBy { it.itemId }
+        ?.mapIndexed { index, item ->
+            HomeNewReleaseEntry(
+                animeId = item.itemId,
+                title = item.title,
+                animeUrl = "",
+                description = item.description,
+                episodeNumber = 0,
+                episodeTitle = "",
+                videoId = null,
+                dubTitle = item.dubbing.takeIf(String::isNotBlank),
+                playerTitle = item.playerName.takeIf(String::isNotBlank),
+                posterSmallUrl = item.posterSmallUrl,
+                posterMediumUrl = item.posterMediumUrl,
+                posterBigUrl = item.posterBigUrl,
+                posterFullsizeUrl = item.posterFullsizeUrl,
+                posterMegaUrl = item.posterMegaUrl,
+                firstSeenAt = cachedAt.takeIf { it > 0L } ?: now,
+                lastDetectedAt = cachedAt.takeIf { it > 0L } ?: now,
+                lastUpdatedAt = 0L,
+                position = index,
+            )
+        }
+        ?.toList()
+        .orEmpty()
