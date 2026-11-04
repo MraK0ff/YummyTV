@@ -15,6 +15,7 @@ import su.afk.yummy.tv.source.anistar.domain.model.AnistarTitle
 import su.afk.yummy.tv.source.anistar.domain.usecase.GetAnistarEpisodesUseCase
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Ищет AniStar напрямую по основному и альтернативным названиям. MAL id не требуется:
@@ -24,6 +25,7 @@ import javax.inject.Inject
  * подхватывать только что опубликованные серии. HLS URL здесь не кэшируются: токены
  * могут быстро истекать и запрашиваются отдельно при открытии плеера.
  */
+@Singleton
 internal class AnistarExtraVideoRepository @Inject constructor(
     private val api: AnistarApi,
     private val getEpisodes: GetAnistarEpisodesUseCase,
