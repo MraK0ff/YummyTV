@@ -12,7 +12,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.content.MultiPartFormDataContent
 import io.ktor.http.contentType
 import io.ktor.http.formData
-import io.ktor.http.headersOf
 import io.ktor.http.isSuccess
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -34,7 +33,7 @@ class TorrServerClient @Inject constructor(
     fun configure(value: TorrServerConfiguration) {
         require(value.baseUrl.startsWith("http://") || value.baseUrl.startsWith("https://"))
         require(value.baseUrl.trimEnd('/').isNotBlank())
-        require(value.username.none { it == '\\r' || it == '\\n' })
+        require(value.username.none { it.code == 13 || it.code == 10 })
         require(value.password.none { it == '\\r' || it == '\\n' })
         configuration = value.copy(baseUrl = value.baseUrl.trimEnd('/'))
     }
@@ -70,7 +69,7 @@ class TorrServerClient @Inject constructor(
         saveToDatabase: Boolean = true,
     ): String {
         require(bytes.isNotEmpty() && bytes.size <= MAX_TORRENT_FILE_BYTES) { "Invalid torrent file size" }
-        val safeName = fileName.substringAfterLast('/').substringAfterLast('\\\\')
+        val safeName = fileName.substringAfterLast('/').substringAfterLast(92.toChar())
             .filterNot { it.isISOControl() || it == '"' }
             .take(120)
             .ifBlank { "torrent.torrent" }
