@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.navigation.root.RootTab
@@ -23,6 +24,11 @@ internal fun mobileMenuItems(unreadNotificationsCount: Int, avatarUrl: String): 
         stringResource(R.string.main_tab_catalog),
         RootTab.CATALOG,
         Icons.Default.GridView,
+    ),
+    MobileMenuItem(
+        stringResource(R.string.main_tab_updates),
+        RootTab.UPDATES,
+        Icons.Default.Update,
     ),
     MobileMenuItem(
         stringResource(R.string.main_tab_home),
