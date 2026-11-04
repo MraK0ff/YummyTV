@@ -67,6 +67,12 @@ abstract class HomeFeedDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun saveNewReleaseHistory(entries: List<HomeNewReleaseEntry>)
 
+    @Query("SELECT * FROM home_my_new_episode_history ORDER BY position")
+    abstract suspend fun getMyNewEpisodeHistory(): List<HomeMyNewEpisodeEntry>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun saveMyNewEpisodeHistory(entries: List<HomeMyNewEpisodeEntry>)
+
     @Query(
         """
         DELETE FROM home_feed_items
