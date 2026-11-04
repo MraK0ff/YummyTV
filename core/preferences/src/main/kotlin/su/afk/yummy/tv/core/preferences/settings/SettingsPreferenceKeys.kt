@@ -14,6 +14,8 @@ internal object SettingsPreferenceKeys {
     val showCatalogTitleYearKey = booleanPreferencesKey("show_top_title_year")
     val showEpisodeFlagsKey = booleanPreferencesKey("show_episode_flags")
     val newEpisodesSectionEnabledKey = booleanPreferencesKey("new_episodes_section_enabled")
+    val homeSectionOrderKey = stringPreferencesKey("home_section_order")
+    val hiddenHomeSectionsKey = stringSetPreferencesKey("hidden_home_sections")
     val seasonalDecorationsEnabledKey = booleanPreferencesKey("seasonal_decorations_enabled")
     val seasonalAnnouncedKey = stringPreferencesKey("seasonal_announced_key")
     val newEpisodesSourcesKey = stringSetPreferencesKey("new_episodes_sources")
