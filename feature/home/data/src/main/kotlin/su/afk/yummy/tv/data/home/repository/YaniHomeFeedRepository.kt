@@ -60,6 +60,7 @@ class YaniHomeFeedRepository(
 
     /** Параллельные загрузки ленты (экран и канал ТВ) ждут друг друга, а не качают её дважды. */
     private val fetchMutex = Mutex()
+    private val myNewEpisodeHistoryMutex = Mutex()
 
     override suspend fun getHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = false)
 
@@ -77,14 +78,16 @@ class YaniHomeFeedRepository(
         libraryAnimeIds: Set<Int>,
         nowSeconds: Long,
     ): List<HomeFeedItem> = withContext(Dispatchers.IO) {
-        val history = MyNewEpisodeHistoryTracker().merge(
-            recentlyAired = recentlyAired,
-            history = homeFeedStore.getMyNewEpisodeHistory(),
-            libraryAnimeIds = libraryAnimeIds,
-            nowSeconds = nowSeconds,
-        )
-        homeFeedStore.saveMyNewEpisodeHistory(history)
-        history.map { it.toHomeFeedItem() }
+        myNewEpisodeHistoryMutex.withLock {
+            val history = MyNewEpisodeHistoryTracker().merge(
+                recentlyAired = recentlyAired,
+                history = homeFeedStore.getMyNewEpisodeHistory(),
+                libraryAnimeIds = libraryAnimeIds,
+                nowSeconds = nowSeconds,
+            )
+            homeFeedStore.saveMyNewEpisodeHistory(history)
+            history.map { it.toHomeFeedItem() }
+        }
     }
 
     override suspend fun removeCachedContinueWatching(animeId: Int) {
