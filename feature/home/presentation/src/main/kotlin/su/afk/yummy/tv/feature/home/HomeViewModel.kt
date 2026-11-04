@@ -489,11 +489,24 @@ class HomeViewModel @Inject internal constructor(
         combine(settingsStore.homeSectionOrder, settingsStore.hiddenHomeSections) { order, hidden ->
             order to hidden
         }.onEach { (order, hidden) ->
-            homeSectionOrder = order
+            val defaultOrder = listOf(
+                "MY_NEW_EPISODES",
+                "NEW_RELEASES",
+                "NEW_TITLES",
+                "RECOMMENDATIONS",
+                "ANNOUNCEMENTS",
+                "COLLECTIONS",
+                "BLOGGER_VIDEOS",
+                "MORE",
+            )
+            // Старые сохранённые списки содержат только шесть feed-секций.
+            // Добавляем новые пункты в конец, не теряя пользовательский порядок.
+            val completeOrder = order + defaultOrder.filterNot { it in order }
+            homeSectionOrder = completeOrder
             hiddenHomeSections = hidden
             setState {
                 copy(
-                    homeSectionOrder = (order.ifEmpty { listOf("MY_NEW_EPISODES", "NEW_RELEASES", "NEW_TITLES", "RECOMMENDATIONS", "ANNOUNCEMENTS", "COLLECTIONS", "BLOGGER_VIDEOS", "MORE") }).toImmutableList(),
+                    homeSectionOrder = completeOrder.toImmutableList(),
                     hiddenHomeSections = hidden,
                 )
             }
