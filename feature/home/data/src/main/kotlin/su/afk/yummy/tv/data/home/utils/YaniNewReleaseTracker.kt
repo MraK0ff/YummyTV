@@ -59,6 +59,16 @@ internal class YaniNewReleaseTracker {
                         position = if (isInitialSnapshot) merged.size else -1,
                     )
                 }
+                previous.episodeNumber <= 0 -> {
+                    // Legacy cards had no persisted episode number. The first valid API snapshot
+                    // establishes their baseline; it must not look like a brand-new release.
+                    merged[animeId] = newest.toEntry(
+                        now = now,
+                        firstSeenAt = previous.firstSeenAt,
+                        lastUpdatedAt = 0L,
+                        position = previous.position,
+                    )
+                }
                 newest.episodeNumber > previous.episodeNumber -> {
                     merged[animeId] = newest.toEntry(
                         now = now,
