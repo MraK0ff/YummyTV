@@ -8,7 +8,9 @@ import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.model.settings.LibraryContinueWatchingCardSize
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
+import su.afk.yummy.tv.feature.settings.HomeSectionKind
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.common.utils.hint
 import su.afk.yummy.tv.feature.settings.common.utils.icon
 import su.afk.yummy.tv.feature.settings.common.utils.label
@@ -17,6 +19,8 @@ import su.afk.yummy.tv.feature.settings.common.utils.enabledHint
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.utils.hint
 import su.afk.yummy.tv.feature.settings.utils.restoreCategoryFocusOnLeft
+import su.afk.yummy.tv.feature.settings.view.DetailsButtonOrderResetRow
+import su.afk.yummy.tv.feature.settings.view.DetailsButtonOrderRow
 import su.afk.yummy.tv.feature.settings.view.SettingsBlockGap
 import su.afk.yummy.tv.feature.settings.view.SettingsDivider
 import su.afk.yummy.tv.feature.settings.view.SettingsSectionTitle
@@ -113,6 +117,50 @@ internal fun SettingsTvAppearanceContent(
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsBlockGap()
+    SettingsSectionTitle(text = stringResource(R.string.settings_home_sections_title))
+    state.homeSectionOrder.forEachIndexed { index, section ->
+        DetailsButtonOrderRow(
+            label = stringResource(section.labelRes()),
+            position = index + 1,
+            canMoveUp = index > 0,
+            canMoveDown = index < state.homeSectionOrder.lastIndex,
+            onMoveUp = { onEvent(SettingsState.Event.HomeSectionMoved(section, DetailsButtonMoveDirection.UP)) },
+            onMoveDown = { onEvent(SettingsState.Event.HomeSectionMoved(section, DetailsButtonMoveDirection.DOWN)) },
+        )
+        SettingsDivider()
+    }
+    HomeSectionKind.entries.forEach { section ->
+        val enabled = if (section == HomeSectionKind.MY_NEW_EPISODES) {
+            state.newEpisodesSectionEnabled
+        } else {
+            section !in state.hiddenHomeSections
+        }
+        ToggleRow(
+            label = stringResource(section.labelRes()),
+            hint = if (enabled) {
+                stringResource(R.string.settings_home_section_enabled)
+            } else {
+                stringResource(R.string.settings_disabled)
+            },
+            enabled = enabled,
+            onClick = {
+                if (section == HomeSectionKind.MY_NEW_EPISODES) {
+                    onEvent(SettingsState.Event.NewEpisodesSectionToggled)
+                } else {
+                    onEvent(SettingsState.Event.HomeSectionVisibilityToggled(section))
+                }
+            },
+            modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+        )
+        SettingsDivider()
+    }
+    DetailsButtonOrderResetRow(
+        label = stringResource(R.string.settings_home_sections_reset),
+        hint = stringResource(R.string.settings_home_sections_hint),
+        onReset = { onEvent(SettingsState.Event.HomeSectionOrderReset) },
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
+    SettingsBlockGap()
     SettingsSectionTitle(text = stringResource(R.string.settings_mobile_section_library))
     SettingsTvIconChoiceRow(
         label = stringResource(R.string.settings_library_continue_watching_card_size_title),
@@ -128,20 +176,17 @@ internal fun SettingsTvAppearanceContent(
     pickerRow(SettingsTvPicker.LIBRARY_TAB_ORDER, Modifier)
     SettingsBlockGap()
     SettingsSectionTitle(text = stringResource(R.string.settings_section_new_episodes))
-    ToggleRow(
-        label = stringResource(R.string.settings_new_episodes_section),
-        hint = if (state.newEpisodesSectionEnabled) {
-            stringResource(R.string.settings_new_episodes_section_enabled)
-        } else {
-            stringResource(R.string.settings_disabled)
-        },
-        enabled = state.newEpisodesSectionEnabled,
-        onClick = { onEvent(SettingsState.Event.NewEpisodesSectionToggled) },
-        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
-    )
-    // Список источников без включённого блока ни на что не влияет.
     if (state.newEpisodesSectionEnabled) {
-        SettingsDivider()
-        pickerRow(SettingsTvPicker.NEW_EPISODES_SOURCES, Modifier)
+        pickerRow(SettingsTvPicker.NEW_EPISODES_SOURCES, Modifier.restoreCategoryFocusOnLeft(tabFocusRequester))
     }
+}
+
+@androidx.compose.runtime.Composable
+private fun HomeSectionKind.labelRes(): Int = when (this) {
+    HomeSectionKind.MY_NEW_EPISODES -> R.string.settings_home_section_my_new_episodes
+    HomeSectionKind.NEW_RELEASES -> R.string.settings_home_section_new_releases
+    HomeSectionKind.NEW_TITLES -> R.string.settings_home_section_new_titles
+    HomeSectionKind.RECOMMENDATIONS -> R.string.settings_home_section_recommendations
+    HomeSectionKind.ANNOUNCEMENTS -> R.string.settings_home_section_announcements
+    HomeSectionKind.COLLECTIONS -> R.string.settings_home_section_collections
 }
