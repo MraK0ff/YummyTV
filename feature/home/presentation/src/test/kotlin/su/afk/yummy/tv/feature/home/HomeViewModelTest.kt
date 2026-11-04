@@ -86,7 +86,7 @@ class HomeViewModelTest : BaseUnitTest() {
     private val removeCachedContinueWatching: RemoveCachedContinueWatchingUseCase = mockk(relaxed = true)
     private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase = mockk()
     private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase = mockk()
-    private val trackMyNewEpisodes: TrackMyNewEpisodesUseCase = mockk(relaxed = true)
+    private val trackMyNewEpisodesUseCase: TrackMyNewEpisodesUseCase = mockk(relaxed = true)
     private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase = mockk()
     private val stringProvider: StringProvider = mockk()
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase = mockk()
@@ -164,7 +164,7 @@ class HomeViewModelTest : BaseUnitTest() {
         removeCachedContinueWatching = removeCachedContinueWatching,
         observeLibraryNewEpisodeAnimeIds = observeLibraryNewEpisodeAnimeIds,
         getRecentlyAiredSchedule = getRecentlyAiredSchedule,
-        trackMyNewEpisodes = trackMyNewEpisodes,
+        trackMyNewEpisodesUseCase = trackMyNewEpisodesUseCase,
         appClock = appClock,
         observeWatchedEpisodes = observeWatchedEpisodes,
         stringProvider = stringProvider,
