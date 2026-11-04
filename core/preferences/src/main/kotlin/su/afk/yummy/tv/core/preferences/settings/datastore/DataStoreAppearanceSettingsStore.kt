@@ -175,7 +175,7 @@ internal class DataStoreAppearanceSettingsStore @Inject constructor(
         }
     }
 
-    private companion object {
+    internal companion object {
         const val HOME_SECTION_ORDER_SEPARATOR = ","
         /**
          * Безопасный запасной вариант, пока качество не выбрано: на первичной настройке оно
