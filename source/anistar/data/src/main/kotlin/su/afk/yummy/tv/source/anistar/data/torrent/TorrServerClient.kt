@@ -28,15 +28,18 @@ import javax.inject.Singleton
 @Singleton
 class TorrServerClient @Inject constructor(
     @param:UnauthenticatedJsonClient private val client: HttpClient,
+    private val configurationStore: TorrServerConfigurationStore,
 ) {
-    @Volatile private var configuration = TorrServerConfiguration()
+    @Volatile private var configuration = configurationStore.load()
 
     fun configure(value: TorrServerConfiguration) {
         require(value.baseUrl.startsWith("http://") || value.baseUrl.startsWith("https://"))
         require(value.baseUrl.trimEnd('/').isNotBlank())
         require(value.username.none { it.code == 13 || it.code == 10 })
         require(value.password.none { it.code == 13 || it.code == 10 })
-        configuration = value.copy(baseUrl = value.baseUrl.trimEnd('/'))
+        val normalized = value.copy(baseUrl = value.baseUrl.trimEnd('/'))
+        configuration = normalized
+        configurationStore.saveBaseUrl(normalized.baseUrl)
     }
 
     suspend fun checkConnection(): String {

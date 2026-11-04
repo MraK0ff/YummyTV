@@ -7,10 +7,12 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 
 class TorrServerClientTest : BaseUnitTest() {
 
+    private val configurationStore = TestTorrServerConfigurationStore()
     private val client = TorrServerClient(
         io.ktor.client.HttpClient(io.ktor.client.engine.mock.MockEngine { request ->
             error("Unexpected HTTP request: ${request.url}")
         }),
+        configurationStore,
     )
 
     @Test
@@ -21,6 +23,7 @@ class TorrServerClientTest : BaseUnitTest() {
             "https://torr.example:8090/play/0123456789abcdef0123456789abcdef/2",
             client.playbackUrl("0123456789abcdef0123456789abcdef", 2),
         )
+        assertEquals("https://torr.example:8090", configurationStore.savedBaseUrl)
     }
 
     @Test
@@ -71,5 +74,17 @@ class TorrServerClientTest : BaseUnitTest() {
                 client.uploadTorrentFile(ByteArray(8 * 1024 * 1024 + 1))
             }
         }
+    }
+}
+
+
+private class TestTorrServerConfigurationStore : TorrServerConfigurationStore {
+    var savedBaseUrl: String? = null
+
+    override fun load(): TorrServerConfiguration =
+        TorrServerConfiguration(baseUrl = savedBaseUrl ?: "http://127.0.0.1:8090")
+
+    override fun saveBaseUrl(baseUrl: String) {
+        savedBaseUrl = baseUrl
     }
 }

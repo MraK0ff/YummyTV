@@ -12,12 +12,20 @@ import su.afk.yummy.tv.source.anistar.data.source.AndroidAnistarMessages
 import su.afk.yummy.tv.source.anistar.data.source.AnistarExtraStreamRepository
 import su.afk.yummy.tv.source.anistar.data.source.AnistarExtraVideoRepository
 import su.afk.yummy.tv.source.anistar.data.source.AnistarMessages
+import su.afk.yummy.tv.source.anistar.data.torrent.AndroidTorrServerConfigurationStore
+import su.afk.yummy.tv.source.anistar.data.torrent.TorrServerConfigurationStore
 import su.afk.yummy.tv.source.anistar.domain.repository.AnistarRepository
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 internal interface AnistarModule {
+
+    @Binds
+    @Singleton
+    fun bindTorrServerConfigurationStore(
+        impl: AndroidTorrServerConfigurationStore,
+    ): TorrServerConfigurationStore
 
     @Binds
     @Singleton
