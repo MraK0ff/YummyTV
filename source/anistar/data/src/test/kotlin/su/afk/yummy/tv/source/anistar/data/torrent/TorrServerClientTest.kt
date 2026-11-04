@@ -8,7 +8,9 @@ import su.afk.yummy.tv.core.testing.BaseUnitTest
 class TorrServerClientTest : BaseUnitTest() {
 
     private val client = TorrServerClient(
-        io.ktor.client.HttpClient(),
+        io.ktor.client.HttpClient(io.ktor.client.engine.mock.MockEngine { request ->
+            error("Unexpected HTTP request: ${request.url}")
+        }),
     )
 
     @Test
