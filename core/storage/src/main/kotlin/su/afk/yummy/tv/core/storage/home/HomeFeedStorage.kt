@@ -11,4 +11,8 @@ interface HomeFeedStorage {
     suspend fun saveFeed(cache: HomeFeedCache)
 
     suspend fun deleteContinueWatchingByAnimeId(animeId: Int)
+
+    suspend fun getNewReleaseHistory(): List<HomeNewReleaseEntry>
+
+    suspend fun saveNewReleaseHistory(entries: List<HomeNewReleaseEntry>)
 }
