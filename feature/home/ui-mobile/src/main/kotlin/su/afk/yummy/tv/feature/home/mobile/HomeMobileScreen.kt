@@ -226,7 +226,7 @@ fun HomeMobileScreen(
                 ) {
                     val feed = state.feed
 
-                    // Плашки и поиск в одном item: иначе spacedBy(24) растягивает зазор между ними
+                    // Статусные плашки держим в одном item, чтобы не раздувать зазор между ними
                     if (isOffline || state.statusMessage != null) {
                         item(key = "status") {
                             Column(modifier = Modifier.mobileContentMaxWidth()) {
