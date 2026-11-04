@@ -28,6 +28,7 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
 import su.afk.yummy.tv.feature.main.MainState
+import su.afk.yummy.tv.feature.account.navigator.AccountNotificationsDestination
 import su.afk.yummy.tv.feature.main.MainViewModel
 import su.afk.yummy.tv.feature.main.api.MainGraph
 import su.afk.yummy.tv.feature.main.mobile.model.mobileMenuItems
@@ -106,6 +107,16 @@ class MobileMainGraph @Inject internal constructor(
                         showBottomBar = atTabRoot && !isRequiredUpdateDestination &&
                             !isFullscreenDestination,
                         showRail = showRail,
+                        showGlobalHeader = atTabRoot && !isRequiredUpdateDestination && !isFullscreenDestination,
+                        onProfileSelected = {
+                            onEvent(MainState.Event.RootSelected(RootTab.ACCOUNT, popToRootOnReselect = true))
+                        },
+                        onNotificationsSelected = {
+                            navManager.navigate(AccountNotificationsDestination)
+                        },
+                        onSettingsSelected = {
+                            onEvent(MainState.Event.RootSelected(RootTab.SETTINGS, popToRootOnReselect = true))
+                        },
                         onDestinationSelected = { root ->
                             onEvent(MainState.Event.RootSelected(root, popToRootOnReselect = true))
                         },
