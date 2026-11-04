@@ -33,9 +33,9 @@ internal class YaniNewReleaseTracker {
 
         candidates.forEach { (animeId, items) ->
             // Highest regular episode wins. For equal episode numbers, first API occurrence wins.
-            val newest = items.maxWithOrNull(
-                compareBy<Candidate> { it.episodeNumber }.thenByDescending { -it.index },
-            ) ?: return@forEach
+            val newest = items.sortedWith(
+                compareByDescending<Candidate> { it.episodeNumber }.thenBy { it.index },
+            ).firstOrNull() ?: return@forEach
             val previous = previousById[animeId]
 
             when {
@@ -112,10 +112,10 @@ internal class YaniNewReleaseTracker {
  */
 internal fun String?.toRegularEpisodeNumber(): Int? {
     val value = this?.trim()?.takeIf { it.isNotEmpty() } ?: return null
-    if (!value.matches(Regex("""^\\d+(?:[.,]\\d+)?(?:\\s*(?:серия|серии|эпизод|episode|ep\\.?)?)?$""", RegexOption.IGNORE_CASE)) {
+    if (!value.matches(Regex("""^\d+(?:[.,]\d+)?(?:\s*(?:серия|серии|эпизод|episode|ep\.?)?)?$""", RegexOption.IGNORE_CASE))) {
         return null
     }
-    val numeric = value.substringBefore(Regex("""\\s""")).replace(',', '.')
+    val numeric = Regex("""^\d+(?:[.,]\d+)?""").find(value)?.value ?: return null
     val decimal = numeric.toBigDecimalOrNull() ?: return null
     if (decimal.stripTrailingZeros().scale() > 0) return null
     return runCatching { decimal.intValueExact() }.getOrNull()?.takeIf { it > 0 }
