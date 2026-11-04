@@ -39,8 +39,9 @@ class AniStarTorrentProvider @Inject constructor(
         for (mirror in ANI_STAR_MIRRORS) {
             try {
                 val searchUrl = "$mirror/?do=search&subaction=search&story=$encoded"
+                val requestHeaders = headers.snapshot()
                 val response = client.get(searchUrl) {
-                    headers.snapshot().forEach { (name, value) -> header(name, value) }
+                    requestHeaders.forEach { (name, value) -> header(name, value) }
                 }
                 if (!response.status.isSuccess()) {
                     lastError = IOException("AniStar search HTTP ${response.status.value}")
@@ -65,8 +66,9 @@ class AniStarTorrentProvider @Inject constructor(
 
     suspend fun downloadTorrentFile(torrent: AniStarTorrent): ByteArray = withContext(Dispatchers.IO) {
         val url = torrent.torrentFileUrl ?: throw IOException("Torrent file URL is missing")
+        val requestHeaders = headers.snapshot()
         val response = client.get(url) {
-            headers.snapshot().forEach { (name, value) -> header(name, value) }
+            requestHeaders.forEach { (name, value) -> header(name, value) }
         }
         if (!response.status.isSuccess()) throw IOException("AniStar torrent download HTTP " + response.status.value)
         val declaredLength = response.headers[io.ktor.http.HttpHeaders.ContentLength]?.toLongOrNull()
@@ -93,11 +95,12 @@ class AniStarTorrentProvider @Inject constructor(
 
     suspend fun resolve(torrent: AniStarTorrent): AniStarTorrent = withContext(Dispatchers.IO) {
         if (torrent.magnetUri != null || torrent.torrentFileUrl != null) return@withContext torrent
+        val requestHeaders = headers.snapshot()
         val response = client.get(torrent.url) {
-            headers.snapshot().forEach { (name, value) -> header(name, value) }
+            requestHeaders.forEach { (name, value) -> header(name, value) }
         }
         if (!response.status.isSuccess()) throw IOException("AniStar torrent page HTTP ${response.status.value}")
-        val page = AniStarTorrentParser.parseTorrentPage(response.bodyAsText(), response.request.url.toString())
+        val page = AniStarTorrentParser.parseTorrentPage(response.bodyAsText(), response.call.request.url.toString())
         if (page.magnetUri == null && page.torrentFileUrl == null) {
             throw IOException("AniStar page contains neither magnet nor .torrent link")
         }
