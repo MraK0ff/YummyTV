@@ -67,6 +67,7 @@ import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
+import su.afk.yummy.tv.feature.home.utils.withHomeSectionPreferences
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.getPlayerDest
