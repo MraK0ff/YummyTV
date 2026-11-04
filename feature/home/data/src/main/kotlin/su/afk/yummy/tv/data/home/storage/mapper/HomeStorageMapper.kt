@@ -15,6 +15,7 @@ import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_RECOMMENDATIONS
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
+import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressEntry
 import su.afk.yummy.tv.core.utils.network.toHttpsUrl
 import su.afk.yummy.tv.data.home.R
@@ -36,6 +37,7 @@ internal fun YaniFeedDto.toHomeFeedCache(
     language: String,
     watchSignature: String,
     cachedAt: Long,
+    newReleaseHistory: List<HomeNewReleaseEntry>? = null,
 ): HomeFeedCache =
     HomeFeedCache(
         entry = HomeFeedCacheEntry(
@@ -47,7 +49,8 @@ internal fun YaniFeedDto.toHomeFeedCache(
             language = language,
             watchSignature = watchSignature,
             container = HOME_FEED_CONTAINER_HERO,
-        ) + response.newVideos.toNewVideoEntries(language, watchSignature) +
+        ) + (newReleaseHistory?.toNewReleaseEntries(language, watchSignature)
+            ?: response.newVideos.toNewVideoEntries(language, watchSignature)) +
                 response.new.toSeriesEntries(
                     language,
                     watchSignature,
@@ -188,6 +191,32 @@ private fun List<YaniAnimeDto>.toSeriesEntries(
         )
     }
 
+private fun List<HomeNewReleaseEntry>.toNewReleaseEntries(
+    language: String,
+    watchSignature: String,
+): List<HomeFeedItemEntry> =
+    sortedBy { it.position }.mapIndexed { index, item ->
+        HomeFeedItemEntry(
+            language = language,
+            watchSignature = watchSignature,
+            container = HOME_FEED_CONTAINER_NEW_RELEASES,
+            position = index,
+            itemId = item.animeId,
+            title = item.title,
+            description = item.description,
+            posterSmallUrl = item.posterSmallUrl?.toHttpsUrl(),
+            posterMediumUrl = item.posterMediumUrl?.toHttpsUrl(),
+            posterBigUrl = item.posterBigUrl?.toHttpsUrl(),
+            posterFullsizeUrl = item.posterFullsizeUrl?.toHttpsUrl(),
+            posterMegaUrl = item.posterMegaUrl?.toHttpsUrl(),
+            rating = null,
+            year = null,
+            actionType = HOME_FEED_ACTION_SERIES,
+            actionId = item.animeId,
+            episode = item.episodeNumber.toString(),
+        )
+    }
+
 private fun List<YaniVideoDto>.toNewVideoEntries(
     language: String,
     watchSignature: String,
@@ -275,6 +304,7 @@ private fun HomeFeedItemEntry.toHomeFeedItem(): HomeFeedItem =
         ),
         rating = rating?.takeIf { it > 0.0 },
         year = year?.takeIf { it > 0 },
+        episodeNumber = episode.takeIf { container == HOME_FEED_CONTAINER_NEW_RELEASES }?.toIntOrNull(),
         collection = HomeCollectionPreview(
             posterUrls = collectionPosterUrls.split(COLLECTION_POSTER_URLS_SEPARATOR).filter(String::isNotBlank),
             likes = collectionLikes,
