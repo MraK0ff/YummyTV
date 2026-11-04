@@ -2,6 +2,7 @@ package su.afk.yummy.tv.source.anistar.data.torrent
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import java.net.URI
 
 /**
  * HTML-парсер каталога и страницы раздачи AniStar.
@@ -14,7 +15,7 @@ internal object AniStarTorrentParser {
         val document = Jsoup.parse(html, pageUrl)
         return document.select(".torrent").mapNotNull { block ->
             val link = block.selectFirst("a[href]")?.absUrl("href")
-                ?.takeIf(String::isNotBlank) ?: return@mapNotNull null
+                ?.takeIf(::isHttpUrl) ?: return@mapNotNull null
             val name = block.selectFirst(".info_d1")?.text()?.trim()
                 ?.takeIf(String::isNotBlank)
                 ?: block.selectFirst("a[href]")?.text()?.trim()?.takeIf(String::isNotBlank)
@@ -33,17 +34,34 @@ internal object AniStarTorrentParser {
 
     fun parseTorrentPage(html: String, pageUrl: String): AniStarTorrentPage {
         val document = Jsoup.parse(html, pageUrl)
-        val magnetUri = document.selectFirst("a[href^=magnet:]")?.attr("href")
-            ?.takeIf(String::isNotBlank)
+        val magnetUri = document.select("a[href]").firstOrNull { anchor ->
+            isMagnetUri(anchor.attr("href"))
+        }?.attr("href")
         val torrentUrl = document.select("a[href]").firstOrNull { anchor ->
-            anchor.attr("href").substringBefore('?').endsWith(".torrent", ignoreCase = true)
-        }?.absUrl("href")?.takeIf(String::isNotBlank)
+            anchor.attr("href").substringBefore('?').endsWith(".torrent", ignoreCase = true) &&
+                isHttpUrl(anchor.absUrl("href"))
+        }?.absUrl("href")
         val pageTitle = document.title().trim().takeIf(String::isNotBlank)
         return AniStarTorrentPage(
             title = pageTitle,
             magnetUri = magnetUri,
             torrentFileUrl = torrentUrl,
         )
+    }
+
+    private fun isHttpUrl(value: String): Boolean {
+        val uri = runCatching { URI(value) }.getOrNull() ?: return false
+        return (uri.scheme.equals("http", ignoreCase = true) ||
+            uri.scheme.equals("https", ignoreCase = true)) &&
+            !uri.host.isNullOrBlank() && uri.userInfo == null &&
+            uri.port in -1..65535
+    }
+
+    private fun isMagnetUri(value: String): Boolean {
+        if (value.any(Char::isISOControl)) return false
+        val uri = runCatching { URI(value) }.getOrNull() ?: return false
+        return uri.scheme.equals("magnet", ignoreCase = true) &&
+            uri.rawQuery.orEmpty().split('&').any { it.startsWith("xt=urn:btih:", ignoreCase = true) }
     }
 
     private fun extractSize(block: Element): String? {

@@ -45,12 +45,30 @@ class AniStarTorrentParserTest {
     @Test
     fun `resolves magnet and torrent download from detail page`() {
         val page = AniStarTorrentParser.parseTorrentPage(
-            """<title>Anime &amp; Special</title><a href="magnet:?xt=urn:btih:abcdef">Magnet</a><a href="/download/a.torrent">Download</a>""",
+            """<title>Anime &amp; Special</title><a href="magnet:?xt=urn:btih:0123456789012345678901234567890123456789">Magnet</a><a href="/download/a.torrent">Download</a>""",
             "https://anistar.example/torrent/4",
         )
 
         assertEquals("Anime & Special", page.title)
-        assertEquals("magnet:?xt=urn:btih:abcdef", page.magnetUri)
+        assertEquals("magnet:?xt=urn:btih:0123456789012345678901234567890123456789", page.magnetUri)
         assertEquals("https://anistar.example/download/a.torrent", page.torrentFileUrl)
+    }
+
+    @Test
+    fun `ignores unsafe torrent and magnet links`() {
+        val page = AniStarTorrentParser.parseTorrentPage(
+            """<a href="javascript:alert(1)">Torrent</a><a href="file:///etc/passwd.torrent">File</a><a href="magnet:?dn=missing-info-hash">Bad magnet</a>""",
+            "https://anistar.example/torrent/5",
+        )
+
+        assertNull(page.magnetUri)
+        assertNull(page.torrentFileUrl)
+    }
+
+    @Test
+    fun `ignores non-http catalog destinations`() {
+        val html = """<div class="torrent"><a href="javascript:alert(1)"><span class="info_d1">Unsafe</span></a></div>"""
+
+        assertTrue(AniStarTorrentParser.parseList(html, "https://anistar.example/list").isEmpty())
     }
 }
