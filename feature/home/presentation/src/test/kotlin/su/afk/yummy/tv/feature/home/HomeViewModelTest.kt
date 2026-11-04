@@ -46,6 +46,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetRecentlyAiredScheduleUseCase
+import su.afk.yummy.tv.domain.home.usecase.TrackMyNewEpisodesUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveHomeContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveLibraryNewEpisodeAnimeIdsUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveWatchedEpisodesUseCase
@@ -85,6 +86,7 @@ class HomeViewModelTest : BaseUnitTest() {
     private val removeCachedContinueWatching: RemoveCachedContinueWatchingUseCase = mockk(relaxed = true)
     private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase = mockk()
     private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase = mockk()
+    private val trackMyNewEpisodes: TrackMyNewEpisodesUseCase = mockk(relaxed = true)
     private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase = mockk()
     private val stringProvider: StringProvider = mockk()
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase = mockk()
@@ -162,6 +164,7 @@ class HomeViewModelTest : BaseUnitTest() {
         removeCachedContinueWatching = removeCachedContinueWatching,
         observeLibraryNewEpisodeAnimeIds = observeLibraryNewEpisodeAnimeIds,
         getRecentlyAiredSchedule = getRecentlyAiredSchedule,
+        trackMyNewEpisodes = trackMyNewEpisodes,
         appClock = appClock,
         observeWatchedEpisodes = observeWatchedEpisodes,
         stringProvider = stringProvider,
