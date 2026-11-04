@@ -10,7 +10,6 @@ android {
 
 dependencies {
     implementation(project(":source:anistar:domain"))
-    implementation(project(":source:availability:domain"))
     implementation(project(":core:model"))
     implementation(project(":core:network"))
     implementation(project(":feature:details:domain"))
