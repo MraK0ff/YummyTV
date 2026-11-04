@@ -43,6 +43,25 @@ class AniStarTorrentParserTest {
     }
 
     @Test
+    fun `parses torrent links from AniStar torrent all section`() {
+        val html = """
+            <div id="torrent_all">
+              <a href="/forum/release-1">Release One</a>
+              <a href="magnet:?xt=urn:btih:0123456789012345678901234567890123456789">Release Two</a>
+            </div>
+        """.trimIndent()
+
+        val torrents = AniStarTorrentParser.parseList(html, "https://anistar.example/100-title.html")
+
+        assertEquals(2, torrents.size)
+        assertEquals("https://anistar.example/forum/release-1", torrents[0].url)
+        assertEquals(
+            "magnet:?xt=urn:btih:0123456789012345678901234567890123456789",
+            torrents[1].magnetUri,
+        )
+    }
+
+    @Test
     fun `finds a matching AniStar title page from search results`() {
         val html = """
             <div class="news">

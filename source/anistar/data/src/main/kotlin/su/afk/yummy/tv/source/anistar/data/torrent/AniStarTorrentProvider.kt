@@ -76,6 +76,7 @@ class AniStarTorrentProvider @Inject constructor(
     }
 
     suspend fun resolve(torrent: AniStarTorrent): AniStarTorrent = withContext(Dispatchers.IO) {
+        if (torrent.magnetUri != null || torrent.torrentFileUrl != null) return@withContext torrent
         val response = client.get(torrent.url) {
             headers.snapshot().forEach { (name, value) -> header(name, value) }
         }

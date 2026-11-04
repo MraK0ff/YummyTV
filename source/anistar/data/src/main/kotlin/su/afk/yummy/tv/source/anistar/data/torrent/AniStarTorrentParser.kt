@@ -14,23 +14,69 @@ internal object AniStarTorrentParser {
 
     fun parseList(html: String, pageUrl: String): List<AniStarTorrent> {
         val document = Jsoup.parse(html, pageUrl)
-        return document.select(".torrent").mapNotNull { block ->
-            val link = block.selectFirst("a[href]")?.absUrl("href")
-                ?.takeIf(::isHttpUrl) ?: return@mapNotNull null
-            val name = block.selectFirst(".info_d1")?.text()?.trim()
-                ?.takeIf(String::isNotBlank)
-                ?: block.selectFirst("a[href]")?.text()?.trim()?.takeIf(String::isNotBlank)
-                ?: return@mapNotNull null
-
-            AniStarTorrent(
-                title = name,
-                url = link,
-                size = extractSize(block),
-                seeders = block.selectFirst(".li_distribute")?.text()?.toIntOrNull(),
-                leechers = block.selectFirst(".li_swing")?.text()?.toIntOrNull(),
-                downloads = block.selectFirst(".li_download")?.text()?.toIntOrNull(),
-            )
+        val blocks = document.select(".torrent")
+        if (blocks.isNotEmpty()) {
+            return blocks.mapNotNull { block ->
+                val anchor = block.selectFirst("a[href]") ?: return@mapNotNull null
+                val link = anchor.absUrl("href")
+                if (!isHttpUrl(link)) return@mapNotNull null
+                val name = block.selectFirst(".info_d1")?.text()?.trim()
+                    ?.takeIf(String::isNotBlank)
+                    ?: anchor.text().trim().takeIf(String::isNotBlank)
+                    ?: return@mapNotNull null
+                AniStarTorrent(
+                    title = name,
+                    url = link,
+                    size = extractSize(block),
+                    seeders = block.selectFirst(".li_distribute")?.text()?.toIntOrNull(),
+                    leechers = block.selectFirst(".li_swing")?.text()?.toIntOrNull(),
+                    downloads = block.selectFirst(".li_download")?.text()?.toIntOrNull(),
+                )
+            }
         }
+
+        // AniStar exposes its torrent list through the #torrent_all section. Some site layouts
+        // render simple links there instead of the legacy .torrent card markup.
+        val torrentSection = document.selectFirst("#torrent_all") ?: return emptyList()
+        val links = if (torrentSection.select("a[href]").isNotEmpty()) {
+            torrentSection.select("a[href]")
+        } else {
+            torrentSection.parent()?.select("a[href]") ?: emptyList()
+        }
+        return links.mapNotNull { anchor ->
+            val href = anchor.absUrl("href")
+            val label = anchor.text().trim()
+            if (label.isBlank()) return@mapNotNull null
+            if (href.startsWith("magnet:", ignoreCase = true) && isMagnetUri(href)) {
+                AniStarTorrent(
+                    title = label,
+                    url = pageUrl,
+                    size = null,
+                    seeders = null,
+                    leechers = null,
+                    magnetUri = href,
+                )
+            } else if (href.substringBefore('?').endsWith(".torrent", ignoreCase = true) && isHttpUrl(href)) {
+                AniStarTorrent(
+                    title = label,
+                    url = pageUrl,
+                    size = null,
+                    seeders = null,
+                    leechers = null,
+                    torrentFileUrl = href,
+                )
+            } else if (isHttpUrl(href)) {
+                AniStarTorrent(
+                    title = label,
+                    url = href,
+                    size = null,
+                    seeders = null,
+                    leechers = null,
+                )
+            } else {
+                null
+            }
+        }.distinctBy(AniStarTorrent::url)
     }
 
     fun parseSearchResultPage(html: String, pageUrl: String, title: String): String? {
