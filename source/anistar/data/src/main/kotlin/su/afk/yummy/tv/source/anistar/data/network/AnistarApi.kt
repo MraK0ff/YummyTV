@@ -1,40 +1,51 @@
 package su.afk.yummy.tv.source.anistar.data.network
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
-import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
-import su.afk.yummy.tv.core.network.yummy.SiteRequestSigner
-import su.afk.yummy.tv.core.network.yummy.signSiteRequest
-import su.afk.yummy.tv.source.anistar.data.dto.AnistarMirrorResponseDto
 import java.io.IOException
 import javax.inject.Inject
 
-/** Собственный сервер YummyTV (живое зеркало; наличие тайтла и серии приходят из общей ручки наличия) и плеер-страница AniStar (потоки серии). */
+/**
+ * Клиент AniStar. Поиск выполняется напрямую на сайте, а не через серверный индекс YummyTV:
+ * так новые тайтлы и серии становятся видны сразу после публикации на AniStar.
+ */
 internal class AnistarApi @Inject constructor(
     @param:UnauthenticatedJsonClient private val client: HttpClient,
-    private val signers: Set<@JvmSuppressWildcards SiteRequestSigner>,
-    private val siteApiConfig: SiteApiConfig,
 ) {
-    suspend fun getMirror(): AnistarMirrorResponseDto {
-        val url = "${siteApiConfig.baseUrl}/anistar/mirror"
-        val response = client.get(url) { sign("GET", url, ByteArray(0)) }
-        if (!response.status.isSuccess()) throw IOException("AniStar API: HTTP ${response.status.value}")
-        return response.body()
+    suspend fun search(query: String): AnistarSearchPage {
+        val response = client.get("$SITE_URL/index.php") {
+            url.parameters.append("do", "search")
+            url.parameters.append("subaction", "search")
+            url.parameters.append("search_start", "1")
+            url.parameters.append("full_search", "0")
+            url.parameters.append("result_from", "1")
+            url.parameters.append("story", query)
+        }
+        if (!response.status.isSuccess()) throw IOException("AniStar search: HTTP ${response.status.value}")
+        val requestUrl = response.request.url
+        val mirror = "${requestUrl.protocol.name}://${requestUrl.host}"
+        return AnistarSearchPage(response.bodyAsText(), mirror)
     }
 
-    /** HTML плеер-страницы тайтла с JS-массивом серий и ссылками на потоки; для несуществующей новости сайт отвечает 200 без серий. */
+    /** Плеер-страница содержит актуальный JS-плейлист; её читаем при каждом запросе источника. */
     suspend fun getPlayerPage(mirror: String, newsId: Long): String {
-        val response = client.get("$mirror/test/player2/videoas_p2p_new.php") { url.parameters.append("id", newsId.toString()) }
+        val response = client.get("$mirror/test/player2/videoas_p2p_new.php") {
+            url.parameters.append("id", newsId.toString())
+        }
         if (!response.status.isSuccess()) throw IOException("AniStar player: HTTP ${response.status.value}")
         return response.bodyAsText()
     }
 
-    private fun HttpRequestBuilder.sign(method: String, url: String, body: ByteArray) {
-        signSiteRequest(signers, method, url, body)
+    private companion object {
+        // Домен совпадает с актуальным доменом из конфигурации AniStar; Ktor следует HTTP redirect.
+        const val SITE_URL = "https://v31.astar.bz"
     }
 }
+
+internal data class AnistarSearchPage(
+    val html: String,
+    val mirror: String,
+)
