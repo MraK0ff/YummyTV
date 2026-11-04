@@ -863,7 +863,7 @@ class DetailsViewModel @AssistedInject internal constructor(
         val source = torrentSources.firstOrNull()
         val details = currentState.details
         val title = details?.title?.takeIf(String::isNotBlank)
-        if (source == null || title == null) {
+        if (source == null || details == null || title == null) {
             setState { copy(showAniStarTorrentDialog = true, aniStarTorrentError = "AniStar torrent source is unavailable") }
             return
         }
