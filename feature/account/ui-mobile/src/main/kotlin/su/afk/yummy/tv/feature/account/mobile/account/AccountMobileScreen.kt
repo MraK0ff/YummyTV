@@ -259,14 +259,6 @@ fun AccountMobileScreen(
                 )
                 add(
                     AccountMobileQuickAction(
-                        key = "messages",
-                        title = stringResource(R.string.account_notification_type_message),
-                        icon = Icons.Filled.Email,
-                        onClick = { onEvent(AccountState.Event.MessagesSelected) },
-                    ),
-                )
-                add(
-                    AccountMobileQuickAction(
                         key = "watch_later",
                         title = stringResource(R.string.account_watch_later),
                         icon = Icons.Filled.WatchLater,
