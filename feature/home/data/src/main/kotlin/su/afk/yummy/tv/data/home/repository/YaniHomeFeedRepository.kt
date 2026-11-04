@@ -22,7 +22,6 @@ import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
-import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
 import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
 import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_NEW_RELEASES
 import su.afk.yummy.tv.core.storage.home.isFresh
@@ -33,7 +32,6 @@ import su.afk.yummy.tv.data.home.mapper.localContinueWatchingItems
 import su.afk.yummy.tv.data.home.mapper.withLocalOverrides
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
 import su.afk.yummy.tv.data.home.utils.YaniNewReleaseTracker
-import su.afk.yummy.tv.data.home.utils.toRegularEpisodeNumber
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeContinueWatchingItem
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeedCache
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
@@ -244,13 +242,15 @@ class YaniHomeFeedRepository(
  * The previous home cache already deduplicated /feed videos by anime, but didn't persist ep_title.
  * Preserve those cards as a baseline (episode 0) until the first valid feed item is seen.
  */
-private fun HomeFeedCache?.toLegacyReleaseHistory(now: Long): List<HomeNewReleaseEntry> =
-    this?.items
-        ?.asSequence()
-        ?.filter { it.container == HOME_FEED_CONTAINER_NEW_RELEASES }
-        ?.sortedBy { it.position }
-        ?.distinctBy { it.itemId }
-        ?.mapIndexed { index, item ->
+private fun HomeFeedCache?.toLegacyReleaseHistory(now: Long): List<HomeNewReleaseEntry> {
+    val baselineTimestamp = this?.cachedAt?.takeIf { it > 0L } ?: now
+    return this?.items
+        .orEmpty()
+        .asSequence()
+        .filter { it.container == HOME_FEED_CONTAINER_NEW_RELEASES }
+        .sortedBy { it.position }
+        .distinctBy { it.itemId }
+        .mapIndexed { index, item ->
             HomeNewReleaseEntry(
                 animeId = item.itemId,
                 title = item.title,
@@ -266,11 +266,11 @@ private fun HomeFeedCache?.toLegacyReleaseHistory(now: Long): List<HomeNewReleas
                 posterBigUrl = item.posterBigUrl,
                 posterFullsizeUrl = item.posterFullsizeUrl,
                 posterMegaUrl = item.posterMegaUrl,
-                firstSeenAt = cachedAt.takeIf { it > 0L } ?: now,
-                lastDetectedAt = cachedAt.takeIf { it > 0L } ?: now,
+                firstSeenAt = baselineTimestamp,
+                lastDetectedAt = baselineTimestamp,
                 lastUpdatedAt = 0L,
                 position = index,
             )
         }
-        ?.toList()
-        .orEmpty()
+        .toList()
+}
