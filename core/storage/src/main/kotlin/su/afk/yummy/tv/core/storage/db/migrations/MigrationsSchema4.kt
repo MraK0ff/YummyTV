@@ -465,3 +465,39 @@ internal val MIGRATION_68_69 = object : Migration(68, 69) {
         db.execSQL("ALTER TABLE anime_viewing_order ADD COLUMN typeKind TEXT")
     }
 }
+
+
+/** Persistent per-anime history used to distinguish new episodes from alternate-dub reposts. */
+internal val MIGRATION_69_70 = object : Migration(69, 70) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS home_new_release_history (
+                animeId INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                animeUrl TEXT NOT NULL,
+                description TEXT NOT NULL,
+                episodeNumber INTEGER NOT NULL,
+                episodeTitle TEXT NOT NULL,
+                videoId INTEGER,
+                dubTitle TEXT,
+                playerTitle TEXT,
+                posterSmallUrl TEXT,
+                posterMediumUrl TEXT,
+                posterBigUrl TEXT,
+                posterFullsizeUrl TEXT,
+                posterMegaUrl TEXT,
+                firstSeenAt INTEGER NOT NULL,
+                lastDetectedAt INTEGER NOT NULL,
+                lastUpdatedAt INTEGER NOT NULL,
+                position INTEGER NOT NULL,
+                PRIMARY KEY(animeId)
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_home_new_release_history_position " +
+                "ON home_new_release_history(position)"
+        )
+    }
+}
