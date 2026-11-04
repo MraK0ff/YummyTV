@@ -4,7 +4,6 @@ import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalOverlay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.consumeWindowInsets
