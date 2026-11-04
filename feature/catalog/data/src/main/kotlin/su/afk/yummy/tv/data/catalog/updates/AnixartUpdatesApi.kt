@@ -53,8 +53,8 @@ class AnixartUpdatesApi(private val clientProvider: YaniHttpClientProvider) {
 
     private fun JsonElement.releaseObjects(): List<JsonObject> = when (this) {
         is JsonObject -> (if (containsKey("id") && containsKey("title")) listOf(this) else emptyList()) +
-            values.flatMap(JsonElement::releaseObjects)
-        else -> runCatching { jsonArray.flatMap(JsonElement::releaseObjects) }.getOrDefault(emptyList())
+            values.flatMap { value -> value.releaseObjects() }
+        else -> runCatching { jsonArray.flatMap { value -> value.releaseObjects() } }.getOrDefault(emptyList())
     }
 
     private fun JsonObject.text(key: String): String? =
