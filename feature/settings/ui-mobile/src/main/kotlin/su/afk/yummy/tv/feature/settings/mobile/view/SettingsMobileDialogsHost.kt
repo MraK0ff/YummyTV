@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.NewEpisodesSource
@@ -225,6 +226,19 @@ internal fun SettingsMobileDialogsHost(
                         state.subtitleStyle.copy(edge = it),
                     ),
                 )
+                dialogs.activePicker = null
+            },
+        )
+
+        SettingsMobilePicker.INTERFACE_LANGUAGE -> SettingsMobilePickerSheet(
+            title = stringResource(R.string.settings_interface_language_title),
+            selectedValue = state.interfaceLanguage,
+            options = AppInterfaceLanguage.entries.map {
+                SettingsMobilePickerOption(it, it.label())
+            },
+            onDismiss = { dialogs.activePicker = null },
+            onSelected = {
+                onEvent(SettingsState.Event.InterfaceLanguageSelected(it))
                 dialogs.activePicker = null
             },
         )
