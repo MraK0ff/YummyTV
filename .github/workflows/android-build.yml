@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: room-schema-70
-          path: core/storage/schemas/su.afk.yummy.tv.core.storage.db.AppDatabase/70.json
+          path: core/storage/schemas/su.afk.yummy.tv.core.storage.db.AppDatabase/71.json
           if-no-files-found: error
           retention-days: 7
 
