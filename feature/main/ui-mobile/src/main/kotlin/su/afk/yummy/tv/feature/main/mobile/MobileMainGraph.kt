@@ -56,11 +56,7 @@ class MobileMainGraph @Inject internal constructor(
         val atTabRoot = navManager.appBackStack.isEmpty() && navManager.backStack.size <= 1
         val isRequiredUpdateDestination =
             currentDestination is UpdateDestination && currentDestination.required
-        // Полноэкранные экраны (плеер, первичная настройка) не должны соседствовать с меню: бар
-        // иначе держится только на atTabRoot, а тот зависит от того, успел ли таб-стек
-        // проинициализироваться к моменту навигации из MainViewModel.init.
         val isFullscreenDestination = currentDestination is FullscreenDestination
-        // Рейка на широком окне остаётся рядом с деталями, уходит только в полноэкранных сценах.
         val showRail = !isRequiredUpdateDestination && !isFullscreenDestination
 
         ScreenNavigator(viewModel) { state, effect, onEvent ->
@@ -100,14 +96,13 @@ class MobileMainGraph @Inject internal constructor(
                 ) {
                     MobileMainScaffold(
                         selectedDestination = navManager.currentRoot,
-                        menuItems = mobileMenuItems(
-                            state.unreadNotificationsCount,
-                            if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
-                        ),
+                        menuItems = mobileMenuItems(),
                         showBottomBar = atTabRoot && !isRequiredUpdateDestination &&
                             !isFullscreenDestination,
                         showRail = showRail,
                         showGlobalHeader = atTabRoot && !isRequiredUpdateDestination && !isFullscreenDestination,
+                        avatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
+                        unreadNotificationsCount = state.unreadNotificationsCount,
                         onProfileSelected = {
                             onEvent(MainState.Event.RootSelected(RootTab.ACCOUNT, popToRootOnReselect = true))
                         },
