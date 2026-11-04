@@ -15,6 +15,9 @@ import javax.inject.Singleton
  * Каждый балансер спрашивает наличие отдельно, а сервер отвечает за все сразу, поэтому запросы по одному тайтлу сливаются:
  * первый идёт на сервер, остальные ждут его под замком и берут готовый ответ. Ответ, в котором часть источников не ответила,
  * не кэшируется, чтобы следующий запрос их переспросил; сетевой сбой не кэшируется вовсе.
+ *
+ * Короткий TTL уменьшает окно, в течение которого новая публикация на балансере скрыта старым ответом.
+ * Частые параллельные запросы по-прежнему объединяются одним запросом благодаря per-key mutex.
  */
 @Singleton
 internal class AvailabilityRepositoryImpl @Inject constructor(
@@ -43,6 +46,6 @@ internal class AvailabilityRepositoryImpl @Inject constructor(
     private fun cacheKey(lookup: AvailabilityLookup): String = lookup.malId?.let { "mal:$it" } ?: "title:${lookup.title}|${lookup.year}"
 
     private companion object {
-        const val TTL_MS = 5 * 60 * 1000L
+        const val TTL_MS = 60 * 1000L
     }
 }
