@@ -22,7 +22,7 @@ internal class AnistarApi @Inject constructor(
     private var currentMirror: String = SITE_URL
 
     suspend fun search(query: String): AnistarSearchPage {
-        val response = client.get("$SITE_URL/index.php") {
+        val response = client.get("$currentMirror/index.php") {
             url.parameters.append("do", "search")
             url.parameters.append("subaction", "search")
             url.parameters.append("search_start", "1")
