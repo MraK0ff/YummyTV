@@ -7,6 +7,9 @@ import kotlinx.serialization.Serializable
 data object AccountDestination : NavKey
 
 @Serializable
+data object AccountNotificationsDestination : NavKey
+
+@Serializable
 data class UserProfileDestination(val userId: Int) : NavKey
 
 @Serializable
