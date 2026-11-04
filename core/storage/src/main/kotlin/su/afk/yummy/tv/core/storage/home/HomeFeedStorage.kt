@@ -15,4 +15,8 @@ interface HomeFeedStorage {
     suspend fun getNewReleaseHistory(): List<HomeNewReleaseEntry>
 
     suspend fun saveNewReleaseHistory(entries: List<HomeNewReleaseEntry>)
+
+    suspend fun getMyNewEpisodeHistory(): List<HomeMyNewEpisodeEntry>
+
+    suspend fun saveMyNewEpisodeHistory(entries: List<HomeMyNewEpisodeEntry>)
 }
