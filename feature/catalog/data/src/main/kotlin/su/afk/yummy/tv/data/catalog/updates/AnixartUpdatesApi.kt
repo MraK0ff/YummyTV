@@ -19,7 +19,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-internal data class AnixartRelease(
+data class AnixartRelease(
     val id: Long,
     val title: String,
     val year: Int?,
