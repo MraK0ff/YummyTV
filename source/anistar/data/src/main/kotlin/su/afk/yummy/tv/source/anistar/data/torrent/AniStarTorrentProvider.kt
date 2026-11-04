@@ -31,7 +31,6 @@ class AniStarTorrentProvider @Inject constructor(
 
 
 
-    /** Searches a title page first, then reads the torrent section exposed on that page. */
     /** Searches title pages on both published AniStar mirrors, then reads the torrent section. */
     suspend fun searchTorrents(title: String): List<AniStarTorrent> = withContext(Dispatchers.IO) {
         require(title.isNotBlank()) { "Anime title is required" }

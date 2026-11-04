@@ -105,11 +105,14 @@ internal object AniStarTorrentParser {
     fun parseSearchResultPage(html: String, pageUrl: String, title: String): String? {
         val candidate = findBestAnistarCandidate(html, listOf(title), expectedYear = null) ?: return null
         val document = Jsoup.parse(html, pageUrl)
+        val baseHost = runCatching { URI(pageUrl).host }.getOrNull() ?: return null
         val titlePattern = Regex("(?:^|/)" + candidate.newsId + "-")
         return document.select("a[href]").firstOrNull { anchor ->
-            val path = runCatching { URI(anchor.absUrl("href")).path }.getOrNull().orEmpty()
+            val uri = runCatching { URI(anchor.absUrl("href")) }.getOrNull() ?: return@firstOrNull false
+            val path = uri.path.orEmpty()
             Regex("""(?:^|/)\d+-[^/]+\.html$""", RegexOption.IGNORE_CASE).containsMatchIn(path) &&
-                titlePattern.containsMatchIn(path)
+                titlePattern.containsMatchIn(path) &&
+                uri.host.equals(baseHost, ignoreCase = true)
         }?.absUrl("href")?.takeIf(::isHttpUrl)
     }
 
