@@ -36,6 +36,7 @@ dependencies {
 
     implementation(libs.bundles.compose.presentation)
     implementation(libs.compose.foundation)
+    implementation(libs.compose.material3)
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.unit.test)
