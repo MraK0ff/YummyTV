@@ -26,7 +26,7 @@ internal class AnistarExtraStreamRepository @Inject constructor(
         }
     }
 
-    private fun AnistarStreams.toStream(): PlayerStreamResolveResult.Stream {
+    private fun AnistarStreams.toStream(): PlayerStreamResolveResult {
         // Конвенция плеера: карта идёт по возрастанию качества, последнее считается лучшим.
         val ascending = hlsByQuality.entries
             .filter { (quality, url) -> quality > 0 && url.isNotBlank() }
