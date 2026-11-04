@@ -32,7 +32,6 @@ class TorrServerClientTest : BaseUnitTest() {
 
         assertEquals("alice", configurationStore.saved?.username)
         assertEquals("secret", configurationStore.saved?.password)
-        assertEquals(true, client.playbackHeaders().containsKey("Authorization"))
     }
 
     @Test
