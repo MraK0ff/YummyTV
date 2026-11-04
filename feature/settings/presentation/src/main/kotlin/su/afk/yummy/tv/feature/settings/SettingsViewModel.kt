@@ -81,6 +81,7 @@ class SettingsViewModel @Inject internal constructor(
                         showEpisodeFlags = snapshot.showEpisodeFlags,
                         newEpisodesSectionEnabled = snapshot.newEpisodesSectionEnabled,
                         seasonalDecorationsEnabled = snapshot.seasonalDecorationsEnabled,
+                        accountShortcutsExpanded = snapshot.accountShortcutsExpanded,
                         seasonalTheme = seasonalThemeAt(System.currentTimeMillis()),
                         newEpisodesSources = snapshot.newEpisodesSources,
                         showLibraryTitleYear = snapshot.showLibraryTitleYear,
@@ -254,6 +255,10 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.SeasonalDecorationsToggled -> viewModelScope.launch {
                 settingsStore.setSeasonalDecorationsEnabled(!currentState.seasonalDecorationsEnabled)
+            }
+
+            SettingsState.Event.AccountShortcutsToggled -> viewModelScope.launch {
+                settingsStore.setAccountShortcutsExpanded(!currentState.accountShortcutsExpanded)
             }
 
             SettingsState.Event.NewEpisodesSectionToggled -> viewModelScope.launch {
