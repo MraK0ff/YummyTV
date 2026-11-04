@@ -30,9 +30,11 @@ internal class AnistarApi @Inject constructor(
             url.parameters.append("result_from", "1")
             url.parameters.append("story", query)
         }
-        if (!response.status.isSuccess()) throw IOException("AniStar search: HTTP \${response.status.value}")
+        if (!response.status.isSuccess()) {
+            throw IOException("AniStar search: HTTP " + response.status.value)
+        }
         val requestUrl = response.request.url
-        val mirror = "\${requestUrl.protocol.name}://\${requestUrl.host}"
+        val mirror = requestUrl.protocol.name + "://" + requestUrl.host
         currentMirror = mirror
         return AnistarSearchPage(response.bodyAsText(), mirror)
     }
@@ -45,9 +47,11 @@ internal class AnistarApi @Inject constructor(
         val response = client.get("$mirror/test/player2/videoas_p2p_new.php") {
             url.parameters.append("id", newsId.toString())
         }
-        if (!response.status.isSuccess()) throw IOException("AniStar player: HTTP \${response.status.value}")
+        if (!response.status.isSuccess()) {
+            throw IOException("AniStar player: HTTP " + response.status.value)
+        }
         val requestUrl = response.request.url
-        currentMirror = "\${requestUrl.protocol.name}://\${requestUrl.host}"
+        currentMirror = requestUrl.protocol.name + "://" + requestUrl.host
         return response.bodyAsText()
     }
 
