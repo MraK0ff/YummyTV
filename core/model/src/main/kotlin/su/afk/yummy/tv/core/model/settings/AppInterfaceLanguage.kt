@@ -14,7 +14,12 @@ enum class AppInterfaceLanguage(val localeTag: String) {
 
     companion object {
         fun fromLocaleTags(tags: String?): AppInterfaceLanguage =
-            entries.firstOrNull { it.localeTag.isNotEmpty() && it.localeTag.equals(tags?.substringBefore(',')?.substringBefore('-'), ignoreCase = true) }
-                ?: SYSTEM
+            entries.firstOrNull { language ->
+                language.localeTag.isNotEmpty() &&
+                    language.localeTag.equals(
+                        tags?.substringBefore(',')?.substringBefore('-'),
+                        ignoreCase = true,
+                    )
+            } ?: SYSTEM
     }
 }
