@@ -11,6 +11,7 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.content.MultiPartFormDataContent
 import io.ktor.http.contentType
+import android.util.Base64
 import io.ktor.http.formData
 import io.ktor.http.isSuccess
 import kotlinx.serialization.Serializable
@@ -120,7 +121,7 @@ class TorrServerClient @Inject constructor(
     private fun io.ktor.client.request.HttpRequestBuilder.auth() {
         if (configuration.username.isNotBlank()) {
             val token = "${configuration.username}:${configuration.password}"
-            header("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString(token.toByteArray()))
+            header("Authorization", "Basic " + Base64.encodeToString(token.toByteArray(Charsets.UTF_8), Base64.NO_WRAP))
         }
     }
 
