@@ -9,10 +9,10 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
-import io.ktor.http.content.MultiPartFormDataContent
+import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.http.contentType
 import android.util.Base64
-import io.ktor.http.formData
+import io.ktor.client.request.forms.formData
 import io.ktor.http.isSuccess
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
