@@ -61,7 +61,7 @@ internal object AniStarTorrentParser {
         if (value.any(Char::isISOControl)) return false
         val uri = runCatching { URI(value) }.getOrNull() ?: return false
         return uri.scheme.equals("magnet", ignoreCase = true) &&
-            uri.rawQuery.orEmpty().split('&').any { it.startsWith("xt=urn:btih:", ignoreCase = true) }
+            value.substringAfter('?', "").split('&').any { it.startsWith("xt=urn:btih:", ignoreCase = true) }
     }
 
     private fun extractSize(block: Element): String? {
