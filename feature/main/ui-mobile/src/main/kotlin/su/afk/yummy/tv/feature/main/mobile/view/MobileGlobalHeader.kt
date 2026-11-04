@@ -1,6 +1,5 @@
 package su.afk.yummy.tv.feature.main.mobile.view
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,15 +16,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import su.afk.yummy.tv.core.designsystem.R as CoreR
+import su.afk.yummy.tv.core.designsystem.components.AppBrandIcon
 
 @Composable
 internal fun MobileGlobalHeader(
     onProfileClick: () -> Unit,
     onNotificationsClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    isProfileSelected: Boolean,
+    isNotificationsSelected: Boolean,
+    isSettingsSelected: Boolean,
 ) {
     Row(
         modifier = Modifier
@@ -35,31 +36,27 @@ internal fun MobileGlobalHeader(
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(
-            painter = painterResource(CoreR.drawable.ic_yummy_brand),
-            contentDescription = null,
-            modifier = Modifier.size(34.dp),
-        )
+        AppBrandIcon(modifier = Modifier.size(34.dp))
         androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
         IconButton(onClick = onProfileClick) {
             Icon(
                 imageVector = Icons.Outlined.PersonOutline,
                 contentDescription = "Profile",
-                tint = MaterialTheme.colorScheme.onSurface,
+                tint = if (isProfileSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         IconButton(onClick = onNotificationsClick) {
             Icon(
                 imageVector = Icons.Outlined.NotificationsNone,
                 contentDescription = "Notifications",
-                tint = MaterialTheme.colorScheme.onSurface,
+                tint = if (isNotificationsSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         IconButton(onClick = onSettingsClick) {
             Icon(
                 imageVector = Icons.Outlined.Settings,
                 contentDescription = "Settings",
-                tint = MaterialTheme.colorScheme.onSurface,
+                tint = if (isSettingsSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
