@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.PersonOutline
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -33,9 +34,11 @@ import su.afk.yummy.tv.core.designsystem.components.AppBrandIcon
 internal fun MobileGlobalHeader(
     avatarUrl: String,
     unreadNotificationsCount: Int,
+    onSearchClick: () -> Unit,
     onProfileClick: () -> Unit,
     onNotificationsClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    isSearchSelected: Boolean,
     isProfileSelected: Boolean,
     isNotificationsSelected: Boolean,
     isSettingsSelected: Boolean,
@@ -51,6 +54,13 @@ internal fun MobileGlobalHeader(
     ) {
         AppBrandIcon(modifier = Modifier.size(34.dp))
         Spacer(Modifier.weight(1f))
+        IconButton(onClick = onSearchClick) {
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = "Search",
+                tint = if (isSearchSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         IconButton(onClick = onSettingsClick) {
             Icon(
                 imageVector = Icons.Outlined.Settings,
