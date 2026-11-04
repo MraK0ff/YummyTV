@@ -144,6 +144,6 @@ internal fun String?.toRegularEpisodeNumber(): Int? {
 }
 
 private val REGULAR_EPISODE_PATTERN = Regex(
-    """^(\\d+)\\s*(?:[.,]\\s*(\\d+))?\\s*(?:серия|серии|эпизод|эп\\.?|episode|ep\\.?)?$""",
+    """^(\d+)\s*(?:[.,]\s*(\d+))?\s*(?:серия|серии|эпизод|эп\.?|episode|ep\.?)?$""",
     RegexOption.IGNORE_CASE,
 )
