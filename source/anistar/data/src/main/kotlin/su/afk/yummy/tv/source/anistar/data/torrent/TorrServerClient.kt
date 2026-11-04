@@ -45,8 +45,8 @@ class TorrServerClient @Inject constructor(
         require(value.username.none { it.isISOControl() })
         require(value.password.none { it.isISOControl() })
         val normalized = value.copy(baseUrl = candidate.trimEnd('/'))
-        configuration = normalized
         configurationStore.save(normalized)
+        configuration = normalized
     }
 
     suspend fun checkConnection(): String {
