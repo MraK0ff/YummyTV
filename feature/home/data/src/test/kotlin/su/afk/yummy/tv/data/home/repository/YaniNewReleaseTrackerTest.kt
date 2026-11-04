@@ -23,6 +23,12 @@ class YaniNewReleaseTrackerTest {
         assertEquals(1, result.size)
         assertEquals(10, result.single().episodeNumber)
         assertEquals("Alpha", result.single().dubTitle)
+        val reversed = tracker.merge(
+            videos = listOf(video(1, "10", dub = "Alpha", videoId = 1), video(1, "10", dub = "Zulu", videoId = 2)),
+            history = emptyList(),
+            now = 100L,
+        )
+        assertEquals(result.single(), reversed.single())
     }
 
     @Test
