@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
+import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_NEW_RELEASES
 import su.afk.yummy.tv.core.storage.home.isFresh
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
@@ -167,6 +168,7 @@ class YaniHomeFeedRepository(
         watchSignature: String,
     ): HomeFeedCache {
         analyticsTracker.log(TAG) { "Fetch feed language=$languageCode watchSignature=$watchSignature" }
+        val previousCache = homeFeedStore.getFeed(languageCode, watchSignature)
         val dto = api.getFeed()
         analyticsTracker.log(TAG) { "Feed dto ${dto.summaryForLog()}" }
         val now = System.currentTimeMillis()
@@ -176,12 +178,26 @@ class YaniHomeFeedRepository(
             now = now,
         )
         homeFeedStore.saveNewReleaseHistory(releaseHistory)
-        val cache = dto.toHomeFeedCache(
+        val mappedCache = dto.toHomeFeedCache(
             language = languageCode,
             watchSignature = watchSignature,
             cachedAt = now,
             newReleaseHistory = releaseHistory,
         )
+        // On upgrade, an old feed cache may contain cards but no episode history yet. Keep those
+        // cards until a valid baseline can be established; an empty or malformed feed must not
+        // erase previously displayed releases.
+        val legacyReleases = previousCache?.items
+            ?.filter { it.container == HOME_FEED_CONTAINER_NEW_RELEASES }
+            .orEmpty()
+        val cache = if (releaseHistory.isEmpty() && legacyReleases.isNotEmpty()) {
+            mappedCache.copy(
+                items = mappedCache.items.filterNot { it.container == HOME_FEED_CONTAINER_NEW_RELEASES } +
+                    legacyReleases,
+            )
+        } else {
+            mappedCache
+        }
         homeFeedStore.saveFeed(cache)
         analyticsTracker.log(TAG) {
             val feed = cache.toStoredHomeFeed(stringProvider)
