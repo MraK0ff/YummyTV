@@ -10,11 +10,13 @@ class AniStarTorrentParserTest {
     fun `parses multiple torrents and optional stats`() {
         val html = """
             <div class="torrent">
-              <a href="/torrent/1"><span class="info_d1">Anime &amp; Movie (1080p)</span></a>
-              <span>Размер: <b>1.4 GB</b></span>
-              <li class="li_swing">12</li>
-              <li class="li_distribute">34</li>
-              <li class="li_download">56</li>
+              <div class="torrent-inner">
+                <a href="/torrent/1"><span class="info_d1">Anime &amp; Movie (1080p)</span></a>
+                <span>Размер: <b>1.4 GB</b></span>
+                <li class="li_swing">12</li>
+                <li class="li_distribute">34</li>
+                <li class="li_download">56</li>
+              </div>
             </div>
             <div class="torrent">
               <a href="https://anistar.example/torrent/2"><span class="info_d1">Second</span></a>
