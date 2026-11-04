@@ -23,7 +23,6 @@ import su.afk.yummy.tv.data.home.dto.YaniAnimeDto
 import su.afk.yummy.tv.data.home.dto.YaniCollectionDto
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 import su.afk.yummy.tv.data.home.dto.YaniPosterDto
-import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeCollectionPreview
@@ -37,7 +36,7 @@ internal fun YaniFeedDto.toHomeFeedCache(
     language: String,
     watchSignature: String,
     cachedAt: Long,
-    newReleaseHistory: List<HomeNewReleaseEntry>? = null,
+    newReleaseHistory: List<HomeNewReleaseEntry>,
 ): HomeFeedCache =
     HomeFeedCache(
         entry = HomeFeedCacheEntry(
@@ -49,8 +48,7 @@ internal fun YaniFeedDto.toHomeFeedCache(
             language = language,
             watchSignature = watchSignature,
             container = HOME_FEED_CONTAINER_HERO,
-        ) + (newReleaseHistory?.toNewReleaseEntries(language, watchSignature)
-            ?: response.newVideos.toNewVideoEntries(language, watchSignature)) +
+        ) + newReleaseHistory.toNewReleaseEntries(language, watchSignature) +
                 response.new.toSeriesEntries(
                     language,
                     watchSignature,
@@ -214,36 +212,6 @@ private fun List<HomeNewReleaseEntry>.toNewReleaseEntries(
             actionType = HOME_FEED_ACTION_SERIES,
             actionId = item.animeId,
             episode = item.episodeNumber.toString(),
-        )
-    }
-
-private fun List<YaniVideoDto>.toNewVideoEntries(
-    language: String,
-    watchSignature: String,
-): List<HomeFeedItemEntry> =
-    groupBy { it.animeId }.mapNotNull { (animeId, videos) ->
-        val id = animeId ?: return@mapNotNull null
-        val item = videos.first()
-        val title = item.title.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-        Triple(id, title, item)
-    }.mapIndexed { index, (id, title, item) ->
-        HomeFeedItemEntry(
-            language = language,
-            watchSignature = watchSignature,
-            container = HOME_FEED_CONTAINER_NEW_RELEASES,
-            position = index,
-            itemId = id,
-            title = title,
-            description = item.description,
-            posterSmallUrl = item.poster?.small?.toHttpsUrl(),
-            posterMediumUrl = item.poster?.medium?.toHttpsUrl(),
-            posterBigUrl = item.poster?.big?.toHttpsUrl(),
-            posterFullsizeUrl = item.poster?.fullsize?.toHttpsUrl(),
-            posterMegaUrl = item.poster?.mega?.toHttpsUrl(),
-            rating = null,
-            year = null,
-            actionType = HOME_FEED_ACTION_SERIES,
-            actionId = id,
         )
     }
 
