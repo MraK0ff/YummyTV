@@ -320,4 +320,14 @@
         <string name="settings_new_episodes_source_on">Counted</string>
     <string name="settings_new_episodes_source_off">Not counted</string>
     <string name="settings_library_tabs_reset_hint">Restore the default library tab order</string>
+    <string name="settings_home_sections_title">Home sections</string>
+    <string name="settings_home_sections_hint">Choose which blocks appear on Home and change their order</string>
+    <string name="settings_home_sections_reset">Reset Home section order</string>
+    <string name="settings_home_section_enabled">Shown on Home</string>
+    <string name="settings_home_section_my_new_episodes">New episodes from my lists</string>
+    <string name="settings_home_section_new_releases">New releases</string>
+    <string name="settings_home_section_new_titles">New titles</string>
+    <string name="settings_home_section_recommendations">Recommendations</string>
+    <string name="settings_home_section_announcements">Coming soon</string>
+    <string name="settings_home_section_collections">Collections</string>
 </resources>
