@@ -34,6 +34,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryT
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalAnnouncedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalDecorationsEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.accountShortcutsExpandedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
@@ -149,6 +150,7 @@ internal class DataStoreSettingsStore @Inject constructor(
                 ?: store.resolveSystemContentLanguage(),
             libraryTabOrder = prefs[libraryTabOrderKey].toLibraryTabOrder(),
             seasonalDecorationsEnabled = prefs[seasonalDecorationsEnabledKey] ?: true,
+            accountShortcutsExpanded = prefs[accountShortcutsExpandedKey] ?: false,
         )
     }
 
