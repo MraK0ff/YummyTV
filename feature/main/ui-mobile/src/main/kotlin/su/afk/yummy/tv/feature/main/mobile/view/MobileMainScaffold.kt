@@ -122,13 +122,13 @@ internal fun <T> MobileMainScaffold(
                     }
                     Box(modifier = Modifier.weight(1f).fillMaxSize()) {
                         content()
-                        if (showSeasonalOverlay) SeasonalOverlay()
                         GlobalToastOverlay(
                             text = toastMessage,
                             modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),
                         )
                     }
                 }
+                if (showSeasonalOverlay) SeasonalOverlay()
             }
         }
     }
