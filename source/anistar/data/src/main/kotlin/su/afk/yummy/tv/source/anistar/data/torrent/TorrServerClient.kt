@@ -34,7 +34,7 @@ class TorrServerClient @Inject constructor(
         require(value.baseUrl.startsWith("http://") || value.baseUrl.startsWith("https://"))
         require(value.baseUrl.trimEnd('/').isNotBlank())
         require(value.username.none { it.code == 13 || it.code == 10 })
-        require(value.password.none { it == '\\r' || it == '\\n' })
+        require(value.password.none { it.code == 13 || it.code == 10 })
         configuration = value.copy(baseUrl = value.baseUrl.trimEnd('/'))
     }
 
