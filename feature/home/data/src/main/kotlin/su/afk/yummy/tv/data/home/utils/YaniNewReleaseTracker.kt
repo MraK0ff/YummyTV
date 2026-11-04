@@ -5,8 +5,8 @@ import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
 import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 
 /**
- * Merges /feed new_videos into the durable anime history. API order is used only as a stable
- * deterministic metadata ordering to choose one alternate upload of the same newest episode.
+ * Merges /feed new_videos into durable anime history. When publication order is unknown,
+ * alternate uploads are selected by stable dubbing, player, and video-id metadata ordering.
  */
 internal class YaniNewReleaseTracker {
 
@@ -117,9 +117,11 @@ internal class YaniNewReleaseTracker {
  */
 internal fun String?.toRegularEpisodeNumber(): Int? {
     val value = this?.trim()?.takeIf { it.isNotEmpty() } ?: return null
-    if (!value.matches(Regex("""^\d+(?:[.,]\d+)?(?:\s*(?:серия|серии|эпизод|episode|ep\.?)?)?$""", RegexOption.IGNORE_CASE))) {
-        return null
-    }
+    val episodePattern = Regex(
+        """^\d+(?:[.,]\d+)?(?:\s*(?:серия|серии|эпизод|episode|ep\.?)?)?$""",
+        RegexOption.IGNORE_CASE,
+    )
+    if (!value.matches(episodePattern)) return null
     val numeric = Regex("""^\d+(?:[.,]\d+)?""").find(value)?.value ?: return null
     val decimal = numeric.toBigDecimalOrNull() ?: return null
     if (decimal.stripTrailingZeros().scale() > 0) return null
