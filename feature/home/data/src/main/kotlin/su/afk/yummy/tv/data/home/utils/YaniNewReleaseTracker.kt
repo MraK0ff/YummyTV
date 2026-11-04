@@ -39,6 +39,13 @@ internal class YaniNewReleaseTracker {
                     .thenBy { it.video.dubTitle.orEmpty().lowercase(Locale.ROOT) }
                     .thenBy { it.video.playerTitle.orEmpty().lowercase(Locale.ROOT) }
                     .thenBy { it.video.videoId ?: Int.MAX_VALUE }
+                    .thenBy { it.video.animeUrl.orEmpty() }
+                    .thenBy { it.video.title }
+                    .thenBy { it.video.description }
+                    .thenBy { it.video.episodeTitle.orEmpty() }
+                    .thenBy { it.video.poster?.big.orEmpty() }
+                    .thenBy { it.video.poster?.medium.orEmpty() }
+                    .thenBy { it.video.poster?.small.orEmpty() }
                     .thenBy { it.index },
             ).firstOrNull() ?: return@forEach
             val previous = previousById[animeId]
