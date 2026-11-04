@@ -32,6 +32,7 @@ import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestination
+import su.afk.yummy.tv.feature.settings.navigator.SettingsHomeSectionsDestination
 import su.afk.yummy.tv.feature.settings.utils.groupedByThree
 import su.afk.yummy.tv.feature.settings.utils.movedLibraryTab
 import javax.inject.Inject
@@ -464,6 +465,10 @@ class SettingsViewModel @Inject internal constructor(
             SettingsState.Event.LibraryTabOrderReset -> viewModelScope.launch {
                 analytics.eventLibraryTabOrderReset()
                 settingsStore.setLibraryTabOrder(SettingsStore.defaultLibraryTabOrder)
+            }
+
+            SettingsState.Event.HomeSectionsSelected -> {
+                nav.navigate(SettingsHomeSectionsDestination)
             }
 
             is SettingsState.Event.HomeSectionMoved -> viewModelScope.launch {
