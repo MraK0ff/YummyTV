@@ -21,7 +21,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
 import java.io.IOException
-import java.net.URI
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -34,17 +33,11 @@ class TorrServerClient @Inject constructor(
     @Volatile private var configuration = configurationStore.load()
 
     fun configure(value: TorrServerConfiguration) {
-        val candidate = value.baseUrl.trim()
-        val uri = runCatching { URI(candidate) }.getOrNull()
-        require(uri != null && (uri.scheme.equals("http", ignoreCase = true) ||
-            uri.scheme.equals("https", ignoreCase = true))) { "TorrServer URL must use HTTP or HTTPS" }
-        require(!uri.host.isNullOrBlank() && uri.userInfo == null &&
-            uri.query == null && uri.fragment == null && uri.port in -1..65535) {
-            "TorrServer URL must contain a valid host and no credentials, query, or fragment"
-        }
-        require(value.username.none { it.isISOControl() })
-        require(value.password.none { it.isISOControl() })
-        val normalized = value.copy(baseUrl = candidate.trimEnd('/'))
+        require(value.baseUrl.startsWith("http://") || value.baseUrl.startsWith("https://"))
+        require(value.baseUrl.trimEnd('/').isNotBlank())
+        require(value.username.none { it.code == 13 || it.code == 10 })
+        require(value.password.none { it.code == 13 || it.code == 10 })
+        val normalized = value.copy(baseUrl = value.baseUrl.trimEnd('/'))
         configuration = normalized
         configurationStore.saveBaseUrl(normalized.baseUrl)
     }

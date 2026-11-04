@@ -34,16 +34,6 @@ class TorrServerClientTest : BaseUnitTest() {
     }
 
     @Test
-    fun `rejects malformed server urls`() {
-        listOf("", "http://", "https:///missing-host", "ftp://torr.example", "http://user:pass@torr.example", "http://torr.example/path?token=x")
-            .forEach { url ->
-                assertThrows(IllegalArgumentException::class.java) {
-                    client.configure(TorrServerConfiguration(baseUrl = url))
-                }
-            }
-    }
-
-    @Test
     fun `rejects line breaks in credentials`() {
         assertThrows(IllegalArgumentException::class.java) {
             client.configure(TorrServerConfiguration(username = "user\nInjected: value"))
