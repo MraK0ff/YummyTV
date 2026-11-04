@@ -331,4 +331,8 @@
     <string name="settings_home_section_announcements">Coming soon</string>
     <string name="settings_home_section_collections">Collections</string>
     <string name="settings_home_sections_reset_hint">Restore the default Home section order</string>
+    <string name="settings_home_sections_navigation_hint">Choose which blocks appear on Home and arrange them</string>
+    <string name="settings_home_sections_visibility_title">Visible sections</string>
+    <string name="settings_home_section_blogger_videos">From bloggers</string>
+    <string name="settings_home_section_more">More</string>
 </resources>
