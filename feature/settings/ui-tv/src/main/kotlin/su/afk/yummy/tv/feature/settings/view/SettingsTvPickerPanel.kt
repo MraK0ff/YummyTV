@@ -29,6 +29,7 @@ import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.HomeSectionKind
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.utils.hint
@@ -52,6 +53,8 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.NEW_EPISODES_SOURCES -> state.newEpisodesSources.newEpisodesSourcesValue()
     SettingsTvPicker.LIBRARY_TAB_ORDER ->
         state.libraryTabOrder.map { it.label() }.joinToString(" · ")
+    SettingsTvPicker.HOME_SECTIONS ->
+        state.homeSectionOrder.map { stringResource(it.labelRes()) }.joinToString(" · ")
 
     SettingsTvPicker.SUBTITLE_COLOR -> state.subtitleStyle.textColor.label()
     SettingsTvPicker.SUBTITLE_BACKGROUND -> state.subtitleStyle.background.label()
@@ -164,6 +167,13 @@ internal fun SettingsTvPickerPanel(
                 onToggle = { onEvent(SettingsState.Event.NewEpisodesSourceToggled(it)) },
             )
 
+            SettingsTvPicker.HOME_SECTIONS -> HomeSectionsPanel(
+                state = state,
+                upFocusRequester = openerFocusRequester,
+                contentFocusRequester = entryFocusRequester,
+                onEvent = onEvent,
+            )
+
             SettingsTvPicker.LIBRARY_TAB_ORDER -> LibraryTabOrderPanel(
                 order = state.libraryTabOrder,
                 upFocusRequester = openerFocusRequester,
@@ -247,4 +257,15 @@ private fun <T> PickerOptions(
             SettingsDivider()
         }
     }
+}
+
+private fun HomeSectionKind.labelRes(): Int = when (this) {
+    HomeSectionKind.MY_NEW_EPISODES -> R.string.settings_home_section_my_new_episodes
+    HomeSectionKind.NEW_RELEASES -> R.string.settings_home_section_new_releases
+    HomeSectionKind.NEW_TITLES -> R.string.settings_home_section_new_titles
+    HomeSectionKind.RECOMMENDATIONS -> R.string.settings_home_section_recommendations
+    HomeSectionKind.ANNOUNCEMENTS -> R.string.settings_home_section_announcements
+    HomeSectionKind.COLLECTIONS -> R.string.settings_home_section_collections
+    HomeSectionKind.BLOGGER_VIDEOS -> R.string.settings_home_section_blogger_videos
+    HomeSectionKind.MORE -> R.string.settings_home_section_more
 }
