@@ -493,7 +493,7 @@ class HomeViewModel @Inject internal constructor(
             hiddenHomeSections = hidden
             setState {
                 copy(
-                    homeSectionOrder = (order.ifEmpty { listOf(\"MY_NEW_EPISODES\", \"NEW_RELEASES\", \"NEW_TITLES\", \"RECOMMENDATIONS\", \"ANNOUNCEMENTS\", \"COLLECTIONS\", \"BLOGGER_VIDEOS\", \"MORE\") }).toImmutableList(),
+                    homeSectionOrder = (order.ifEmpty { listOf("MY_NEW_EPISODES", "NEW_RELEASES", "NEW_TITLES", "RECOMMENDATIONS", "ANNOUNCEMENTS", "COLLECTIONS", "BLOGGER_VIDEOS", "MORE") }).toImmutableList(),
                     hiddenHomeSections = hidden,
                 )
             }
