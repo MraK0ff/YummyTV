@@ -28,7 +28,12 @@ internal class AnistarExtraStreamRepository @Inject constructor(
 
     private fun AnistarStreams.toStream(): PlayerStreamResolveResult.Stream {
         // Конвенция плеера: карта идёт по возрастанию качества, последнее считается лучшим.
-        val ascending = hlsByQuality.entries.sortedBy { it.key }
+        val ascending = hlsByQuality.entries
+            .filter { (quality, url) -> quality > 0 && url.isNotBlank() }
+            .sortedBy { it.key }
+        if (ascending.isEmpty()) {
+            return PlayerStreamResolveResult.Failed("AniStar returned no playable qualities")
+        }
         val qualities = LinkedHashMap<String, String>()
         ascending.forEach { qualities["${it.key}p"] = it.value }
         return PlayerStreamResolveResult.Stream(

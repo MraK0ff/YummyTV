@@ -12,6 +12,11 @@ import su.afk.yummy.tv.source.anistar.data.source.AndroidAnistarMessages
 import su.afk.yummy.tv.source.anistar.data.source.AnistarExtraStreamRepository
 import su.afk.yummy.tv.source.anistar.data.source.AnistarExtraVideoRepository
 import su.afk.yummy.tv.source.anistar.data.source.AnistarMessages
+import su.afk.yummy.tv.domain.details.torrent.AnimeTorrentSource
+import su.afk.yummy.tv.source.anistar.data.torrent.AniStarTorrentSourceImpl
+import su.afk.yummy.tv.source.anistar.data.torrent.AndroidTorrServerConfigurationStore
+import su.afk.yummy.tv.source.anistar.data.torrent.TorrServerConfigurationStore
+import su.afk.yummy.tv.source.anistar.data.torrent.TorrServerExtraStreamRepository
 import su.afk.yummy.tv.source.anistar.domain.repository.AnistarRepository
 import javax.inject.Singleton
 
@@ -21,10 +26,24 @@ internal interface AnistarModule {
 
     @Binds
     @Singleton
+    fun bindTorrServerConfigurationStore(
+        impl: AndroidTorrServerConfigurationStore,
+    ): TorrServerConfigurationStore
+
+    @Binds
+    @IntoSet
+    fun bindAniStarTorrentSource(impl: AniStarTorrentSourceImpl): AnimeTorrentSource
+
+    @Binds
+    @Singleton
     fun bindAnistarRepository(impl: AnistarRepositoryImpl): AnistarRepository
 
     @Binds
     fun bindMessages(impl: AndroidAnistarMessages): AnistarMessages
+
+    @Binds
+    @IntoSet
+    fun bindTorrServerExtraStreamRepository(impl: TorrServerExtraStreamRepository): ExtraStreamRepository
 
     @Binds
     @IntoSet

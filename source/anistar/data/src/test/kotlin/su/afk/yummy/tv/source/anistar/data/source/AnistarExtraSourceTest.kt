@@ -88,6 +88,18 @@ class AnistarExtraSourceTest : BaseUnitTest() {
     }
 
     @Test
+    fun `empty or invalid quality list fails without crashing`() = runTest {
+        coEvery { repository.getStreams(any()) } returns AnistarStreams(
+            hlsByQuality = mapOf(0 to "", -1 to "https://cdn/invalid.m3u8"),
+            referer = "https://v31.astar.bz/",
+        )
+
+        val result = streamRepository().resolve("source://anistar/2658/1")
+
+        assertTrue(result is PlayerStreamResolveResult.Failed)
+    }
+
+    @Test
     fun `missing episode is unavailable network error and bad url fail`() = runTest {
         coEvery { repository.getStreams(any()) } returns null
         val unavailable = streamRepository().resolve("source://anistar/2658/9")

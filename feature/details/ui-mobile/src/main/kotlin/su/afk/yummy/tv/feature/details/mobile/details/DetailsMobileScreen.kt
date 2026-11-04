@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +52,7 @@ import su.afk.yummy.tv.core.utils.formatting.toCompactCount
 import su.afk.yummy.tv.core.utils.system.shareText
 import su.afk.yummy.tv.domain.account.model.UserAnimeList
 import su.afk.yummy.tv.feature.details.details.DetailsState
+import su.afk.yummy.tv.feature.details.details.torrent.AniStarTorrentDialog
 import su.afk.yummy.tv.feature.details.mobile.details.utils.tightenVerticalSpacing
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsCollectionsSection
 import su.afk.yummy.tv.feature.details.mobile.details.view.DetailsCommentsBar
@@ -183,6 +186,12 @@ fun DetailsMobileScreen(
                     }
                 }
             }
+            item(key = "anistar_torrents") {
+                OutlinedButton(
+                    onClick = { onEvent(DetailsState.Event.AniStarTorrentsSelected) },
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                ) { Text("AniStar Torrents") }
+            }
             item(key = "actions") {
                 DetailsSecondaryActions(
                     state = state,
@@ -314,6 +323,7 @@ fun DetailsMobileScreen(
             onBalancerStarClick = { onEvent(DetailsState.Event.BalancerStarToggled(it)) },
             onDubbingStarClick = { onEvent(DetailsState.Event.DubbingStarToggled(it.item.name)) },
         )
+        AniStarTorrentDialog(state = state, onEvent = onEvent)
         NotificationPermissionGateHost(
             state = notificationPermissionGate,
             permissionWasRequested = state.notificationPermissionRequested,
