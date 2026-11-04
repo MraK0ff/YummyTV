@@ -917,7 +917,8 @@ class HomeViewModel @Inject internal constructor(
         setState {
             copy(
                 isLoading = isLoading,
-                feed = feed.toVisibleFeed(hiddenRecommendationIds),
+                feed = feed.toVisibleFeed(hiddenRecommendationIds)
+                    .withHomeSectionPreferences(homeSectionOrder, hiddenHomeSections),
             )
         }
     }
