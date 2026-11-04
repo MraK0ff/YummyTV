@@ -9,7 +9,7 @@ import su.afk.yummy.tv.data.home.dto.YaniAnimeDto
 import su.afk.yummy.tv.data.home.dto.YaniFeedDto
 import su.afk.yummy.tv.data.home.dto.YaniFeedResponseDto
 import su.afk.yummy.tv.data.home.dto.YaniVideoDto
-import su.afk.yummy.tv.data.home.repository.YaniNewReleaseTracker
+import su.afk.yummy.tv.data.home.utils.YaniNewReleaseTracker
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 
 class HomeStorageMapperTest {
