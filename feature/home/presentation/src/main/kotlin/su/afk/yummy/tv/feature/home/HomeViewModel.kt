@@ -491,6 +491,12 @@ class HomeViewModel @Inject internal constructor(
         }.onEach { (order, hidden) ->
             homeSectionOrder = order
             hiddenHomeSections = hidden
+            setState {
+                copy(
+                    homeSectionOrder = (order.ifEmpty { listOf(\"MY_NEW_EPISODES\", \"NEW_RELEASES\", \"NEW_TITLES\", \"RECOMMENDATIONS\", \"ANNOUNCEMENTS\", \"COLLECTIONS\", \"BLOGGER_VIDEOS\", \"MORE\") }).toImmutableList(),
+                    hiddenHomeSections = hidden,
+                )
+            }
             applyHiddenRecommendations()
         }.launchIn(viewModelScope)
     }
