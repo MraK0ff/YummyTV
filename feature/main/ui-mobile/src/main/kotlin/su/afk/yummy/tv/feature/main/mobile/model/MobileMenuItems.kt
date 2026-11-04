@@ -2,7 +2,6 @@ package su.afk.yummy.tv.feature.main.mobile.model
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
@@ -17,11 +16,6 @@ internal fun mobileMenuItems(): List<MobileMenuItem<RootTab>> = listOf(
         stringResource(R.string.main_tab_schedule),
         RootTab.SCHEDULE,
         Icons.Default.CalendarMonth,
-    ),
-    MobileMenuItem(
-        stringResource(R.string.main_tab_catalog),
-        RootTab.CATALOG,
-        Icons.Default.GridView,
     ),
     MobileMenuItem(
         stringResource(R.string.main_tab_home),
