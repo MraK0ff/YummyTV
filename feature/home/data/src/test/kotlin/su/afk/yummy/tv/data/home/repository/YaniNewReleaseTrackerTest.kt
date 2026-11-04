@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
 import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 import su.afk.yummy.tv.data.home.utils.YaniNewReleaseTracker
 import su.afk.yummy.tv.data.home.utils.toRegularEpisodeNumber
@@ -136,11 +137,46 @@ class YaniNewReleaseTrackerTest {
     }
 
     @Test
-    fun `normalizes leading zeros and zero decimal suffix`() {
+    fun `normalizes leading zeros whitespace and decimal separators`() {
         assertEquals(10, " 010 ".toRegularEpisodeNumber())
         assertEquals(10, "10.0".toRegularEpisodeNumber())
         assertEquals(10, "10,00 серия".toRegularEpisodeNumber())
+        assertEquals(10, "10 . 00 эп.".toRegularEpisodeNumber())
+        assertEquals(10, "10, 0 episode".toRegularEpisodeNumber())
         assertFalse("10.5".toRegularEpisodeNumber() == 10)
+        assertEquals(null, "OVA 10".toRegularEpisodeNumber())
+        assertEquals(null, "SP".toRegularEpisodeNumber())
+    }
+
+    @Test
+    fun `legacy cached anime episode is established as baseline`() {
+        val legacy = HomeNewReleaseEntry(
+            animeId = 7,
+            title = "Legacy title",
+            animeUrl = "",
+            description = "",
+            episodeNumber = 0,
+            episodeTitle = "",
+            videoId = null,
+            dubTitle = null,
+            playerTitle = null,
+            posterSmallUrl = null,
+            posterMediumUrl = null,
+            posterBigUrl = null,
+            posterFullsizeUrl = null,
+            posterMegaUrl = null,
+            firstSeenAt = 50L,
+            lastDetectedAt = 50L,
+            lastUpdatedAt = 0L,
+            position = 4,
+        )
+
+        val result = tracker.merge(listOf(video(7, "10")), listOf(legacy), now = 100L)
+
+        assertEquals(10, result.single().episodeNumber)
+        assertEquals(50L, result.single().firstSeenAt)
+        assertEquals(0L, result.single().lastUpdatedAt)
+        assertEquals(4, result.single().position)
     }
 
     private fun video(
