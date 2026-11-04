@@ -277,6 +277,9 @@ class SettingsState {
         /** Пользователь сбросил порядок секций главной. */
         data object HomeSectionOrderReset : Event
 
+        /** Пользователь открыл отдельную страницу управления секциями Home. */
+        data object HomeSectionsSelected : Event
+
         /** Пользователь открыл категорию настроек (мобильный интерфейс). */
         data class CategorySelected(val category: SettingsCategory) : Event
 
