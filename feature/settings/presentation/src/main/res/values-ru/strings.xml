@@ -330,4 +330,5 @@
     <string name="settings_home_section_recommendations">Рекомендации</string>
     <string name="settings_home_section_announcements">Скоро</string>
     <string name="settings_home_section_collections">Подборки</string>
+    <string name="settings_home_sections_reset_hint">Вернуть исходный порядок блоков главной</string>
 </resources>
