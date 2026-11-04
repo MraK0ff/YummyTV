@@ -23,7 +23,7 @@ class AniStarTorrentProvider @Inject constructor(
 ) {
     suspend fun getTorrents(listUrl: String): List<AniStarTorrent> = withContext(Dispatchers.IO) {
         val response = client.get(listUrl) {
-            headers.snapshot().forEach { (name, value) -> header(name, value) }
+            this@AniStarTorrentProvider.headers.snapshot().forEach { (name, value) -> header(name, value) }
         }
         if (!response.status.isSuccess()) throw IOException("AniStar HTTP ${response.status.value}")
         AniStarTorrentParser.parseList(response.bodyAsText(), listUrl)
@@ -47,7 +47,7 @@ class AniStarTorrentProvider @Inject constructor(
                     continue
                 }
                 val html = response.bodyAsText()
-                val pageUrl = response.request.url.toString()
+                val pageUrl = response.call.request.url.toString()
                 val titlePageUrl = AniStarTorrentParser.parseSearchResultPage(html, pageUrl, title)
                     ?: continue
                 val torrents = getTorrents(titlePageUrl)
