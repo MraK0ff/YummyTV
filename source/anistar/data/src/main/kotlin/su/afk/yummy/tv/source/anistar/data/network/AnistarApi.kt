@@ -5,6 +5,7 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
 import su.afk.yummy.tv.core.network.di.UnauthenticatedJsonClient
+import su.afk.yummy.tv.source.anistar.data.dto.AnistarMirrorResponseDto
 import java.io.IOException
 import javax.inject.Inject
 
@@ -24,23 +25,28 @@ internal class AnistarApi @Inject constructor(
             url.parameters.append("result_from", "1")
             url.parameters.append("story", query)
         }
-        if (!response.status.isSuccess()) throw IOException("AniStar search: HTTP ${response.status.value}")
+        if (!response.status.isSuccess()) throw IOException("AniStar search: HTTP \${response.status.value}")
         val requestUrl = response.request.url
-        val mirror = "${requestUrl.protocol.name}://${requestUrl.host}"
+        val mirror = "\${requestUrl.protocol.name}://\${requestUrl.host}"
         return AnistarSearchPage(response.bodyAsText(), mirror)
     }
 
-    /** Плеер-страница содержит актуальный JS-плейлист; её читаем при каждом запросе источника. */
+    /**
+     * Для получения списка серий и HLS используется та же плеер-страница, что и раньше.
+     * Зеркало берётся из прямого ответа AniStar; серверный endpoint /anistar/mirror не нужен.
+     */
     suspend fun getPlayerPage(mirror: String, newsId: Long): String {
         val response = client.get("$mirror/test/player2/videoas_p2p_new.php") {
             url.parameters.append("id", newsId.toString())
         }
-        if (!response.status.isSuccess()) throw IOException("AniStar player: HTTP ${response.status.value}")
+        if (!response.status.isSuccess()) throw IOException("AniStar player: HTTP \${response.status.value}")
         return response.bodyAsText()
     }
 
+    /** Совместимость с резолвером потоков: зеркало теперь выбирается самим клиентом. */
+    suspend fun getMirror(): AnistarMirrorResponseDto = AnistarMirrorResponseDto(SITE_URL)
+
     private companion object {
-        // Домен совпадает с актуальным доменом из конфигурации AniStar; Ktor следует HTTP redirect.
         const val SITE_URL = "https://v31.astar.bz"
     }
 }
