@@ -2,7 +2,6 @@ package su.afk.yummy.tv.source.anistar.data.torrent
 
 import kotlinx.coroutines.delay
 import java.io.IOException
-import java.net.URLEncoder
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,9 +13,7 @@ class AniStarTorrentPlaybackManager @Inject constructor(
 ) {
     suspend fun search(title: String): List<AniStarTorrent> {
         require(title.isNotBlank()) { "Anime title is required" }
-        val encodedTitle = URLEncoder.encode(title.trim(), "UTF-8")
-        val url = "$ANI_STAR_URL/index.php?do=search&subaction=search&search_start=1&full_search=0&result_from=1&story=$encodedTitle"
-        return aniStar.getTorrents(url)
+        return aniStar.searchTorrents(title)
     }
 
     suspend fun add(torrent: AniStarTorrent): AddedAniStarTorrent {
@@ -42,7 +39,6 @@ class AniStarTorrentPlaybackManager @Inject constructor(
     suspend fun checkServerConnection(): String = torrServer.checkConnection()
 
     private companion object {
-        const val ANI_STAR_URL = "https://v31.astar.bz"
         const val PLAYER_SOURCE_PREFIX = "source://torrserver/"
         const val METADATA_ATTEMPTS = 15
         const val METADATA_RETRY_DELAY_MS = 1_000L

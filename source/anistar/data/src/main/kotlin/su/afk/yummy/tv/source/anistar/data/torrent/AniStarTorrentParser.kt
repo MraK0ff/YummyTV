@@ -3,6 +3,7 @@ package su.afk.yummy.tv.source.anistar.data.torrent
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.net.URI
+import su.afk.yummy.tv.source.anistar.data.utils.findBestAnistarCandidate
 
 /**
  * HTML-парсер каталога и страницы раздачи AniStar.
@@ -30,6 +31,17 @@ internal object AniStarTorrentParser {
                 downloads = block.selectFirst(".li_download")?.text()?.toIntOrNull(),
             )
         }
+    }
+
+    fun parseSearchResultPage(html: String, pageUrl: String, title: String): String? {
+        val candidate = findBestAnistarCandidate(html, listOf(title), expectedYear = null) ?: return null
+        val document = Jsoup.parse(html, pageUrl)
+        val titlePattern = Regex("(?:^|/)" + candidate.newsId + "-")
+        return document.select("a[href]").firstOrNull { anchor ->
+            val path = runCatching { URI(anchor.absUrl("href")).path }.getOrNull().orEmpty()
+            Regex("""(?:^|/)\d+-[^/]+\.html$""", RegexOption.IGNORE_CASE).containsMatchIn(path) &&
+                titlePattern.containsMatchIn(path)
+        }?.absUrl("href")?.takeIf(::isHttpUrl)
     }
 
     fun parseTorrentPage(html: String, pageUrl: String): AniStarTorrentPage {

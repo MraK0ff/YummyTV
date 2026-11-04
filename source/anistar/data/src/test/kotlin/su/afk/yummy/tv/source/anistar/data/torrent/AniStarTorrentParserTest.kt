@@ -43,6 +43,42 @@ class AniStarTorrentParserTest {
     }
 
     @Test
+    fun `finds a matching AniStar title page from search results`() {
+        val html = """
+            <div class="news">
+              <a href="/10051-goukon-ni-ittara.html">Goukon ni Ittara Onna ga Inakatta Hanashi</a>
+            </div>
+        """.trimIndent()
+
+        assertEquals(
+            "https://anistar.example/10051-goukon-ni-ittara.html",
+            AniStarTorrentParser.parseSearchResultPage(
+                html,
+                "https://anistar.example/?do=search&story=Goukon",
+                "Goukon ni Ittara Onna ga Inakatta Hanashi",
+            ),
+        )
+    }
+
+    @Test
+    fun `does not select adult category search results`() {
+        val html = """
+            <div class="news hentai">
+              <a href="/10051-goukon-ni-ittara.html">Goukon ni Ittara Onna ga Inakatta Hanashi</a>
+              <span>Hentai</span>
+            </div>
+        """.trimIndent()
+
+        assertNull(
+            AniStarTorrentParser.parseSearchResultPage(
+                html,
+                "https://anistar.example/?do=search&story=Goukon",
+                "Goukon ni Ittara Onna ga Inakatta Hanashi",
+            ),
+        )
+    }
+
+    @Test
     fun `resolves magnet and torrent download from detail page`() {
         val page = AniStarTorrentParser.parseTorrentPage(
             """<title>Anime &amp; Special</title><a href="magnet:?xt=urn:btih:0123456789012345678901234567890123456789">Magnet</a><a href="/download/a.torrent">Download</a>""",
