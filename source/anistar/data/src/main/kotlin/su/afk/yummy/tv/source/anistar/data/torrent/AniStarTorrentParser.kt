@@ -49,8 +49,8 @@ internal object AniStarTorrentParser {
     private fun extractSize(block: Element): String? {
         val ownText = block.getAllElements()
             .asSequence()
-            .map { it.ownText() }
-            .firstOrNull { it.contains("Размер", ignoreCase = true) }
+            .firstOrNull { it.ownText().contains("Размер", ignoreCase = true) }
+            ?.text()
             .orEmpty()
         val match = Regex("""Размер\s*:\s*(.+)""", RegexOption.IGNORE_CASE)
             .find(ownText)?.groupValues?.getOrNull(1)?.trim()
