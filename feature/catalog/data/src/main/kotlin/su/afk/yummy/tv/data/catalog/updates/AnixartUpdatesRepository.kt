@@ -33,8 +33,9 @@ class AnixartUpdatesRepository(
             releases.map { release ->
                 async {
                     val key = "${release.id}:${release.year}:${normalize(release.title)}"
-                    val animeId = matchCache[key] ?: semaphore.withPermit { findYummyId(release) }
-                    if (animeId == null) return@async null
+                    val cachedId = matchCache[key]
+                    val match = if (cachedId != null) null else semaphore.withPermit { findYummyAnime(release) }
+                    val animeId = cachedId ?: match?.animeId ?: return@async null
                     matchCache[key] = animeId
                     UpdatesFeedItem(
                         anixartId = release.id,
@@ -44,14 +45,16 @@ class AnixartUpdatesRepository(
                         episodesReleased = release.episodesReleased,
                         episodesTotal = release.episodesTotal,
                         lastUpdateAt = release.lastUpdateAt,
-                        posterUrl = null,
+                        posterUrl = match?.posterUrl,
                     )
                 }
             }.awaitAll().filterNotNull()
         }
     }
 
-    private suspend fun findYummyId(release: AnixartRelease): Int? {
+    private data class YummyMatch(val animeId: Int, val posterUrl: String?)
+
+    private suspend fun findYummyAnime(release: AnixartRelease): YummyMatch? {
         val exact = yaniSearchApi.search(
             query = release.title,
             filters = SearchFilters.EMPTY,
@@ -59,11 +62,12 @@ class AnixartUpdatesRepository(
             offset = 0,
         ).filter { it.animeId != null && normalize(it.title) == normalize(release.title) }
         val yearMatches = exact.filter { release.year == null || it.year == release.year }
-        return when {
-            yearMatches.size == 1 -> yearMatches.single().animeId
-            exact.size == 1 -> exact.single().animeId
-            else -> null
+        val selected = when {
+            yearMatches.size == 1 -> yearMatches.single()
+            exact.size == 1 -> exact.single()
+            else -> return null
         }
+        return YummyMatch(selected.animeId ?: return null, selected.poster?.medium ?: selected.poster?.big)
     }
 
     private fun normalize(value: String): String = value.lowercase().filter(Char::isLetterOrDigit)
