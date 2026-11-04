@@ -330,4 +330,5 @@
     <string name="settings_home_section_recommendations">Recommendations</string>
     <string name="settings_home_section_announcements">Coming soon</string>
     <string name="settings_home_section_collections">Collections</string>
+    <string name="settings_home_sections_reset_hint">Restore the default Home section order</string>
 </resources>
