@@ -143,6 +143,9 @@ include(":feature:playersetup:ui-mobile")
 include(":feature:faq:api")
 include(":feature:faq:presentation")
 include(":feature:faq:ui-mobile")
+include(":feature:glossary:api")
+include(":feature:glossary:presentation")
+include(":feature:glossary:ui-mobile")
 
 include(":feature:pages:api")
 include(":feature:pages:domain")
@@ -217,6 +220,16 @@ if (file("source/ailiberty").isDirectory && file("source/availability").isDirect
 if (file("source/anidub").isDirectory && file("source/availability").isDirectory) {
     include(":source:anidub:domain")
     include(":source:anidub:data")
+}
+
+if (file("source/sameband").isDirectory && file("source/availability").isDirectory) {
+    include(":source:sameband:domain")
+    include(":source:sameband:data")
+}
+
+if (file("source/studiomir").isDirectory && file("source/availability").isDirectory) {
+    include(":source:studiomir:domain")
+    include(":source:studiomir:data")
 }
 
 if (file("source/ashdi").isDirectory) {

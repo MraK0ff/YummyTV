@@ -8,34 +8,19 @@ import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 
 private const val LOG_TAG = PersistedLogTags.ALLOHA_EXTRACTOR
 
-internal fun parseHeaders(headersJson: String): Map<String, String> {
-    val objectValue = JSONObject(headersJson)
-    return buildMap {
-        objectValue.keys().forEach { key ->
-            objectValue.optString(key).takeIf(String::isNotBlank)
-                ?.let { put(key.lowercase(), it) }
-        }
-    }
-}
-
-/**
- * One `hlsSource` entry: a dubbing with its own quality ladder. Alloha's player shows exactly this
- * list behind its gear icon, so it - not the site-level catalog - is the source of truth for what
- * voices this episode actually has.
- */
-internal data class AllohaParsedAudioTrack(
-    val track: AllohaAudioTrack,
-    val qualities: LinkedHashMap<String, String>,
-)
-
 internal data class AllohaParsedSources(
-    val audioTracks: List<AllohaParsedAudioTrack>,
+    val audioTracks: List<AllohaAudioTrack>,
     val subtitles: List<AllohaSubtitleTrack>,
 )
 
+/**
+ * @param pickMirror chooses the URL to play out of the mirrors listed for one quality; the first
+ * one by default.
+ */
 internal fun parseSources(
     responseJson: String,
     analytics: AnalyticsTracker,
+    pickMirror: (mirrors: List<String>) -> String = { it.first() },
 ): AllohaParsedSources {
     val root = JSONObject(responseJson)
     val sources = root.optJSONArray("hlsSource")
@@ -47,29 +32,26 @@ internal fun parseSources(
             val quality = source.optJSONObject("quality") ?: continue
             val qualities = linkedMapOf<String, String>()
             quality.keys().forEach { label ->
-                (quality.optNonBlankString(label) ?: return@forEach)
+                val mirrors = (quality.optNonBlankString(label) ?: return@forEach)
                     .split(" or ")
-                    .firstOrNull()
-                    ?.trim()
-                    ?.normalizeStreamUrl()
-                    ?.takeIf(String::isNotBlank)
-                    ?.let { qualities.putIfAbsent(label.normalizeQualityLabel(), it) }
+                    .map { it.trim().normalizeStreamUrl() }
+                    .filter(String::isNotBlank)
+                if (mirrors.isEmpty()) return@forEach
+                qualities.putIfAbsent(label.normalizeQualityLabel(), pickMirror(mirrors))
             }
             if (qualities.isEmpty()) continue
             val sorted = qualities.entries
                 .sortedBy { it.key.filter(Char::isDigit).toIntOrNull() ?: 0 }
                 .associateTo(linkedMapOf()) { it.toPair() }
             add(
-                AllohaParsedAudioTrack(
-                    track = AllohaAudioTrack(
-                        // audioId is Alloha's own identifier; fall back to the index so a source
-                        // without one still stays selectable.
-                        id = source.optNonBlankString("audioId") ?: index.toString(),
-                        label = source.optNonBlankString("label")?.trim()
-                            ?.takeIf(String::isNotBlank)
-                            ?: "#${index + 1}",
-                        isDefault = source.optBoolean("default"),
-                    ),
+                AllohaAudioTrack(
+                    // audioId is Alloha's own identifier; fall back to the index so a source
+                    // without one still stays selectable.
+                    id = source.optNonBlankString("audioId") ?: index.toString(),
+                    label = source.optNonBlankString("label")?.trim()
+                        ?.takeIf(String::isNotBlank)
+                        ?: "#${index + 1}",
+                    isDefault = source.optBoolean("default"),
                     qualities = sorted,
                 )
             )
@@ -101,7 +83,7 @@ internal fun parseSources(
     }
 
     analytics.log(LOG_TAG) {
-        "bnsi audioTracks=${audioTracks.map { it.track.label }} " +
+        "bnsi audioTracks=${audioTracks.map(AllohaAudioTrack::label)} " +
                 "subtitles=${subtitles.map(AllohaSubtitleTrack::label)}"
     }
     return AllohaParsedSources(audioTracks = audioTracks, subtitles = subtitles)
@@ -114,7 +96,6 @@ internal fun parseSources(
 private fun JSONObject.optNonBlankString(key: String): String? =
     if (isNull(key)) null else optString(key).takeIf(String::isNotBlank)
 
-/** Used both here and by [su.afk.yummy.tv.data.player.extractor.alloha.AllohaExtractor]'s bridge. */
 internal fun String.normalizeStreamUrl(): String = if (startsWith("//")) "https:$this" else this
 
 private fun String.normalizeQualityLabel(): String =

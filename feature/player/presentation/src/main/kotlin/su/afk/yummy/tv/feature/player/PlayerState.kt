@@ -1,6 +1,11 @@
 package su.afk.yummy.tv.feature.player
 
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
+import su.afk.yummy.tv.feature.player.model.PlayerResolveLogEntry
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
+import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PlayerResizeMode
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleStyleSettings
@@ -55,6 +60,10 @@ class PlayerState {
         val zoomLevel: PlayerZoomLevel = PlayerZoomLevel.PERCENT_10,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
         val playerError: String? = null,
+        /** Текущий шаг получения потока; null, пока резолв не идёт. */
+        val resolveStatus: PlayerStreamResolveStatus? = null,
+        /** Журнал шагов и сетевых запросов текущего резолва. */
+        val resolveLog: ImmutableList<PlayerResolveLogEntry> = persistentListOf(),
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,
         val playbackPositionMs: Long = 0L,
@@ -83,6 +92,8 @@ class PlayerState {
         val isOfflinePlayback: Boolean = false,
         /** Локальный прогресс серий тайтла: подписи просмотра в списке серий. */
         val watchProgress: List<AnimeWatchProgress> = emptyList(),
+        /** Пометки серий (филлер/рекап) из MyAnimeList по `episodeGroupKey()`; пусто, если пометки выключены в настройках. */
+        val episodeFlags: Map<String, EpisodeFlags> = emptyMap(),
         val isLocalFile: Boolean = false,
         val offlineCacheKey: String? = null,
         /** `VideoDownloadCacheKeyScheme.storageValue` скачанной серии; 0 — старая схема ключей. */

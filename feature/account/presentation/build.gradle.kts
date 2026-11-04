@@ -21,7 +21,9 @@ dependencies {
     implementation(project(":feature:collection:api"))
     implementation(project(":feature:details:api"))
     implementation(project(":feature:faq:api"))
+    implementation(project(":feature:glossary:api"))
     implementation(project(":feature:messages:api"))
+    implementation(project(":feature:watch-later:api"))
     implementation(project(":feature:pages:api"))
     implementation(project(":feature:posts:api"))
     implementation(project(":feature:reviews:api"))
@@ -30,7 +32,6 @@ dependencies {
     implementation(project(":feature:collection:domain"))
     implementation(project(":feature:player:domain"))
     implementation(project(":feature:video-download:api"))
-    implementation(project(":feature:watch-later:api"))
 
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.lifecycle.viewmodelCompose)

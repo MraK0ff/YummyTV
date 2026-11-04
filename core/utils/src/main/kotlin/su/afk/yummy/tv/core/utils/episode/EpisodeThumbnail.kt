@@ -7,7 +7,7 @@ import su.afk.yummy.tv.core.utils.kodik.normalizeIframeUrl
  * Единая модель превью серии для Coil и для [EpisodeThumbnailResolver]: все экраны (серии, «Продолжить», история,
  * «Отложенные», загрузки) описывают серию одинаково, а откуда брать кадр, решает резолвер.
  *
- * [animeId] и [episode] опознают серию (по ним ищутся кадры TMDB, Tenrai и Kodik-видео тайтла); [iframeUrl] и [imageUrl] —
+ * [animeId] и [episode] опознают серию (по ним ищутся кадры TMDB и Kodik-видео тайтла); [iframeUrl] и [imageUrl] —
  * подсказки, которые у экрана уже есть: Kodik-iframe серии и готовая картинка (её берут, только если серия не опознана). Ключ кэша общий для серии
  * ([episodeThumbnailCacheKey]): у одной серии на разных экранах разные подсказки (озвучка), а кадр должен быть один и
  * скачиваться один раз.
@@ -41,6 +41,7 @@ data class EpisodeThumbnail(
  * Ключ превью серии, не зависящий от озвучки: `"01"` и `"1"` — одна серия.
  * v2: кадры TMDB встали первыми в цепочке источников, поэтому прежние кадры Tenrai/Kodik под старым ключом
  * (`episode_thumb:`, `tenrai_thumb:`, `kodik_thumb:`) больше не читаем: иначе диск отдал бы их мимо резолвера.
+ * v3: в цепочке появилась своя копия кадра в AVIF (static.afk.su), старые снимки диска отдаются мимо неё.
  */
 fun episodeThumbnailCacheKey(animeId: Int, episode: String): String =
-    "episode_thumb_v2:$animeId:${episode.episodeGroupKey()}"
+    "episode_thumb_v3:$animeId:${episode.episodeGroupKey()}"

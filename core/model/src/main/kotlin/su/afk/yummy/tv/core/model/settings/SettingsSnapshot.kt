@@ -31,6 +31,7 @@ data class SettingsSnapshot(
     val tvPlayerVolumeKeysEnabled: Boolean,
     val advancedPlayerVolumeEnabled: Boolean,
     val volumeStabilizationEnabled: Boolean,
+    val audioFocusDisabled: Boolean = false,
     val playerBufferProfile: PlayerBufferProfile,
     val browserUserAgentProfile: BrowserUserAgentProfile = BrowserUserAgentProfile.DEFAULT,
     val videoExportAutoEnabled: Boolean,
@@ -38,5 +39,6 @@ data class SettingsSnapshot(
     val yaniApplicationToken: String,
     val contentLanguage: YaniContentLanguage,
     val seasonalDecorationsEnabled: Boolean = true,
+    val accountShortcutsExpanded: Boolean = false,
     val libraryTabOrder: List<LibraryTabKind> = LibraryTabKind.entries,
 )
