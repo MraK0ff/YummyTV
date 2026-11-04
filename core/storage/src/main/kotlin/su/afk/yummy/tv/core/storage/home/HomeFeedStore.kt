@@ -19,6 +19,13 @@ internal class HomeFeedStore(private val dao: HomeFeedDao) : HomeFeedStorage {
         if (entries.isNotEmpty()) dao.saveNewReleaseHistory(entries)
     }
 
+    override suspend fun getMyNewEpisodeHistory(): List<HomeMyNewEpisodeEntry> =
+        dao.getMyNewEpisodeHistory()
+
+    override suspend fun saveMyNewEpisodeHistory(entries: List<HomeMyNewEpisodeEntry>) {
+        if (entries.isNotEmpty()) dao.saveMyNewEpisodeHistory(entries)
+    }
+
     override suspend fun deleteContinueWatchingByAnimeId(animeId: Int) {
         dao.deleteItemsByContainerAndItemId(
             container = HOME_FEED_CONTAINER_CONTINUE_WATCHING,
