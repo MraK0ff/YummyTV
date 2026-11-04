@@ -67,7 +67,6 @@ import su.afk.yummy.tv.core.storage.home.HomeFeedCacheEntry
 import su.afk.yummy.tv.core.storage.home.HomeFeedDao
 import su.afk.yummy.tv.core.storage.home.HomeFeedItemEntry
 import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
-import su.afk.yummy.tv.core.storage.home.HomeNewReleaseDao
 import su.afk.yummy.tv.core.storage.library.LibraryDao
 import su.afk.yummy.tv.core.storage.library.LibraryEntry
 import su.afk.yummy.tv.core.storage.library.LibrarySyncStateEntry
@@ -170,7 +169,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun watchProgressDao(): WatchProgressDao
     abstract fun animeStorageDao(): AnimeStorageDao
     abstract fun homeFeedDao(): HomeFeedDao
-    abstract fun homeNewReleaseDao(): HomeNewReleaseDao
     abstract fun animeScheduleDao(): AnimeScheduleDao
     abstract fun searchStorageDao(): SearchStorageDao
     abstract fun collectionStorageDao(): CollectionStorageDao
