@@ -193,7 +193,7 @@ private fun List<HomeNewReleaseEntry>.toNewReleaseEntries(
     language: String,
     watchSignature: String,
 ): List<HomeFeedItemEntry> =
-    sortedBy { it.position }.mapIndexed { index, item ->
+    filter { it.episodeNumber > 0 }.sortedBy { it.position }.mapIndexed { index, item ->
         HomeFeedItemEntry(
             language = language,
             watchSignature = watchSignature,
