@@ -1,12 +1,12 @@
 package su.afk.yummy.tv.data.home.repository
 
-import java.math.BigDecimal
+import java.util.Locale
 import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
 import su.afk.yummy.tv.data.home.dto.YaniVideoDto
 
 /**
  * Merges /feed new_videos into the durable anime history. API order is used only as a stable
- * tie-breaker between alternate uploads of the same newest episode.
+ * deterministic metadata ordering to choose one alternate upload of the same newest episode.
  */
 internal class YaniNewReleaseTracker {
 
@@ -32,9 +32,14 @@ internal class YaniNewReleaseTracker {
         val merged = previousById.toMutableMap()
 
         candidates.forEach { (animeId, items) ->
-            // Highest regular episode wins. For equal episode numbers, first API occurrence wins.
+            // Highest regular episode wins. API publication ordering is not assumed: alternate uploads
+            // use a stable dubbing/player/video-id ordering instead.
             val newest = items.sortedWith(
-                compareByDescending<Candidate> { it.episodeNumber }.thenBy { it.index },
+                compareByDescending<Candidate> { it.episodeNumber }
+                    .thenBy { it.video.dubTitle.orEmpty().lowercase(Locale.ROOT) }
+                    .thenBy { it.video.playerTitle.orEmpty().lowercase(Locale.ROOT) }
+                    .thenBy { it.video.videoId ?: Int.MAX_VALUE }
+                    .thenBy { it.index },
             ).firstOrNull() ?: return@forEach
             val previous = previousById[animeId]
 
