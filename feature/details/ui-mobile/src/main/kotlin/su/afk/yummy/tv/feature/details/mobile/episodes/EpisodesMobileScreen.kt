@@ -197,6 +197,7 @@ fun EpisodesMobileScreen(
         EpisodeActionsSheet(
             action = action,
             onToggleWatched = { onEvent(EpisodesState.Event.EpisodeWatchedToggled) },
+            onMarkWatchedAndPrevious = { onEvent(EpisodesState.Event.EpisodeWatchedAndPreviousSelected) },
             onClearWatched = { onEvent(EpisodesState.Event.EpisodeWatchedCleared) },
             onToggleWatchLater = { onEvent(EpisodesState.Event.EpisodeWatchLaterToggled) },
             onDismiss = { onEvent(EpisodesState.Event.EpisodeActionsDismissed) },

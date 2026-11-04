@@ -187,6 +187,7 @@
     <string name="details_relation_titles_found">Найдено тайтлов: %1$d</string>
         <string name="details_mobile_episode_actions_action">Действия с серией</string>
     <string name="details_mark_episode_watched">Отметить просмотренной</string>
+    <string name="details_mark_episode_watched_previous">Отметить просмотренной и все предыдущие</string>
     <string name="details_mobile_add_watch_later">Отложить просмотр</string>
     <string name="details_mobile_remove_watch_later">Убрать из отложенных</string>
     <string name="details_mobile_unmark_episode_watched">Убрать отметку о просмотре</string>

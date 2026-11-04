@@ -249,6 +249,9 @@ class EpisodesState {
         /** Пользователь переключил отметку "просмотрено" у серии. */
         data object EpisodeWatchedToggled : Event
 
+        /** Mark this episode and every preceding episode in the title's episode order. */
+        data object EpisodeWatchedAndPreviousSelected : Event
+
         /** Пользователь сбросил отметку/прогресс у серии, даже не досмотренной до конца. */
         data object EpisodeWatchedCleared : Event
 

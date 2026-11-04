@@ -36,6 +36,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 internal fun EpisodeActionsTvDialog(
     action: EpisodesState.EpisodeAction,
     onToggleWatched: () -> Unit,
+    onMarkWatchedAndPrevious: () -> Unit,
     onClearWatched: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -79,25 +80,35 @@ internal fun EpisodeActionsTvDialog(
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    TvRetryButton(
-                        text = stringResource(CoreR.string.common_cancel),
-                        onClick = onDismiss,
-                        modifier = Modifier.focusRequester(dismissFocusRequester),
-                    )
-                    TvRetryButton(
-                        text = if (action.isWatched) {
-                            stringResource(R.string.details_tv_unmark_episode_watched)
-                        } else {
-                            stringResource(R.string.details_mark_episode_watched)
-                        },
-                        onClick = onToggleWatched,
-                    )
-                    if (!action.isWatched && action.hasProgress) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         TvRetryButton(
-                            text = stringResource(R.string.details_tv_unmark_episode_watched),
-                            onClick = onClearWatched,
+                            text = stringResource(CoreR.string.common_cancel),
+                            onClick = onDismiss,
+                            modifier = Modifier.focusRequester(dismissFocusRequester),
                         )
+                        TvRetryButton(
+                            text = if (action.isWatched) {
+                                stringResource(R.string.details_tv_unmark_episode_watched)
+                            } else {
+                                stringResource(R.string.details_mark_episode_watched)
+                            },
+                            onClick = onToggleWatched,
+                        )
+                        if (!action.isWatched && action.hasProgress) {
+                            TvRetryButton(
+                                text = stringResource(R.string.details_tv_unmark_episode_watched),
+                                onClick = onClearWatched,
+                            )
+                        }
+                    }
+                    if (!action.isWatched) {
+                        Row {
+                            TvRetryButton(
+                                text = stringResource(R.string.details_mark_episode_watched_previous),
+                                onClick = onMarkWatchedAndPrevious,
+                            )
+                        }
                     }
                 }
             }
