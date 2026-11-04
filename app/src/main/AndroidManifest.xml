@@ -30,7 +30,7 @@
     </queries>
 
     <application
-        android:name=".android.di.YummyTvApplication"
+                android:name=".android.di.YummyTvApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -41,6 +41,9 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
+        <meta-data
+            android:name="autoStoreLocales"
+            android:value="true" />
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
             android:value="su.afk.yummy.tv.android.cast.YummyTvCastOptionsProvider" />
