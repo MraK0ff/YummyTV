@@ -117,6 +117,9 @@ class MobileMainGraph @Inject internal constructor(
                         onSettingsSelected = {
                             onEvent(MainState.Event.RootSelected(RootTab.SETTINGS, popToRootOnReselect = true))
                         },
+                        isProfileSelected = navManager.currentRoot == RootTab.ACCOUNT,
+                        isNotificationsSelected = currentDestination is AccountNotificationsDestination,
+                        isSettingsSelected = navManager.currentRoot == RootTab.SETTINGS,
                         onDestinationSelected = { root ->
                             onEvent(MainState.Event.RootSelected(root, popToRootOnReselect = true))
                         },
