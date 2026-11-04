@@ -501,3 +501,34 @@ internal val MIGRATION_69_70 = object : Migration(69, 70) {
         )
     }
 }
+
+
+/** Persistent ordering and episode history for the MY_NEW_EPISODES home section. */
+internal val MIGRATION_70_71 = object : Migration(70, 71) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS home_my_new_episode_history (
+                animeId INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                episodeNumber INTEGER NOT NULL,
+                airedAtSeconds INTEGER NOT NULL,
+                posterSmallUrl TEXT,
+                posterMediumUrl TEXT,
+                posterBigUrl TEXT,
+                posterFullsizeUrl TEXT,
+                posterMegaUrl TEXT,
+                firstSeenAt INTEGER NOT NULL,
+                lastUpdatedAt INTEGER NOT NULL,
+                position INTEGER NOT NULL,
+                PRIMARY KEY(animeId)
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_home_my_new_episode_history_position " +
+                "ON home_my_new_episode_history(position)"
+        )
+    }
+}
