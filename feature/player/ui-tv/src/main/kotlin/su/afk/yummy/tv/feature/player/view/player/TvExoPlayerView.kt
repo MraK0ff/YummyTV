@@ -665,5 +665,20 @@ internal fun TvExoPlayerView(
                 .align(Alignment.CenterEnd)
                 .padding(end = 48.dp),
         )
+        TvPlayerEpisodesStrip(
+            visible = panels.isOpen(TvPlayerPanel.Episodes),
+            episodes = playback.episodes,
+            currentEpisodeIndex = playback.currentEpisodeIndex,
+            selectedFocusRequester = focus.selectedEpisodes,
+            animeId = state.animeId,
+            posterUrl = state.posterUrl,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            onEpisodeSelected = { index ->
+                panels.close(PanelReturnFocusTarget.Episodes)
+                onPlayerEvent(PlayerState.Event.EpisodeSelected(index))
+                onInteraction()
+            },
+            onExitUp = { exitPanelDown(PanelReturnFocusTarget.Episodes) },
+        )
     }
 }
