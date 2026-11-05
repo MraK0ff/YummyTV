@@ -142,6 +142,11 @@ class HomeViewModelTest : BaseUnitTest() {
         coEvery { getBloggerVideos(any(), any(), any(), any(), any()) } returns emptyList()
         coEvery { setAnimeRecommendationIgnored(any(), any()) } returns true
         coEvery { getRecentlyAiredSchedule(any()) } returns emptyList()
+        coEvery { trackMyNewEpisodesUseCase(any(), any(), any()) } answers {
+            val schedule = firstArg<List<HomeFeedItem>>()
+            val selectedAnimeIds = secondArg<Set<Int>>()
+            schedule.filter { it.id in selectedAnimeIds }
+        }
     }
 
     private fun createViewModel() = HomeViewModel(
