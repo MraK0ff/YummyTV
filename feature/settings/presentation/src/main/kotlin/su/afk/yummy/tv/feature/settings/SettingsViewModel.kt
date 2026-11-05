@@ -102,6 +102,7 @@ class SettingsViewModel @Inject internal constructor(
                         watchedThresholds = snapshot.watchedThresholds,
                         tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
+                        audioFocusDisabled = snapshot.audioFocusDisabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
                         audioFocusDisabled = snapshot.audioFocusDisabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
@@ -390,6 +391,10 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.advancedPlayerVolumeEnabled
                 analytics.eventAdvancedPlayerVolumeToggled(enabled)
                 settingsStore.setAdvancedPlayerVolumeEnabled(enabled)
+            }
+
+            SettingsState.Event.AudioFocusToggled -> viewModelScope.launch {
+                settingsStore.setAudioFocusDisabled(!currentState.audioFocusDisabled)
             }
 
             SettingsState.Event.AdaptiveVideoQualityToggled -> viewModelScope.launch {
