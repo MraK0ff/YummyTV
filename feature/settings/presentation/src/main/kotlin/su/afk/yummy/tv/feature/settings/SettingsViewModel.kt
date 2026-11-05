@@ -111,7 +111,6 @@ class SettingsViewModel @Inject internal constructor(
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
                         audioFocusDisabled = snapshot.audioFocusDisabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
-                        audioFocusDisabled = snapshot.audioFocusDisabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
                         browserUserAgentProfile = snapshot.browserUserAgentProfile,
                         videoExportAutoEnabled = snapshot.videoExportAutoEnabled,
