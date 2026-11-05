@@ -58,6 +58,8 @@ internal fun HomeDashboard(
     feed: HomeFeed,
     continueWatching: List<HomeContinueWatchingItem>,
     launchingContinueWatchingAnimeId: Int?,
+    homeSectionOrder: List<String>,
+    hiddenHomeSections: Set<String>,
     onContinueWatchingSelected: (HomeContinueWatchingItem) -> Unit,
     onItemSelected: (sectionId: String, item: HomeFeedItem) -> Unit,
     requestInitialFocus: Boolean,
@@ -69,8 +71,9 @@ internal fun HomeDashboard(
     val mainMenuFocusRequester = LocalMainMenuFocusRequester.current
     val defaultBringIntoViewSpec = LocalBringIntoViewSpec.current
 
-    val hasContinueWatching = continueWatching.isNotEmpty()
-    val hasHero = feed.heroItems.isNotEmpty()
+    val hasContinueWatching =
+        continueWatching.isNotEmpty() && "CONTINUE_WATCHING" !in hiddenHomeSections
+    val hasHero = feed.heroItems.isNotEmpty() && "SEASON_ANIME" !in hiddenHomeSections
 
     // Блок новых серий закреплён над «Аниме сезона», остальные секции идут после него. Нумеруем
     // секции по исходному списку, чтобы ключи рядов (а с ними и возврат фокуса) не поехали.
