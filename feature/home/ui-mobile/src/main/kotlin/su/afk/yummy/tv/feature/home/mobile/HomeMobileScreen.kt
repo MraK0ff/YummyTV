@@ -236,37 +236,41 @@ fun HomeMobileScreen(
                         }
                     }
 
-                    if (feed != null && feed.heroItems.isNotEmpty()) {
-                        item(key = "hero") {
-                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                MobileSectionHeader(
-                                    title = stringResource(R.string.home_season_title),
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                )
-                                HomeHeroCarousel(
-                                    items = feed.heroItems,
-                                    onItemSelected = onItemSelected,
-                                )
-                            }
-                        }
-                    }
-
-                    if (state.continueWatching.isNotEmpty()) {
-                        item(key = "continue_watching") {
-                            ContinueWatchingSection(
-                                entries = state.continueWatching,
-                                launchingAnimeId = state.launchingContinueWatchingAnimeId,
-                                onEntrySelected = {
-                                    onEvent(HomeState.Event.ContinueWatchingSelected(it))
-                                },
-                                onEntryLongClick = { continueWatchingActionEntry = it },
-                            )
-                        }
-                    }
-
                     state.homeSectionOrder.forEach { sectionName ->
                         if (sectionName in state.hiddenHomeSections) return@forEach
                         when (sectionName) {
+                            "SEASON_ANIME" -> {
+                                if (feed != null && feed.heroItems.isNotEmpty()) {
+                                    item(key = "hero") {
+                                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                            MobileSectionHeader(
+                                                title = stringResource(R.string.home_season_title),
+                                                modifier = Modifier.padding(horizontal = 16.dp),
+                                            )
+                                            HomeHeroCarousel(
+                                                items = feed.heroItems,
+                                                onItemSelected = onItemSelected,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            "CONTINUE_WATCHING" -> {
+                                if (state.continueWatching.isNotEmpty()) {
+                                    item(key = "continue_watching") {
+                                        ContinueWatchingSection(
+                                            entries = state.continueWatching,
+                                            launchingAnimeId = state.launchingContinueWatchingAnimeId,
+                                            onEntrySelected = {
+                                                onEvent(HomeState.Event.ContinueWatchingSelected(it))
+                                            },
+                                            onEntryLongClick = { continueWatchingActionEntry = it },
+                                        )
+                                    }
+                                }
+                            }
+
                             "BLOGGER_VIDEOS" -> {
                                 if (state.bloggerVideos.isNotEmpty()) {
                                     item(key = "blogger_videos") {
