@@ -97,6 +97,7 @@ class SettingsViewModel @Inject internal constructor(
                         playerControlsAutoHideSeconds = snapshot.playerControlsAutoHideSeconds,
                         pictureInPictureEnabled = snapshot.pictureInPictureEnabled,
                         playerOrientationMode = snapshot.playerOrientationMode,
+                        audioFocusDisabled = snapshot.audioFocusDisabled,
                         suggestNextEpisodeOnWatched = snapshot.suggestNextEpisodeOnWatched,
                         autoManageLibraryLists = snapshot.autoManageLibraryLists,
                         watchedThresholds = snapshot.watchedThresholds,
@@ -378,6 +379,10 @@ class SettingsViewModel @Inject internal constructor(
             is SettingsState.Event.PlayerOrientationModeSelected -> viewModelScope.launch {
                 analytics.eventPlayerOrientationModeSelected(event.mode)
                 settingsStore.setPlayerOrientationMode(event.mode)
+            }
+
+            SettingsState.Event.AudioFocusToggled -> viewModelScope.launch {
+                settingsStore.setAudioFocusDisabled(!currentState.audioFocusDisabled)
             }
 
             SettingsState.Event.TvPlayerVolumeKeysToggled -> viewModelScope.launch {
