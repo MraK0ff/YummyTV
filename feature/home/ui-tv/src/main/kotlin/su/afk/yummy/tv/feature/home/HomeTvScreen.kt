@@ -180,6 +180,8 @@ fun HomeTvScreen(
                 feed = feed,
                 continueWatching = state.continueWatching,
                 launchingContinueWatchingAnimeId = state.launchingContinueWatchingAnimeId,
+                homeSectionOrder = state.homeSectionOrder,
+                hiddenHomeSections = state.hiddenHomeSections,
                 requestInitialFocus = focusHandoff.shouldFocusContent,
                 onInitialFocusHandled = focusHandoff::onContentFocused,
                 onContinueWatchingSelected = { entry ->
