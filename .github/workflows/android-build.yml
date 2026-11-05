@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - master
+      - rewrite/clean-history-candidate
 
 permissions:
   contents: read
@@ -47,6 +48,9 @@ jobs:
           echo "compileSdk=$compile_sdk -> platforms;android-$platform_version"
           (yes || true) | sdkmanager --licenses >/dev/null
           sdkmanager --install "platforms;android-$platform_version"
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace
 
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
