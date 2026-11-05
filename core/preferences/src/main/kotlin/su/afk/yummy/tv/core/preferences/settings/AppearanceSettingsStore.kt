@@ -35,9 +35,6 @@ interface AppearanceSettingsStore {
     val libraryTabOrder: Flow<List<LibraryTabKind>>
 
     /** Показывать ли праздничное оформление (гирлянда, тыквы) в сезон. */
-    /** Показывать быстрые действия аккаунта отдельными кнопками. */
-    val accountShortcutsExpanded: Flow<Boolean>
-
     val seasonalDecorationsEnabled: Flow<Boolean>
 
     /** Показывать быстрые действия аккаунта отдельными кнопками. */
