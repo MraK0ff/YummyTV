@@ -56,7 +56,11 @@ internal class YaniNewReleaseTracker {
                         now = now,
                         firstSeenAt = now,
                         lastUpdatedAt = if (isInitialSnapshot) 0L else now,
-                        position = if (isInitialSnapshot) merged.size else -1,
+                        position = if (isInitialSnapshot) {
+                            merged.size
+                        } else {
+                            (merged.values.maxOfOrNull { it.position } ?: -1) + 1
+                        },
                     )
                 }
                 previous.episodeNumber <= 0 -> {
@@ -90,7 +94,7 @@ internal class YaniNewReleaseTracker {
                 .thenByDescending { it.lastUpdatedAt }
                 .thenBy { it.position }
                 .thenBy { it.animeId },
-        ).mapIndexed { index, entry -> entry.copy(position = index) }
+        )
     }
 
     private data class Candidate(
