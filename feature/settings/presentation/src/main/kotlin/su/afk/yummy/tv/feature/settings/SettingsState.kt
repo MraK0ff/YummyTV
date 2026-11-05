@@ -65,6 +65,7 @@ class SettingsState {
         val playerControlsAutoHideSeconds: Int = 4,
         val pictureInPictureEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
+        val audioFocusDisabled: Boolean = false,
         val autoReturnMobileBrightnessToSystemAtZero: Boolean = true,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
         val mobilePlayerGestureTutorialDismissed: Boolean = false,
@@ -211,6 +212,9 @@ class SettingsState {
 
         /** Пользователь выбрал режим принудительной ориентации плеера. */
         data class PlayerOrientationModeSelected(val mode: PlayerOrientationMode) : Event
+
+        /** Пользователь разрешил плееру не запрашивать аудиофокус. */
+        data object AudioFocusToggled : Event
 
         /** Пользователь изменил оформление субтитров (размер, цвет, фон, отступ снизу). */
         data class SubtitleStyleSelected(val settings: PlayerSubtitleStyleSettings) : Event
