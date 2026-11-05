@@ -17,6 +17,7 @@ internal object SettingsPreferenceKeys {
     val homeSectionOrderKey = stringPreferencesKey("home_section_order")
     val hiddenHomeSectionsKey = stringSetPreferencesKey("hidden_home_sections")
     val seasonalDecorationsEnabledKey = booleanPreferencesKey("seasonal_decorations_enabled")
+    val accountShortcutsExpandedKey = booleanPreferencesKey("account_shortcuts_expanded")
     val seasonalAnnouncedKey = stringPreferencesKey("seasonal_announced_key")
     val newEpisodesSourcesKey = stringSetPreferencesKey("new_episodes_sources")
     val showLibraryTitleYearKey = booleanPreferencesKey("show_library_title_year")
@@ -41,6 +42,7 @@ internal object SettingsPreferenceKeys {
         intPreferencesKey("player_controls_auto_hide_seconds")
 
     val pictureInPictureEnabledKey = booleanPreferencesKey("picture_in_picture_enabled")
+    val audioFocusDisabledKey = booleanPreferencesKey("audio_focus_disabled")
     val playerOrientationModeKey = stringPreferencesKey("player_orientation_mode")
     val suggestNextEpisodeOnWatchedKey =
         booleanPreferencesKey("suggest_next_episode_on_watched")

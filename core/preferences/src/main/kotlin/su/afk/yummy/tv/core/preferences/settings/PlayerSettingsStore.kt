@@ -36,6 +36,9 @@ interface PlayerSettingsStore {
 
     val pictureInPictureEnabled: Flow<Boolean>
 
+    /** Отключить автоматическое управление аудиофокусом со стороны ExoPlayer. */
+    val audioFocusDisabled: Flow<Boolean>
+
     /** Принудительная альбомная ориентация плеера, не зависящая от системной блокировки поворота. */
     val playerOrientationMode: Flow<PlayerOrientationMode>
     val suggestNextEpisodeOnWatched: Flow<Boolean>
@@ -100,6 +103,7 @@ interface PlayerSettingsStore {
     suspend fun setNextEpisodeSwitchDelaySeconds(seconds: Int)
     suspend fun setPlayerControlsAutoHideSeconds(seconds: Int)
     suspend fun setPictureInPictureEnabled(enabled: Boolean)
+    suspend fun setAudioFocusDisabled(disabled: Boolean)
     suspend fun setPlayerOrientationMode(mode: PlayerOrientationMode)
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean)
     suspend fun setAutoManageLibraryLists(enabled: Boolean)

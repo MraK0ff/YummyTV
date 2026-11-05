@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -255,14 +254,6 @@ fun AccountMobileScreen(
                         title = stringResource(R.string.account_user_search),
                         icon = Icons.Filled.PersonSearch,
                         onClick = { onEvent(AccountState.Event.UserSearchSelected) },
-                    ),
-                )
-                add(
-                    AccountMobileQuickAction(
-                        key = "messages",
-                        title = stringResource(R.string.account_notification_type_message),
-                        icon = Icons.Filled.Email,
-                        onClick = { onEvent(AccountState.Event.MessagesSelected) },
                     ),
                 )
                 add(
