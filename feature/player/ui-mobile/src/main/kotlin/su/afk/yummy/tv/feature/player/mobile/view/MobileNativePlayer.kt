@@ -915,7 +915,7 @@ internal fun MobileNativePlayer(
                 },
                 episodes = ui.episodes,
                 selectedEpisodeIndex = ui.currentEpisodeIndex,
-                onEpisodeSelected = { index ->
+                onEpisodeSelected = { index: Int ->
                     trackSheetOpen = false
                     onEvent(PlayerState.Event.EpisodeSelected(index))
                 },
