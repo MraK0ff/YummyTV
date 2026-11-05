@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.audioFocusDisabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
@@ -136,6 +137,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             watchedThresholds = prefs.watchedThresholds(),
             tvPlayerVolumeKeysEnabled = prefs[tvPlayerVolumeKeysEnabledKey] ?: false,
             advancedPlayerVolumeEnabled = prefs[advancedPlayerVolumeEnabledKey] ?: false,
+            audioFocusDisabled = prefs[audioFocusDisabledKey] ?: false,
             volumeStabilizationEnabled = prefs[volumeStabilizationEnabledKey] ?: false,
             playerBufferProfile = prefs.enum(playerBufferProfileKey, PlayerBufferProfile.SMALL),
             browserUserAgentProfile = prefs.enum(

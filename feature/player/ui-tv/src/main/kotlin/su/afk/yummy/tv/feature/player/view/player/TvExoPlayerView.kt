@@ -592,11 +592,6 @@ internal fun TvExoPlayerView(
                 panels.close(PanelReturnFocusTarget.Balancer)
                 onInteraction()
             },
-            onEpisodeSelected = { idx ->
-                panels.close(PanelReturnFocusTarget.Episodes)
-                onPlayerEvent(PlayerState.Event.EpisodeSelected(idx))
-                onInteraction()
-            },
             onSpeedSelected = { idx ->
                 onPlayerEvent(PlayerState.Event.SpeedSelected(speeds[idx]))
                 onInteraction()
