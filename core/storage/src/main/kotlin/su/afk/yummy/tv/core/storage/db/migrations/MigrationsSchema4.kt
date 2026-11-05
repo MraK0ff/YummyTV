@@ -506,6 +506,26 @@ internal val MIGRATION_69_70 = object : Migration(69, 70) {
 /** Persistent ordering and episode history for the MY_NEW_EPISODES home section. */
 internal val MIGRATION_70_71 = object : Migration(70, 71) {
     override fun migrate(db: SupportSQLiteDatabase) {
+        // The upstream project also used schema 70 for downloaded opening/ending timings.
+        // The fork used the same version for home-release history. Some installs may therefore
+        // already have these columns while others do not; add only the missing columns.
+        val downloadColumns = buildSet {
+            db.query("PRAGMA table_info(video_downloads)").use { cursor ->
+                val nameIndex = cursor.getColumnIndexOrThrow("name")
+                while (cursor.moveToNext()) add(cursor.getString(nameIndex))
+            }
+        }
+        listOf(
+            "openingStartMs" to "INTEGER",
+            "openingEndMs" to "INTEGER",
+            "endingStartMs" to "INTEGER",
+            "endingEndMs" to "INTEGER",
+        ).forEach { (column, type) ->
+            if (column !in downloadColumns) {
+                db.execSQL("ALTER TABLE video_downloads ADD COLUMN $column $type")
+            }
+        }
+
         db.execSQL(
             """
             CREATE TABLE IF NOT EXISTS home_my_new_episode_history (
