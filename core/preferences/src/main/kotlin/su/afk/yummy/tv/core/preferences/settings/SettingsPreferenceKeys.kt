@@ -42,6 +42,7 @@ internal object SettingsPreferenceKeys {
         intPreferencesKey("player_controls_auto_hide_seconds")
 
     val pictureInPictureEnabledKey = booleanPreferencesKey("picture_in_picture_enabled")
+    val audioFocusDisabledKey = booleanPreferencesKey("audio_focus_disabled")
     val playerOrientationModeKey = stringPreferencesKey("player_orientation_mode")
     val suggestNextEpisodeOnWatchedKey =
         booleanPreferencesKey("suggest_next_episode_on_watched")
