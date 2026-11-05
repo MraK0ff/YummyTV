@@ -4,5 +4,5 @@ import androidx.compose.runtime.Composable
 
 interface MainGraph {
     @Composable
-    fun MainGraph()
+    fun MainGraph(onAppearanceReady: () -> Unit = {})
 }

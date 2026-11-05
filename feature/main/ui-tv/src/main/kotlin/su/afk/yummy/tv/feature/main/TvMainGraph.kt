@@ -43,7 +43,7 @@ class TvMainGraph @Inject constructor(
 ) : MainGraph {
 
     @Composable
-    override fun MainGraph() {
+    override fun MainGraph(onAppearanceReady: () -> Unit) {
         val viewModel: MainViewModel = hiltViewModel()
         val inAppFlow = navManager.appBackStack.isNotEmpty()
         val atRoot = !inAppFlow && navManager.backStack.size <= 1
@@ -53,6 +53,10 @@ class TvMainGraph @Inject constructor(
         val showMainMenu = atRoot && !isRequiredUpdateDestination
 
         ScreenNavigator(viewModel) { state, effect, onEvent ->
+            LaunchedEffect(state.appearanceLoaded) {
+                if (state.appearanceLoaded) onAppearanceReady()
+            }
+
             val toast = rememberGlobalToastState()
             LaunchedEffect(effect) {
                 effect.collect { eff ->

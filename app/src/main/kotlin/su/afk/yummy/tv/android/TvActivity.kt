@@ -3,6 +3,7 @@ package su.afk.yummy.tv.android
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.core.splashscreen.installSplashScreen
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,8 @@ import su.afk.yummy.tv.feature.main.TvMainGraph
 @AndroidEntryPoint
 class TvActivity : ComponentActivity() {
 
+    private var appearanceReady = false
+
     @Inject
     lateinit var mainGraph: TvMainGraph
 
@@ -41,6 +44,7 @@ class TvActivity : ComponentActivity() {
     lateinit var tvIntegration: ITvIntegration
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen().setKeepOnScreenCondition { !appearanceReady }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         tvIntegration.bindBrowsableChannelRequests(this, lifecycleScope)
@@ -51,7 +55,7 @@ class TvActivity : ComponentActivity() {
                 // baseline profile и бенчмарки (модуль :baselineprofile)
                 CompositionLocalProvider(LocalStaticBaseUrl provides siteApiConfig.staticBaseUrl) {
                     Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
-                        mainGraph.MainGraph()
+                        mainGraph.MainGraph(onAppearanceReady = { appearanceReady = true })
                     }
                 }
             }

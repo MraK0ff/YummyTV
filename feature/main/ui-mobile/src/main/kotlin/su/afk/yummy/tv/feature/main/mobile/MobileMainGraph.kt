@@ -52,7 +52,7 @@ class MobileMainGraph @Inject internal constructor(
 ) : MainGraph {
 
     @Composable
-    override fun MainGraph() {
+    override fun MainGraph(onAppearanceReady: () -> Unit) {
         val viewModel: MainViewModel = hiltViewModel()
         val currentDestination = navManager.backStack.lastOrNull()
         val atTabRoot = navManager.appBackStack.isEmpty() && navManager.backStack.size <= 1
@@ -62,6 +62,10 @@ class MobileMainGraph @Inject internal constructor(
         val showRail = !isRequiredUpdateDestination && !isFullscreenDestination
 
         ScreenNavigator(viewModel) { state, effect, onEvent ->
+            LaunchedEffect(state.appearanceLoaded) {
+                if (state.appearanceLoaded) onAppearanceReady()
+            }
+
             val accountSettingsFocusRequester = remember { FocusRequester() }
             val toast = rememberGlobalToastState()
             LaunchedEffect(effect) {

@@ -17,6 +17,8 @@ class MainState {
     data class State(
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
+        /** Становится true только после первого чтения сохранённых настроек оформления. */
+        val appearanceLoaded: Boolean = false,
         val navTransitionStyle: NavTransitionStyle = NavTransitionStyle.FADE_SCALE,
         val seasonalDecorationsEnabled: Boolean = true,
         /** Праздничная тема, включившаяся автоматически, о которой пользователю ещё не сообщили. */

@@ -244,6 +244,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     // APK ставится мимо Play (самообновление) — без profileinstaller профиль не применится
     implementation(libs.androidx.profileinstaller)
+    implementation(libs.androidx.splashscreen)
     implementation(libs.androidx.tracing.ktx)
     baselineProfile(project(":baselineprofile"))
     add("ksp", libs.hilt.work.compiler)

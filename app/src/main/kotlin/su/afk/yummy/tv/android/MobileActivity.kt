@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
+import androidx.core.splashscreen.installSplashScreen
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
@@ -33,6 +34,8 @@ import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 @AndroidEntryPoint
 class MobileActivity : ComponentActivity() {
 
+    private var appearanceReady = false
+
     @Inject
     lateinit var mainGraph: MobileMainGraph
 
@@ -55,6 +58,7 @@ class MobileActivity : ComponentActivity() {
     lateinit var continueWatchingWidgetUpdater: ContinueWatchingWidgetUpdater
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen().setKeepOnScreenCondition { !appearanceReady }
         super.onCreate(savedInstanceState)
         // тёмные бары до первой композиции; YummyTvTheme затем подстраивает иконки под выбранный фон
         enableEdgeToEdge(
@@ -68,7 +72,7 @@ class MobileActivity : ComponentActivity() {
                 // baseline profile и бенчмарки (модуль :baselineprofile)
                 CompositionLocalProvider(LocalStaticBaseUrl provides siteApiConfig.staticBaseUrl) {
                     Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
-                        mainGraph.MainGraph()
+                        mainGraph.MainGraph(onAppearanceReady = { appearanceReady = true })
                     }
                 }
             }
