@@ -26,9 +26,11 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkip
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerBrightnessPercentKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoReturnMobileBrightnessToSystemAtZeroKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.audioFocusDisabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerBufferProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerControlsAutoHideSecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOrientationModeKey
@@ -47,7 +49,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoMana
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.suggestNextEpisodeOnWatchedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerControlsTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerVolumeKeysEnabledKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.audioFocusDisabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.volumeStabilizationEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedLongRemainingMinutesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchedMediumRemainingMinutesKey
@@ -71,7 +72,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val autoSkipDelaySeconds: Flow<Int> = store.data.map { prefs ->
         (prefs[autoSkipDelaySecondsKey] ?: DEFAULT_AUTO_SKIP_DELAY_SECONDS)
-            .coerceIn(MIN_AUTO_SKIP_DELAY_SECONDS, MAX_AUTO_SKIP_DELAY_SECONDS)
+            .coerceIn(0, MAX_AUTO_SKIP_DELAY_SECONDS)
     }
 
     override val showOpeningOnTimeline: Flow<Boolean> =
@@ -94,6 +95,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val pictureInPictureEnabled: Flow<Boolean> =
         store.boolean(pictureInPictureEnabledKey, true)
+
+    override val audioFocusDisabled: Flow<Boolean> =
+        store.boolean(audioFocusDisabledKey, false)
 
     override val playerOrientationMode: Flow<PlayerOrientationMode> =
         store.enumFlow(playerOrientationModeKey, PlayerOrientationMode.SYSTEM)
@@ -129,6 +133,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         prefs[mobilePlayerBrightnessPercentKey]?.coerceIn(MIN_BRIGHTNESS_PERCENT, MAX_VOLUME_PERCENT)
     }
 
+    override val autoReturnMobileBrightnessToSystemAtZero: Flow<Boolean> =
+        store.boolean(autoReturnMobileBrightnessToSystemAtZeroKey, true)
+
     override val playerPlaybackSpeed: Flow<Float> = store.data.map { prefs ->
         (prefs[playerPlaybackSpeedKey] ?: DEFAULT_PLAYBACK_SPEED)
             .coerceIn(MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED)
@@ -136,9 +143,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val volumeStabilizationEnabled: Flow<Boolean> =
         store.boolean(volumeStabilizationEnabledKey, false)
-
-    override val audioFocusDisabled: Flow<Boolean> =
-        store.boolean(audioFocusDisabledKey, false)
 
     override val playerBufferProfile: Flow<PlayerBufferProfile> =
         store.enumFlow(playerBufferProfileKey, PlayerBufferProfile.SMALL)
@@ -206,7 +210,7 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override suspend fun setAutoSkipDelaySeconds(seconds: Int) {
         store.edit { prefs ->
             prefs[autoSkipDelaySecondsKey] =
-                seconds.coerceIn(MIN_AUTO_SKIP_DELAY_SECONDS, MAX_AUTO_SKIP_DELAY_SECONDS)
+                seconds.coerceIn(0, MAX_AUTO_SKIP_DELAY_SECONDS)
         }
     }
 
@@ -232,6 +236,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setPictureInPictureEnabled(enabled: Boolean) =
         store.setBoolean(pictureInPictureEnabledKey, enabled)
+
+    override suspend fun setAudioFocusDisabled(disabled: Boolean) =
+        store.setBoolean(audioFocusDisabledKey, disabled)
 
     override suspend fun setPlayerOrientationMode(mode: PlayerOrientationMode) =
         store.setEnum(playerOrientationModeKey, mode)
@@ -282,6 +289,13 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         }
     }
 
+    override suspend fun clearMobilePlayerBrightnessPercent() {
+        store.edit { prefs -> prefs.remove(mobilePlayerBrightnessPercentKey) }
+    }
+
+    override suspend fun setAutoReturnMobileBrightnessToSystemAtZero(enabled: Boolean) =
+        store.setBoolean(autoReturnMobileBrightnessToSystemAtZeroKey, enabled)
+
     override suspend fun setPlayerPlaybackSpeed(speed: Float) {
         store.edit { prefs ->
             prefs[playerPlaybackSpeedKey] = speed.coerceIn(MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED)
@@ -290,9 +304,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setVolumeStabilizationEnabled(enabled: Boolean) =
         store.setBoolean(volumeStabilizationEnabledKey, enabled)
-
-    override suspend fun setAudioFocusDisabled(disabled: Boolean) =
-        store.setBoolean(audioFocusDisabledKey, disabled)
 
     override suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile) =
         store.setEnum(playerBufferProfileKey, profile)
@@ -351,7 +362,6 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         const val MAX_VOLUME_PERCENT = 100
         const val MIN_BRIGHTNESS_PERCENT = 1
         const val DEFAULT_AUTO_SKIP_DELAY_SECONDS = 5
-        const val MIN_AUTO_SKIP_DELAY_SECONDS = 1
         const val MAX_AUTO_SKIP_DELAY_SECONDS = 15
         const val DEFAULT_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 10
         const val MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 30

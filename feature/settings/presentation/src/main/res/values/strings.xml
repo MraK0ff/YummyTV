@@ -81,6 +81,12 @@
     <string name="settings_player_orientation_sensor_landscape_hint">Always landscape; left or right follows the sensor</string>
     <string name="settings_player_orientation_portrait">Portrait</string>
     <string name="settings_player_orientation_portrait_hint">Always portrait, even if system rotation is unlocked</string>
+    <string name="settings_audio_focus_label">Disable audio focus</string>
+    <string name="settings_audio_focus_enabled">Player ignores other apps taking audio focus. Use it if playback keeps pausing by itself</string>
+    <string name="settings_audio_focus_disabled">Player pauses and ducks when other apps take audio focus</string>
+    <string name="settings_audio_focus_confirm_title">Disable audio focus?</string>
+    <string name="settings_audio_focus_confirm_message">Without audio focus the video will not pause for calls or other apps, will not be ducked by notifications, and may play over other audio. Some devices may behave unexpectedly. Disable only if playback keeps pausing by itself.</string>
+    <string name="settings_audio_focus_confirm">Disable</string>
     <string name="settings_adaptive_video_quality_title">Adaptive quality</string>
     <string name="settings_adaptive_video_quality_hint">Adjusts to your device and network: drops when playback stutters, returns when it improves. Never goes above the preferred quality</string>
     <string name="settings_preferred_video_quality_title">Preferred video quality</string>
@@ -99,9 +105,9 @@
     <string name="settings_details_button_move_down">Move down</string>
     <string name="settings_watch_next_label">Continue watching</string>
     <string name="settings_watch_next_enabled">Synced with TV Home</string>
+    <string name="settings_seasonal_decorations">Seasonal decorations</string>
     <string name="settings_account_shortcuts_expanded">Separate account buttons</string>
     <string name="settings_account_shortcuts_expanded_hint">Show Find users and Watch later as separate buttons on the Account tab</string>
-    <string name="settings_seasonal_decorations">Seasonal decorations</string>
     <string name="settings_seasonal_decorations_halloween">Halloween decorations: Oct 20 – Nov 2</string>
     <string name="settings_seasonal_decorations_new_year">New Year decorations: Dec 15 – Jan 10</string>
     <string name="settings_seasonal_decorations_off_season">No holiday right now — decorations will appear on their own in season</string>
@@ -155,6 +161,7 @@
         <string name="settings_auto_skip_label">Auto-skip opening and ending</string>
     <string name="settings_auto_skip_enabled">Skip when episode timings are available</string>
     <string name="settings_auto_skip_delay_label">Auto-skip delay</string>
+    <string name="settings_auto_skip_delay_instant">Instant</string>
     <string name="settings_show_opening_on_timeline_label">Show opening on the timeline</string>
     <string name="settings_show_opening_on_timeline_enabled">The opening segment is highlighted on the progress bar</string>
     <string name="settings_auto_manage_library_lists_label">Auto-add to Watching / Completed</string>
@@ -169,18 +176,14 @@
     <string name="settings_controls_auto_hide_label">Hide player controls after</string>
     <string name="settings_picture_in_picture_label">Picture-in-Picture (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Automatically open when leaving the app during playback</string>
+    <string name="settings_brightness_return_system_label">Return system brightness at 0</string>
+    <string name="settings_brightness_return_system_hint">When player brightness reaches 0, stop overriding screen brightness and let Android control it</string>
     <string name="settings_advanced_volume_label">Advanced volume in the player</string>
     <string name="settings_advanced_volume_enabled" formatted="false">The player has its own volume (0–100%, 1% steps), independent of the system</string>
     <string name="settings_advanced_volume_disabled">Volume changes the system volume as usual</string>
     <string name="settings_volume_stabilization_label">Volume stabilization</string>
     <string name="settings_volume_stabilization_enabled">Evens out loud and quiet scenes: quiet dialogue is boosted, loud moments are tamed</string>
     <string name="settings_volume_stabilization_disabled">Audio plays with its original dynamic range</string>
-    <string name="settings_audio_focus_label">Disable audio focus</string>
-    <string name="settings_audio_focus_enabled">Player ignores other apps taking audio focus. Use it if playback keeps pausing by itself</string>
-    <string name="settings_audio_focus_disabled">Player pauses and ducks when other apps take audio focus</string>
-    <string name="settings_audio_focus_confirm_title">Disable audio focus?</string>
-    <string name="settings_audio_focus_confirm_message">Without audio focus the video will not pause for calls or other apps, will not be ducked by notifications, and may play over other audio. Some devices may behave unexpectedly. Disable only if playback keeps pausing by itself.</string>
-    <string name="settings_audio_focus_confirm">Disable</string>
     <string name="settings_player_gesture_tutorial_reset">Replay gesture tutorial</string>
     <string name="settings_player_gesture_tutorial_reset_hint">Show the tutorial the next time a video is opened</string>
     <string name="settings_player_gesture_tutorial_reset_done">The tutorial will be shown the next time a video is opened</string>
@@ -191,7 +194,7 @@
     <string name="settings_cache_size_max">Maximum</string>
     <string name="settings_cache_size_mb">%1$d MB</string>
     <string name="settings_cache_size_300">300 MB</string>
-    <string name="settings_content_language_title">Language</string>
+    <string name="settings_content_language_title">Content language</string>
     <string name="settings_content_language_russian">Russian</string>
     <string name="settings_content_language_english">English</string>
     <string name="settings_content_language_ukrainian">Ukrainian</string>
@@ -241,7 +244,7 @@
     <string name="settings_subtitle_edge_shadow">Shadow</string>
     <string name="settings_player_buffer_title">Player buffer size</string>
     <string name="settings_player_buffer_minimal">Minimal</string>
-    <string name="settings_player_buffer_minimal_hint">5–15 s ahead, up to 16 MB of RAM. Fastest start, but rebuffers more often.</string>
+    <string name="settings_player_buffer_minimal_hint">5–15 s ahead, up to 16 MB of RAM. Fastest start, but rebuffers more often. Alloha may pause while its session refreshes.</string>
     <string name="settings_player_buffer_small">Small</string>
     <string name="settings_player_buffer_small_hint">18–30 s ahead, up to 24 MB of RAM. Easy on memory.</string>
     <string name="settings_player_buffer_medium">Medium</string>
@@ -325,4 +328,21 @@
         <string name="settings_new_episodes_source_on">Counted</string>
     <string name="settings_new_episodes_source_off">Not counted</string>
     <string name="settings_library_tabs_reset_hint">Restore the default library tab order</string>
+    <string name="settings_home_sections_title">Home sections</string>
+    <string name="settings_home_sections_hint">Choose which blocks appear on Home and change their order</string>
+    <string name="settings_home_sections_reset">Reset Home section order</string>
+    <string name="settings_home_section_enabled">Shown on Home</string>
+    <string name="settings_home_section_my_new_episodes">New episodes from my lists</string>
+    <string name="settings_home_section_new_releases">New releases</string>
+    <string name="settings_home_section_new_titles">New titles</string>
+    <string name="settings_home_section_recommendations">Recommendations</string>
+    <string name="settings_home_section_announcements">Coming soon</string>
+    <string name="settings_home_section_collections">Collections</string>
+    <string name="settings_home_sections_reset_hint">Restore the default Home section order</string>
+    <string name="settings_home_sections_navigation_hint">Choose which blocks appear on Home and arrange them</string>
+    <string name="settings_home_sections_visibility_title">Visible sections</string>
+    <string name="settings_home_section_blogger_videos">From bloggers</string>
+    <string name="settings_home_section_more">More</string>
+    <string name="settings_interface_language_title">Interface language</string>
+    <string name="settings_interface_language_system">System default</string>
 </resources>

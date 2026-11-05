@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
@@ -37,6 +38,7 @@ class SettingsState {
     @Immutable
     data class State(
         val interfaceMode: AppInterfaceMode = AppInterfaceMode.MOBILE,
+        val interfaceLanguage: AppInterfaceLanguage = AppInterfaceLanguage.SYSTEM,
         val appTheme: AppTheme = AppTheme.WARM_AMBER,
         val backgroundStyle: BackgroundStyle = BackgroundStyle.DARK,
         val navTransitionStyle: NavTransitionStyle = NavTransitionStyle.FADE_SCALE,
@@ -66,6 +68,7 @@ class SettingsState {
         val playerControlsAutoHideSeconds: Int = 4,
         val pictureInPictureEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
+        val autoReturnMobileBrightnessToSystemAtZero: Boolean = true,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
         val mobilePlayerGestureTutorialDismissed: Boolean = false,
         val tvPlayerControlsTutorialDismissed: Boolean = false,
@@ -80,6 +83,7 @@ class SettingsState {
         val watchedThresholds: WatchedThresholds = WatchedThresholds(),
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
+        val audioFocusDisabled: Boolean = false,
         val volumeStabilizationEnabled: Boolean = false,
         /** Аудиофокус плеера отключён пользователем. */
         val audioFocusDisabled: Boolean = false,
@@ -93,6 +97,8 @@ class SettingsState {
         val contentLanguage: YaniContentLanguage = YaniContentLanguage.DEFAULT,
         val libraryTabOrder: ImmutableList<LibraryTabKind> =
             SettingsStore.defaultLibraryTabOrder.toImmutableList(),
+        val homeSectionOrder: ImmutableList<HomeSectionKind> = HomeSectionKind.entries.toImmutableList(),
+        val hiddenHomeSections: Set<HomeSectionKind> = emptySet(),
         val videoExportDirectoryName: String? = null,
         val cacheStorageEntries: ImmutableList<CacheStorageEntry> = persistentListOf(),
         val cacheStorageTotalBytes: Long = 0L,
@@ -207,6 +213,9 @@ class SettingsState {
         /** Пользователь включил или выключил плавающий режим мобильного плеера. */
         data object PictureInPictureToggled : Event
 
+        /** Пользователь включил или выключил возврат системной яркости при достижении нуля. */
+        data object AutoReturnMobileBrightnessToSystemAtZeroToggled : Event
+
         /** Пользователь выбрал режим принудительной ориентации плеера. */
         data class PlayerOrientationModeSelected(val mode: PlayerOrientationMode) : Event
 
@@ -218,10 +227,11 @@ class SettingsState {
 
         data object AdvancedPlayerVolumeToggled : Event
 
+        /** Пользователь отключил или включил запрос аудиофокуса плеером. */
+        data object AudioFocusToggled : Event
+
         /** Пользователь переключил стабилизацию громкости (сжатие динамического диапазона). */
         data object VolumeStabilizationToggled : Event
-
-        /** Переключить отключение аудиофокуса (включение подтверждается диалогом на экране). */
         data object AudioFocusToggled : Event
 
         /** Пользователь запросил повторный показ обучения жестам мобильного плеера. */
@@ -251,6 +261,9 @@ class SettingsState {
         /** Пользователь изменил токен приложения Yani. */
         data class YaniApplicationTokenChanged(val token: String) : Event
 
+        /** Пользователь выбрал язык интерфейса приложения. */
+        data class InterfaceLanguageSelected(val language: AppInterfaceLanguage) : Event
+
         /** Пользователь выбрал язык контента Yani. */
         data class ContentLanguageSelected(val language: YaniContentLanguage) : Event
 
@@ -268,6 +281,18 @@ class SettingsState {
 
         /** Пользователь сбросил порядок вкладок библиотеки к стандартному. */
         data object LibraryTabOrderReset : Event
+
+        /** Пользователь переместил секцию главной вверх или вниз. */
+        data class HomeSectionMoved(val section: HomeSectionKind, val direction: DetailsButtonMoveDirection) : Event
+
+        /** Пользователь включил или выключил секцию главной. */
+        data class HomeSectionVisibilityToggled(val section: HomeSectionKind) : Event
+
+        /** Пользователь сбросил порядок секций главной. */
+        data object HomeSectionOrderReset : Event
+
+        /** Пользователь открыл отдельную страницу управления секциями Home. */
+        data object HomeSectionsSelected : Event
 
         /** Пользователь открыл категорию настроек (мобильный интерфейс). */
         data class CategorySelected(val category: SettingsCategory) : Event

@@ -62,7 +62,6 @@ import su.afk.yummy.tv.feature.home.mobile.view.HomeAnnouncementDialog
 import su.afk.yummy.tv.feature.home.mobile.view.HomeContinueWatchingActionsSheet
 import su.afk.yummy.tv.feature.home.mobile.view.HomeFeedSectionRow
 import su.afk.yummy.tv.feature.home.mobile.view.HomeHeroCarousel
-import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSearchBar
 import su.afk.yummy.tv.feature.home.mobile.view.HomeMobileSkeleton
 import su.afk.yummy.tv.feature.home.mobile.view.HomeBoostyPromptDialog
 import su.afk.yummy.tv.feature.home.mobile.view.HomeCommunityPromptDialog
@@ -227,17 +226,13 @@ fun HomeMobileScreen(
                 ) {
                     val feed = state.feed
 
-                    // Плашки и поиск в одном item: иначе spacedBy(24) растягивает зазор между ними
-                    item(key = "search") {
-                        Column(modifier = Modifier.mobileContentMaxWidth()) {
-                            OfflineBanner(isOffline = isOffline)
-                            InfoBanner(message = state.statusMessage)
-                            HomeMobileSearchBar(
-                                onClick = { onEvent(HomeState.Event.SearchSelected) },
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .padding(top = if (isOffline || state.statusMessage != null) 8.dp else 0.dp),
-                            )
+                    // Статусные плашки держим в одном item, чтобы не раздувать зазор между ними
+                    if (isOffline || state.statusMessage != null) {
+                        item(key = "status") {
+                            Column(modifier = Modifier.mobileContentMaxWidth()) {
+                                OfflineBanner(isOffline = isOffline)
+                                InfoBanner(message = state.statusMessage)
+                            }
                         }
                     }
 
@@ -269,75 +264,84 @@ fun HomeMobileScreen(
                         }
                     }
 
-                    feed?.sections
-                        .orEmpty()
-                        .filter { it.items.isNotEmpty() }
-                        .forEach { section ->
-                            item(key = "section_${section.type.name}") {
-                                val isCollections = section.type == HomeFeedSectionType.COLLECTIONS
-                                val isRecommendations =
-                                    section.type == HomeFeedSectionType.RECOMMENDATIONS
-                                val hasCatalog = isCollections || isRecommendations
-                                HomeFeedSectionRow(
-                                    section = section,
-                                    onItemSelected = onItemSelected,
-                                    actionLabel = if (hasCatalog) {
-                                        stringResource(R.string.home_mobile_all)
-                                    } else {
-                                        null
-                                    },
-                                    onActionClick = when {
-                                        isCollections -> {
-                                            { onEvent(HomeState.Event.CollectionsCatalogSelected) }
-                                        }
+                    state.homeSectionOrder.forEach { sectionName ->
+                        if (sectionName in state.hiddenHomeSections) return@forEach
+                        when (sectionName) {
+                            "BLOGGER_VIDEOS" -> {
+                                if (state.bloggerVideos.isNotEmpty()) {
+                                    item(key = "blogger_videos") {
+                                        MobileHomeBloggerVideosSection(
+                                            title = stringResource(R.string.home_mobile_blogger_videos),
+                                            allLabel = stringResource(R.string.home_mobile_all),
+                                            videos = state.bloggerVideos,
+                                            onVideoSelected = { onEvent(HomeState.Event.BloggerVideoSelected(it)) },
+                                            onAllSelected = { onEvent(HomeState.Event.BloggerVideosSelected) },
+                                        )
+                                    }
+                                }
+                                state.bloggerVideosError?.let { message ->
+                                    item(key = "blogger_videos_error") {
+                                        MobileMessage(
+                                            title = message.asString(),
+                                            actionLabel = stringResource(CoreR.string.common_retry),
+                                            onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
+                                        )
+                                    }
+                                }
+                            }
 
-                                        isRecommendations -> {
-                                            { onEvent(HomeState.Event.RecommendationsCatalogSelected) }
-                                        }
-
-                                        else -> null
-                                    },
-                                    // Управлять видимостью можно только рекомендациями.
-                                    onItemLongClick = if (isRecommendations) {
-                                        { item -> recommendationActionItem = item }
-                                    } else {
-                                        null
-                                    },
+                            "MORE" -> item(key = "quick_actions") {
+                                HomeQuickActionsSection(
+                                    title = stringResource(R.string.home_mobile_more),
+                                    scheduleTitle = stringResource(R.string.home_mobile_schedule),
+                                    reviewsTitle = stringResource(R.string.home_mobile_reviews),
+                                    newsTitle = stringResource(R.string.home_mobile_news),
+                                    onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
+                                    onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
+                                    onNewsClick = { onEvent(HomeState.Event.NewsSelected) },
+                                    modifier = Modifier.mobileContentMaxWidth(),
                                 )
                             }
-                        }
 
-                    if (state.bloggerVideos.isNotEmpty()) {
-                        item(key = "blogger_videos") {
-                            MobileHomeBloggerVideosSection(
-                                title = stringResource(R.string.home_mobile_blogger_videos),
-                                allLabel = stringResource(R.string.home_mobile_all),
-                                videos = state.bloggerVideos,
-                                onVideoSelected = { onEvent(HomeState.Event.BloggerVideoSelected(it)) },
-                                onAllSelected = { onEvent(HomeState.Event.BloggerVideosSelected) },
-                            )
-                        }
-                    }
+                            else -> {
+                                val section = feed?.sections
+                                    ?.firstOrNull { it.type.name == sectionName }
+                                    ?.takeIf { it.items.isNotEmpty() }
+                                if (section != null) {
+                                    item(key = "section_${section.type.name}") {
+                                        val isCollections = section.type == HomeFeedSectionType.COLLECTIONS
+                                        val isRecommendations =
+                                            section.type == HomeFeedSectionType.RECOMMENDATIONS
+                                        val hasCatalog = isCollections || isRecommendations
+                                        HomeFeedSectionRow(
+                                            section = section,
+                                            onItemSelected = onItemSelected,
+                                            actionLabel = if (hasCatalog) {
+                                                stringResource(R.string.home_mobile_all)
+                                            } else {
+                                                null
+                                            },
+                                            onActionClick = when {
+                                                isCollections -> {
+                                                    { onEvent(HomeState.Event.CollectionsCatalogSelected) }
+                                                }
 
-                    state.bloggerVideosError?.let { message ->
-                        item(key = "blogger_videos_error") {
-                            MobileMessage(
-                                title = message.asString(),
-                                actionLabel = stringResource(CoreR.string.common_retry),
-                                onAction = { onEvent(HomeState.Event.BloggerVideosRetrySelected) },
-                            )
-                        }
-                    }
+                                                isRecommendations -> {
+                                                    { onEvent(HomeState.Event.RecommendationsCatalogSelected) }
+                                                }
 
-                    item(key = "quick_actions") {
-                        HomeQuickActionsSection(
-                            title = stringResource(R.string.home_mobile_more),
-                            scheduleTitle = stringResource(R.string.home_mobile_schedule),
-                            reviewsTitle = stringResource(R.string.home_mobile_reviews),
-                            onScheduleClick = { onEvent(HomeState.Event.ScheduleSelected) },
-                            onReviewsClick = { onEvent(HomeState.Event.ReviewsSelected) },
-                            modifier = Modifier.mobileContentMaxWidth(),
-                        )
+                                                else -> null
+                                            },
+                                            onItemLongClick = if (isRecommendations) {
+                                                { item -> recommendationActionItem = item }
+                                            } else {
+                                                null
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

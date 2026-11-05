@@ -22,6 +22,7 @@ import su.afk.yummy.tv.core.preferences.settings.CacheSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.PlayerSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SearchSettingsStore
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.advancedPlayerVolumeEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.audioFocusDisabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.appThemeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlayNextEpisodeKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
@@ -33,8 +34,8 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryC
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.libraryTabOrderKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSectionEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalAnnouncedKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.accountShortcutsExpandedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.seasonalDecorationsEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.accountShortcutsExpandedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.newEpisodesSourcesKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
@@ -56,7 +57,6 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.suggestN
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.tvPlayerVolumeKeysEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.videoDownloadWifiOnlyKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.videoExportAutoEnabledKey
-import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.audioFocusDisabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.volumeStabilizationEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.watchNextEnabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.yaniAvatarUrlKey
@@ -121,7 +121,7 @@ internal class DataStoreSettingsStore @Inject constructor(
             watchNextEnabled = prefs[watchNextEnabledKey] ?: true,
             previewCacheSize = (prefs[previewCacheSizeKey] ?: 100).coerceIn(50, 500),
             autoSkipOpeningsEndings = prefs[autoSkipOpeningsEndingsKey] ?: false,
-            autoSkipDelaySeconds = (prefs[autoSkipDelaySecondsKey] ?: 5).coerceIn(1, 15),
+            autoSkipDelaySeconds = (prefs[autoSkipDelaySecondsKey] ?: 5).coerceIn(0, 15),
             showOpeningOnTimeline = prefs[showOpeningOnTimelineKey] ?: false,
             autoPlayNextEpisode = prefs[autoPlayNextEpisodeKey] ?: false,
             nextEpisodeSwitchDelaySeconds =
@@ -138,8 +138,8 @@ internal class DataStoreSettingsStore @Inject constructor(
             watchedThresholds = prefs.watchedThresholds(),
             tvPlayerVolumeKeysEnabled = prefs[tvPlayerVolumeKeysEnabledKey] ?: false,
             advancedPlayerVolumeEnabled = prefs[advancedPlayerVolumeEnabledKey] ?: false,
-            volumeStabilizationEnabled = prefs[volumeStabilizationEnabledKey] ?: false,
             audioFocusDisabled = prefs[audioFocusDisabledKey] ?: false,
+            volumeStabilizationEnabled = prefs[volumeStabilizationEnabledKey] ?: false,
             playerBufferProfile = prefs.enum(playerBufferProfileKey, PlayerBufferProfile.SMALL),
             browserUserAgentProfile = prefs.enum(
                 browserUserAgentProfileKey,

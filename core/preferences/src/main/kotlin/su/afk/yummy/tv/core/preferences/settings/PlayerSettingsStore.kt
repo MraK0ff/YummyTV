@@ -21,7 +21,7 @@ interface PlayerSettingsStore {
     val adaptiveVideoQualityEnabled: Flow<Boolean>
     val autoSkipOpeningsEndings: Flow<Boolean>
 
-    /** Задержка перед автопропуском опенинга/эндинга, сек (1..15). */
+    /** Задержка перед автопропуском опенинга/эндинга, сек; 0 — мгновенно, 1..15 — с задержкой. */
     val autoSkipDelaySeconds: Flow<Int>
 
     /** Показывать участок опенинга на полосе прогресса плеера. */
@@ -35,6 +35,9 @@ interface PlayerSettingsStore {
     val playerControlsAutoHideSeconds: Flow<Int>
 
     val pictureInPictureEnabled: Flow<Boolean>
+
+    /** Отключить автоматическое управление аудиофокусом со стороны ExoPlayer. */
+    val audioFocusDisabled: Flow<Boolean>
 
     /** Принудительная альбомная ориентация плеера, не зависящая от системной блокировки поворота. */
     val playerOrientationMode: Flow<PlayerOrientationMode>
@@ -54,14 +57,14 @@ interface PlayerSettingsStore {
     /** Яркость мобильного плеера в процентах; `null` — пользователь её не менял, действует системная. */
     val mobilePlayerBrightnessPercent: Flow<Int?>
 
+    /** Возвращать системное управление яркостью при достижении нуля в мобильном плеере. */
+    val autoReturnMobileBrightnessToSystemAtZero: Flow<Boolean>
+
     /** Скорость воспроизведения, выбранная в плеере последней; общая для всех тайтлов. */
     val playerPlaybackSpeed: Flow<Float>
 
     /** Стабилизация громкости (сжатие динамического диапазона аудио). */
     val volumeStabilizationEnabled: Flow<Boolean>
-
-    /** Аудиофокус плеера отключён пользователем (плеер не реагирует на перехват фокуса другими приложениями). */
-    val audioFocusDisabled: Flow<Boolean>
 
     /** Размер оперативного буфера ExoPlayer: запас видео впереди позиции и лимит памяти под него. */
     val playerBufferProfile: Flow<PlayerBufferProfile>
@@ -100,6 +103,7 @@ interface PlayerSettingsStore {
     suspend fun setNextEpisodeSwitchDelaySeconds(seconds: Int)
     suspend fun setPlayerControlsAutoHideSeconds(seconds: Int)
     suspend fun setPictureInPictureEnabled(enabled: Boolean)
+    suspend fun setAudioFocusDisabled(disabled: Boolean)
     suspend fun setPlayerOrientationMode(mode: PlayerOrientationMode)
     suspend fun setSuggestNextEpisodeOnWatched(enabled: Boolean)
     suspend fun setAutoManageLibraryLists(enabled: Boolean)
@@ -112,9 +116,10 @@ interface PlayerSettingsStore {
     suspend fun setAdvancedPlayerVolumeEnabled(enabled: Boolean)
     suspend fun setAdvancedPlayerVolumePercent(percent: Int)
     suspend fun setMobilePlayerBrightnessPercent(percent: Int)
+    suspend fun clearMobilePlayerBrightnessPercent()
+    suspend fun setAutoReturnMobileBrightnessToSystemAtZero(enabled: Boolean)
     suspend fun setPlayerPlaybackSpeed(speed: Float)
     suspend fun setVolumeStabilizationEnabled(enabled: Boolean)
-    suspend fun setAudioFocusDisabled(disabled: Boolean)
     suspend fun setPlayerBufferProfile(profile: PlayerBufferProfile)
     suspend fun setBrowserUserAgentProfile(profile: BrowserUserAgentProfile)
     suspend fun setPlayerResizeMode(mode: PlayerResizeMode)

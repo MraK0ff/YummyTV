@@ -20,6 +20,7 @@ import su.afk.yummy.tv.feature.details.presentation.R
 internal fun EpisodeActionsSheet(
     action: EpisodesState.EpisodeAction,
     onToggleWatched: () -> Unit,
+    onMarkWatchedAndPrevious: () -> Unit,
     onClearWatched: () -> Unit,
     onToggleWatchLater: () -> Unit,
     onDismiss: () -> Unit,
@@ -39,6 +40,13 @@ internal fun EpisodeActionsSheet(
             icon = if (action.isWatched) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
             onClick = onToggleWatched,
         )
+        if (!action.isWatched) {
+            EpisodeSheetActionButton(
+                text = stringResource(R.string.details_mark_episode_watched_previous),
+                icon = Icons.Filled.VisibilityOff,
+                onClick = onMarkWatchedAndPrevious,
+            )
+        }
         if (!action.isWatched && action.hasProgress) {
             EpisodeSheetActionButton(
                 text = stringResource(R.string.details_mobile_unmark_episode_watched),

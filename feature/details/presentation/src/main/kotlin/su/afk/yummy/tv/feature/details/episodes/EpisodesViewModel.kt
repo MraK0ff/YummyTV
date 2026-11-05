@@ -66,6 +66,7 @@ import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeDownloadPrepareRe
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchLaterHandler
 import su.afk.yummy.tv.feature.details.episodes.handler.EpisodeWatchedHandler
 import su.afk.yummy.tv.feature.details.episodes.utils.buildEpisodeGroups
+import su.afk.yummy.tv.feature.details.episodes.utils.previousEpisodeGroups
 import su.afk.yummy.tv.feature.details.episodes.utils.filterEpisodeGroups
 import su.afk.yummy.tv.feature.details.episodes.utils.isActive
 import su.afk.yummy.tv.feature.details.episodes.utils.resolveDownloadStatuses
@@ -261,6 +262,12 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 viewModelScope.launch { toggleEpisodeWatched(action) }
             }
 
+            EpisodesState.Event.EpisodeWatchedAndPreviousSelected -> {
+                val action = currentState.pendingEpisodeAction ?: return
+                setState { copy(pendingEpisodeAction = null) }
+                viewModelScope.launch { markEpisodeWatchedAndPrevious(action) }
+            }
+
             EpisodesState.Event.EpisodeWatchedCleared -> {
                 val action = currentState.pendingEpisodeAction ?: return
                 setState { copy(pendingEpisodeAction = null) }
@@ -409,19 +416,7 @@ class EpisodesViewModel @AssistedInject internal constructor(
                 isSignedIn = isSignedIn,
             )
         } else {
-            watchedHandler.markWatched(
-                animeId = animeId,
-                episode = action.episode,
-                videos = action.videos,
-                bestDubbing = currentState.bestDubbing,
-                existing = currentState.watchProgress.bestFor(action.videos),
-                meta = EpisodeWatchedHandler.EpisodeMeta(
-                    animeTitle = animeTitle,
-                    posterUrl = posterUrl,
-                    screenshotUrl = screenshotsByEpisode[action.episode].orEmpty(),
-                ),
-                isSignedIn = isSignedIn,
-            )
+            markEpisodeWatched(action.episode, action.videos)
         }
 
         if (!succeeded) {
@@ -435,6 +430,57 @@ class EpisodesViewModel @AssistedInject internal constructor(
             refreshVideosFromNetwork()
         }
     }
+
+    /**
+     * Marks the selected episode and the inclusive prefix in the same order used by the episode
+     * list. Numeric episode order is preserved across seasons; specials and unknown numbers keep
+     * the existing trailing/stable ordering. The screen is scoped to one animeId.
+     */
+    private suspend fun markEpisodeWatchedAndPrevious(action: EpisodesState.EpisodeAction) {
+        val episodes = previousEpisodeGroups(
+            groups = currentState.episodeGroups,
+            selectedEpisode = action.episode,
+            selectedVideos = action.videos,
+        )
+        var succeeded = true
+        episodes.forEach { group ->
+            if (currentState.watchProgress.bestFor(group.videos)?.isWatchedProgress() == true) {
+                return@forEach
+            }
+            if (!markEpisodeWatched(group.episode, group.videos)) {
+                succeeded = false
+            }
+        }
+
+        if (!succeeded) {
+            setEffect(
+                EpisodesState.Effect.ShowToast(
+                    stringProvider.get(R.string.details_episode_watched_sync_failed),
+                ),
+            )
+        }
+        if (isSignedIn) {
+            refreshVideosFromNetwork()
+        }
+    }
+
+    private suspend fun markEpisodeWatched(
+        episode: String,
+        videos: List<AnimeVideo>,
+    ): Boolean =
+        watchedHandler.markWatched(
+            animeId = animeId,
+            episode = episode,
+            videos = videos,
+            bestDubbing = currentState.bestDubbing,
+            existing = currentState.watchProgress.bestFor(videos),
+            meta = EpisodeWatchedHandler.EpisodeMeta(
+                animeTitle = animeTitle,
+                posterUrl = posterUrl,
+                screenshotUrl = screenshotsByEpisode[episode].orEmpty(),
+            ),
+            isSignedIn = isSignedIn,
+        )
 
     private suspend fun loadMeta() {
         runSuspendCatching { getAnimeDetails(animeId) }.onSuccess { details ->

@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.model.settings.SupportPromptSnapshot
 import su.afk.yummy.tv.core.model.text.UiText
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
+import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.preferences.settings.SettingsStore
 import su.afk.yummy.tv.core.preferences.settings.contentLanguageChanges
 import su.afk.yummy.tv.core.preferences.settings.currentUserId
@@ -45,6 +46,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.usecase.GetCachedHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetHomeFeedUseCase
 import su.afk.yummy.tv.domain.home.usecase.GetRecentlyAiredScheduleUseCase
+import su.afk.yummy.tv.domain.home.usecase.TrackMyNewEpisodesUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveHomeContinueWatchingUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveLibraryNewEpisodeAnimeIdsUseCase
 import su.afk.yummy.tv.domain.home.usecase.ObserveWatchedEpisodesUseCase
@@ -65,14 +67,13 @@ import su.afk.yummy.tv.feature.home.utils.hasPlayableTarget
 import su.afk.yummy.tv.feature.home.utils.shouldOfferPreviewChannel
 import su.afk.yummy.tv.feature.home.utils.supportPromptRemainingMs
 import su.afk.yummy.tv.feature.home.utils.withMyNewEpisodes
-import su.afk.yummy.tv.feature.home.utils.withShuffledHero
+import su.afk.yummy.tv.feature.home.utils.withHomeSectionPreferences
 import su.afk.yummy.tv.feature.home.utils.withoutHiddenRecommendations
 import su.afk.yummy.tv.feature.player.IPlayerNavigator
 import su.afk.yummy.tv.feature.player.getPlayerDest
 import su.afk.yummy.tv.feature.reviews.IReviewsNavigator
 import su.afk.yummy.tv.feature.schedule.IScheduleNavigator
 import javax.inject.Inject
-import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -98,6 +99,7 @@ class HomeViewModel @Inject internal constructor(
     private val observeLibraryNewEpisodeAnimeIds: ObserveLibraryNewEpisodeAnimeIdsUseCase,
     private val observeWatchedEpisodes: ObserveWatchedEpisodesUseCase,
     private val getRecentlyAiredSchedule: GetRecentlyAiredScheduleUseCase,
+    private val trackMyNewEpisodesUseCase: TrackMyNewEpisodesUseCase,
     private val appClock: AppClock,
     private val stringProvider: StringProvider,
     private val resolveContinueWatchingLaunch: ResolveContinueWatchingLaunchUseCase,
@@ -133,20 +135,23 @@ class HomeViewModel @Inject internal constructor(
     /** Лента без скрытых рекомендаций — из неё тайтл возвращается при откате. */
     private var rawFeed: HomeFeed? = null
 
-    /** Зерно порядка «Аниме сезона»: новое на каждый заход, но стабильное, пока жива VM. */
-    private val heroShuffleSeed = Random.nextLong()
-
     /** Тайтлы из выбранных в настройках списков — из них собирается секция новых серий. */
     private var libraryAnimeIds: Set<Int> = emptySet()
 
     /** Онгоинги с серией за последние дни из расписания; фильтруются по [libraryAnimeIds]. */
     private var recentlyAired: List<HomeFeedItem> = emptyList()
 
+    /** Latest raw schedule snapshot; durable history is merged separately. */
+    private var recentScheduleItems: List<HomeFeedItem> = emptyList()
+
     /** Просмотренные серии: id тайтла → номера серий. Ими помечаются карточки новых серий. */
     private var watchedEpisodes: Map<Int, Set<Int>> = emptyMap()
 
     /** Блок новых серий выключен в настройках — секция не собирается вовсе. */
     private var newEpisodesSectionEnabled: Boolean = true
+
+    private var homeSectionOrder: List<String> = emptyList()
+    private var hiddenHomeSections: Set<String> = emptySet()
 
     private var loadJob: Job? = null
 
@@ -172,6 +177,7 @@ class HomeViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
         observeLibraryAnimeIds()
         loadRecentlyAired()
+        observeHomeSectionPreferences()
         observeHiddenRecommendations()
         observeSupportPrompt()
         observeAnnouncement()
@@ -235,6 +241,10 @@ class HomeViewModel @Inject internal constructor(
 
             HomeState.Event.ScheduleSelected -> {
                 nav.navigate(scheduleNavigator.getScheduleDest())
+            }
+
+            HomeState.Event.NewsSelected -> {
+                nav.switchRoot(root = RootTab.POSTS, reselectPopToRoot = true)
             }
 
             HomeState.Event.ReviewsSelected -> {
@@ -331,6 +341,7 @@ class HomeViewModel @Inject internal constructor(
             .onEach { ids ->
                 libraryAnimeIds = ids
                 applyHiddenRecommendations()
+                if (recentScheduleItems.isNotEmpty()) trackMyNewEpisodes()
             }
             .launchIn(viewModelScope)
 
@@ -349,14 +360,37 @@ class HomeViewModel @Inject internal constructor(
             .launchIn(viewModelScope)
     }
 
-    /** Расписание кэшируется на час, поэтому лишней нагрузки на API это не даёт; ошибка не мешает главной. */
+    /**
+     * The schedule is cached for an hour. Its latest snapshot is merged into Room history so
+     * MY_NEW_EPISODES keeps one newest episode per anime and stable ordering across app restarts.
+     */
     private fun loadRecentlyAired() {
         viewModelScope.launch {
             runSuspendCatching { getRecentlyAiredSchedule(appClock.nowMillis() / 1_000L) }
                 .onSuccess { items ->
-                    recentlyAired = items
-                    applyHiddenRecommendations()
+                    recentScheduleItems = items
+                    trackMyNewEpisodes()
                 }
+                .onFailure {
+                    // Reading the durable history still works offline; a schedule error must not
+                    // clear or hide cards already discovered in previous sessions.
+                    trackMyNewEpisodes(scheduleItems = emptyList())
+                }
+        }
+    }
+
+    private fun trackMyNewEpisodes(scheduleItems: List<HomeFeedItem> = recentScheduleItems) {
+        viewModelScope.launch {
+            runSuspendCatching {
+                trackMyNewEpisodesUseCase(
+                    recentlyAired = scheduleItems,
+                    libraryAnimeIds = libraryAnimeIds,
+                    nowSeconds = appClock.nowMillis() / 1_000L,
+                )
+            }.onSuccess { history ->
+                recentlyAired = history
+                applyHiddenRecommendations()
+            }
         }
     }
 
@@ -445,9 +479,39 @@ class HomeViewModel @Inject internal constructor(
     private fun applyHiddenRecommendations() {
         val feed = rawFeed ?: return
         val hiddenIds = currentState.hiddenRecommendationIds
-        setState {
-            copy(feed = feed.toVisibleFeed(hiddenIds))
-        }
+        val visibleFeed = feed.toVisibleFeed(hiddenIds)
+            .withHomeSectionPreferences(homeSectionOrder, hiddenHomeSections)
+        setState { copy(feed = visibleFeed) }
+    }
+
+    /** Подписка на настройки порядка и видимости секций главной ленты. */
+    private fun observeHomeSectionPreferences() {
+        combine(settingsStore.homeSectionOrder, settingsStore.hiddenHomeSections) { order, hidden ->
+            order to hidden
+        }.onEach { (order, hidden) ->
+            val defaultOrder = listOf(
+                "MY_NEW_EPISODES",
+                "NEW_RELEASES",
+                "NEW_TITLES",
+                "RECOMMENDATIONS",
+                "ANNOUNCEMENTS",
+                "COLLECTIONS",
+                "BLOGGER_VIDEOS",
+                "MORE",
+            )
+            // Старые сохранённые списки содержат только шесть feed-секций.
+            // Добавляем новые пункты в конец, не теряя пользовательский порядок.
+            val completeOrder = order + defaultOrder.filterNot { it in order }
+            homeSectionOrder = completeOrder
+            hiddenHomeSections = hidden
+            setState {
+                copy(
+                    homeSectionOrder = completeOrder.toImmutableList(),
+                    hiddenHomeSections = hidden,
+                )
+            }
+            applyHiddenRecommendations()
+        }.launchIn(viewModelScope)
     }
 
     /** Следит за тем, когда окно поддержки проекта станет доступно к показу. */
@@ -872,7 +936,8 @@ class HomeViewModel @Inject internal constructor(
         setState {
             copy(
                 isLoading = isLoading,
-                feed = feed.toVisibleFeed(hiddenRecommendationIds),
+                feed = feed.toVisibleFeed(hiddenRecommendationIds)
+                    .withHomeSectionPreferences(homeSectionOrder, hiddenHomeSections),
             )
         }
     }
@@ -880,7 +945,6 @@ class HomeViewModel @Inject internal constructor(
     /** Лента в том виде, в котором её видит пользователь: без скрытого, с новыми сериями. */
     private fun HomeFeed.toVisibleFeed(hiddenIds: Set<Int>): HomeFeed =
         withoutHiddenRecommendations(hiddenIds)
-            .withShuffledHero(Random(heroShuffleSeed))
             .let { feed ->
                 if (!newEpisodesSectionEnabled) {
                     feed

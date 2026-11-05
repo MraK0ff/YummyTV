@@ -187,6 +187,7 @@
     <string name="details_relation_titles_found">Знайдено тайтлів: %1$d</string>
         <string name="details_mobile_episode_actions_action">Дії із серією</string>
     <string name="details_mark_episode_watched">Позначити переглянутою</string>
+    <string name="details_mark_episode_watched_previous">Позначити переглянутою та всі попередні</string>
     <string name="details_mobile_add_watch_later">Відкласти перегляд</string>
     <string name="details_mobile_remove_watch_later">Прибрати з відкладених</string>
     <string name="details_mobile_unmark_episode_watched">Прибрати позначку перегляду</string>

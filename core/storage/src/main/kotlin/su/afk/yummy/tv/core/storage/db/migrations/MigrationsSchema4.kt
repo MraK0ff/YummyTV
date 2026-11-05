@@ -466,15 +466,69 @@ internal val MIGRATION_68_69 = object : Migration(68, 69) {
     }
 }
 
-/**
- * Тайминги опенинга/эндинга в записи загрузки: автопропуск работает у скачанных серий без сети.
- * У уже скачанных серий остаются null.
- */
+
+/** Persistent per-anime history used to distinguish new episodes from alternate-dub reposts. */
 internal val MIGRATION_69_70 = object : Migration(69, 70) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE video_downloads ADD COLUMN openingStartMs INTEGER")
-        db.execSQL("ALTER TABLE video_downloads ADD COLUMN openingEndMs INTEGER")
-        db.execSQL("ALTER TABLE video_downloads ADD COLUMN endingStartMs INTEGER")
-        db.execSQL("ALTER TABLE video_downloads ADD COLUMN endingEndMs INTEGER")
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS home_new_release_history (
+                animeId INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                animeUrl TEXT NOT NULL,
+                description TEXT NOT NULL,
+                episodeNumber INTEGER NOT NULL,
+                episodeTitle TEXT NOT NULL,
+                videoId INTEGER,
+                dubTitle TEXT,
+                playerTitle TEXT,
+                posterSmallUrl TEXT,
+                posterMediumUrl TEXT,
+                posterBigUrl TEXT,
+                posterFullsizeUrl TEXT,
+                posterMegaUrl TEXT,
+                firstSeenAt INTEGER NOT NULL,
+                lastDetectedAt INTEGER NOT NULL,
+                lastUpdatedAt INTEGER NOT NULL,
+                position INTEGER NOT NULL,
+                PRIMARY KEY(animeId)
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_home_new_release_history_position " +
+                "ON home_new_release_history(position)"
+        )
+    }
+}
+
+
+/** Persistent ordering and episode history for the MY_NEW_EPISODES home section. */
+internal val MIGRATION_70_71 = object : Migration(70, 71) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS home_my_new_episode_history (
+                animeId INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                episodeNumber INTEGER NOT NULL,
+                airedAtSeconds INTEGER NOT NULL,
+                posterSmallUrl TEXT,
+                posterMediumUrl TEXT,
+                posterBigUrl TEXT,
+                posterFullsizeUrl TEXT,
+                posterMegaUrl TEXT,
+                firstSeenAt INTEGER NOT NULL,
+                lastUpdatedAt INTEGER NOT NULL,
+                position INTEGER NOT NULL,
+                PRIMARY KEY(animeId)
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_home_my_new_episode_history_position " +
+                "ON home_my_new_episode_history(position)"
+        )
     }
 }

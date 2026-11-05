@@ -12,51 +12,51 @@ import su.afk.yummy.tv.core.model.anime.AnimeEpisodes
 import su.afk.yummy.tv.core.model.anime.AnimeRating
 import su.afk.yummy.tv.core.testing.BaseUnitTest
 import su.afk.yummy.tv.domain.player.model.PlayerStreamResolveResult
+import su.afk.yummy.tv.source.anistar.data.network.AnistarApi
+import su.afk.yummy.tv.source.anistar.data.network.AnistarSearchPage
 import su.afk.yummy.tv.source.anistar.domain.model.AnistarStreams
 import su.afk.yummy.tv.source.anistar.domain.repository.AnistarRepository
 import su.afk.yummy.tv.source.anistar.domain.usecase.GetAnistarEpisodesUseCase
 import su.afk.yummy.tv.source.anistar.domain.usecase.ResolveAnistarStreamsUseCase
-import su.afk.yummy.tv.source.availability.domain.model.AvailabilityAnswer
-import su.afk.yummy.tv.source.availability.domain.model.AvailabilityLookup
-import su.afk.yummy.tv.source.availability.domain.model.SourceAvailability
-import su.afk.yummy.tv.source.availability.domain.model.SourceEpisode
-import su.afk.yummy.tv.source.availability.domain.model.SourceVariant
-import su.afk.yummy.tv.source.availability.domain.repository.AvailabilityRepository
-import su.afk.yummy.tv.source.availability.domain.usecase.FindSourceAvailabilityUseCase
 import java.io.IOException
 
 class AnistarExtraSourceTest : BaseUnitTest() {
 
     private val repository: AnistarRepository = mockk()
-    private val availability: AvailabilityRepository = mockk()
+    private val api: AnistarApi = mockk()
     private val messages = object : AnistarMessages {
         override val notFound = "nf-text"
     }
 
-    private fun details(malId: Int?) = AnimeDetails(
+    private fun details(malId: Int? = 52991) = AnimeDetails(
         id = 1, animeUrl = "u", title = "Фрирен", description = "", poster = null,
         rating = AnimeRating(null, null, null, null, null), genres = emptyList(), year = 2023, ageRating = null,
         views = null, status = null, type = "tv", episodes = AnimeEpisodes(28, 12, null, null), otherTitles = listOf("Frieren"),
         creators = emptyList(), studios = emptyList(), viewingOrder = emptyList(), screenshots = emptyList(), malId = malId,
     )
 
-    private val anistar = SourceAvailability(
-        sourceId = "anistar", key = "2658", url = "https://v31.astar.bz/test/player2/videoas_p2p_new.php?id=2658",
-        episodesAvailable = 2, episodesTotal = 12, ongoing = true, qualities = emptyList(),
-        variants = listOf(SourceVariant("2658", isDubbing = false, episodes = listOf(2, 1).map { SourceEpisode(it, null, null, null) })),
+    private val searchPage = AnistarSearchPage(
+        html = """<div id="dle-content"><div class="shortstory"><a href="/2658-frieren.html">Фрирен / Frieren</a><span>Год выпуска: 2023</span></div></div>""",
+        mirror = "https://v31.astar.bz",
     )
 
-    private fun answer(sources: List<SourceAvailability> = emptyList(), failed: Set<String> = emptySet()) = AvailabilityAnswer(sources, failed)
+    private val playerPage = """
+        title: "Серия 2", media_id: 2,
+        files: [{title: "360", file: "https://cdn/360.m3u8"}],
+        title: "Серия 1", media_id: 1,
+        files: [{title: "360", file: "https://cdn/360.m3u8"}],
+    """.trimIndent()
 
-    private fun videoRepository() = AnistarExtraVideoRepository(FindSourceAvailabilityUseCase(availability), GetAnistarEpisodesUseCase())
+    private fun videoRepository() = AnistarExtraVideoRepository(api, GetAnistarEpisodesUseCase())
 
     private fun streamRepository() = AnistarExtraStreamRepository(ResolveAnistarStreamsUseCase(repository), messages)
 
     @Test
-    fun `videos are built per episode and lookup carries the app data`() = runTest {
-        coEvery { availability.find(AvailabilityLookup(52991, "Фрирен", listOf("Frieren"), 2023, "tv", 28)) } returns answer(listOf(anistar))
+    fun `videos are found directly on AniStar and do not require MAL id`() = runTest {
+        coEvery { api.search("Фрирен") } returns searchPage
+        coEvery { api.getPlayerPage("https://v31.astar.bz", 2658L) } returns playerPage
 
-        val videos = videoRepository().videos(details(52991))
+        val videos = videoRepository().videos(details(malId = null))
 
         assertEquals(listOf("1", "2"), videos.map { it.episode })
         assertEquals("source://anistar/2658/1", videos[0].iframeUrl)
@@ -65,21 +65,16 @@ class AnistarExtraSourceTest : BaseUnitTest() {
     }
 
     @Test
-    fun `no mal id or no title gives no videos`() = runTest {
-        assertTrue(videoRepository().videos(details(null)).isEmpty())
-        coEvery { availability.find(any()) } returns answer()
-        assertTrue(videoRepository().videos(details(1)).isEmpty())
+    fun `direct search errors are propagated instead of silently hiding source`() = runTest {
+        coEvery { api.search("Фрирен") } throws IOException("AniStar is unavailable")
+
+        assertThrows(IOException::class.java) {
+            kotlinx.coroutines.runBlocking { videoRepository().videos(details()) }
+        }
     }
 
     @Test
-    fun `source that failed to answer is an error and not an empty list`() = runTest {
-        coEvery { availability.find(any()) } returns answer(failed = setOf("anistar"))
-
-        assertThrows(IOException::class.java) { kotlinx.coroutines.runBlocking { videoRepository().videos(details(1)) } }
-    }
-
-    @Test
-    fun `stream carries ascending qualities, the best one and the referer`() = runTest {
+    fun `stream carries ascending qualities the best one and referer`() = runTest {
         coEvery { repository.getStreams(any()) } returns AnistarStreams(
             hlsByQuality = mapOf(720 to "https://cdn/720.m3u8", 360 to "https://cdn/360.m3u8"),
             referer = "https://v31.astar.bz/",
@@ -93,7 +88,7 @@ class AnistarExtraSourceTest : BaseUnitTest() {
     }
 
     @Test
-    fun `missing episode is unavailable, network error and bad url fail`() = runTest {
+    fun `missing episode is unavailable network error and bad url fail`() = runTest {
         coEvery { repository.getStreams(any()) } returns null
         val unavailable = streamRepository().resolve("source://anistar/2658/9")
         assertEquals("nf-text", (unavailable as PlayerStreamResolveResult.Unavailable).message)

@@ -3,6 +3,7 @@ package su.afk.yummy.tv.feature.main.mobile.view
 import su.afk.yummy.tv.core.designsystem.seasonal.SeasonalOverlay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -27,17 +28,23 @@ import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileBottomBarDefaults
 import su.afk.yummy.tv.core.designsystem.mobile.bar.MobileNavigationLayout
 import su.afk.yummy.tv.feature.main.mobile.model.MobileMenuItem
 
-/**
- * Корневой каркас мобильного UI: на компактной ширине — нижний бар, на планшете, развёрнутом
- * складном и в широком окне — боковая рейка. [showBottomBar] и [showRail] задаются раздельно:
- * бар занимает высоту контента и уходит вне корня таба, рейка остаётся рядом с деталями.
- */
 @Composable
 internal fun <T> MobileMainScaffold(
     selectedDestination: T,
     menuItems: List<MobileMenuItem<T>>,
     showBottomBar: Boolean,
     showRail: Boolean,
+    showGlobalHeader: Boolean,
+    avatarUrl: String,
+    unreadNotificationsCount: Int,
+    onSearchSelected: () -> Unit,
+    onProfileSelected: () -> Unit,
+    onNotificationsSelected: () -> Unit,
+    onSettingsSelected: () -> Unit,
+    isSearchSelected: Boolean,
+    isProfileSelected: Boolean,
+    isNotificationsSelected: Boolean,
+    isSettingsSelected: Boolean,
     onDestinationSelected: (T) -> Unit,
     toastMessage: String?,
     showSeasonalOverlay: Boolean = true,
@@ -62,11 +69,7 @@ internal fun <T> MobileMainScaffold(
 
     val surface = MaterialTheme.colorScheme.surface
     NavigationSuiteScaffoldLayout(
-        navigationSuiteType = if (isRail) {
-            NavigationSuiteType.NavigationRail
-        } else {
-            NavigationSuiteType.NavigationBar
-        },
+        navigationSuiteType = if (isRail) NavigationSuiteType.NavigationRail else NavigationSuiteType.NavigationBar,
         state = suiteState,
         navigationSuite = {
             if (isRail) {
@@ -88,8 +91,6 @@ internal fun <T> MobileMainScaffold(
         },
     ) {
         CompositionLocalProvider(LocalMobileNavigationLayout provides layout) {
-            // Низ контента уже занят баром вместе с системным инсетом: без консьюма imePadding
-            // в экранах табов отступал бы на полную высоту клавиатуры и оставлял пустую полосу.
             val barInsets = if (layout == MobileNavigationLayout.BottomBar) {
                 WindowInsets.navigationBars.add(WindowInsets(bottom = MobileBottomBarDefaults.BarHeight))
             } else {
@@ -101,12 +102,30 @@ internal fun <T> MobileMainScaffold(
                     .consumeWindowInsets(barInsets)
                     .background(MaterialTheme.colorScheme.background),
             ) {
-                content()
+                Column(modifier = Modifier.fillMaxSize()) {
+                    if (showGlobalHeader) {
+                        MobileGlobalHeader(
+                            avatarUrl = avatarUrl,
+                            unreadNotificationsCount = unreadNotificationsCount,
+                            onSearchClick = onSearchSelected,
+                            onProfileClick = onProfileSelected,
+                            onNotificationsClick = onNotificationsSelected,
+                            onSettingsClick = onSettingsSelected,
+                            isSearchSelected = isSearchSelected,
+                            isProfileSelected = isProfileSelected,
+                            isNotificationsSelected = isNotificationsSelected,
+                            isSettingsSelected = isSettingsSelected,
+                        )
+                    }
+                    Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+                        content()
+                        GlobalToastOverlay(
+                            text = toastMessage,
+                            modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),
+                        )
+                    }
+                }
                 if (showSeasonalOverlay) SeasonalOverlay()
-                GlobalToastOverlay(
-                    text = toastMessage,
-                    modifier = Modifier.padding(bottom = MobileBottomBarDefaults.contentBottomPadding),
-                )
             }
         }
     }

@@ -81,6 +81,12 @@
     <string name="settings_player_orientation_sensor_landscape_hint">Завжди альбомна орієнтація, сторона (ліворуч або праворуч) визначається датчиком</string>
     <string name="settings_player_orientation_portrait">Вертикально</string>
     <string name="settings_player_orientation_portrait_hint">Завжди вертикальна орієнтація, навіть якщо в системі увімкнено автоповорот</string>
+    <string name="settings_audio_focus_label">Вимкнути аудіофокус</string>
+    <string name="settings_audio_focus_enabled">Плеєр не реагує на перехоплення фокусу іншими застосунками. Увімкніть, якщо відтворення саме ставиться на паузу</string>
+    <string name="settings_audio_focus_disabled">Плеєр ставиться на паузу або приглушується, коли фокус забирають інші застосунки</string>
+    <string name="settings_audio_focus_confirm_title">Вимкнути аудіофокус?</string>
+    <string name="settings_audio_focus_confirm_message">Без аудіофокусу відео не зупинятиметься під час дзвінків і звуку інших застосунків, не приглушуватиметься сповіщеннями та може грати поверх них. На деяких пристроях це може працювати некоректно. Вимикайте, лише якщо відтворення саме ставиться на паузу.</string>
+    <string name="settings_audio_focus_confirm">Вимкнути</string>
     <string name="settings_adaptive_video_quality_title">Адаптивна якість</string>
     <string name="settings_adaptive_video_quality_hint">Підлаштовується під пристрій і мережу: знижується при підвисаннях, повертається при покращенні. Вище бажаної якості не підіймається</string>
     <string name="settings_preferred_video_quality_title">Бажана якість</string>
@@ -99,9 +105,9 @@
     <string name="settings_details_button_move_down">Перемістити нижче</string>
     <string name="settings_watch_next_label">Продовжити перегляд</string>
     <string name="settings_watch_next_enabled">Синхронізується з TV Home</string>
+    <string name="settings_seasonal_decorations">Святкове оформлення</string>
     <string name="settings_account_shortcuts_expanded">Окремі кнопки в акаунті</string>
     <string name="settings_account_shortcuts_expanded_hint">Показувати «Пошук користувачів» і «Відкладений перегляд» окремими кнопками на вкладці акаунта</string>
-    <string name="settings_seasonal_decorations">Святкове оформлення</string>
     <string name="settings_seasonal_decorations_halloween">Оформлення до Гелловіну: з 20.10 по 02.11</string>
     <string name="settings_seasonal_decorations_new_year">Новорічне оформлення: з 15.12 по 10.01</string>
     <string name="settings_seasonal_decorations_off_season">Зараз непідхожа дата для святкового оформлення — воно ввімкнеться саме в сезон</string>
@@ -155,6 +161,7 @@
         <string name="settings_auto_skip_label">Автопропуск опенінгу та ендінгу</string>
     <string name="settings_auto_skip_enabled">Пропускати, якщо для серії є тайм-коди</string>
     <string name="settings_auto_skip_delay_label">Затримка автопропуску</string>
+    <string name="settings_auto_skip_delay_instant">Миттєво</string>
     <string name="settings_show_opening_on_timeline_label">Показувати опенінг на таймлайні</string>
     <string name="settings_show_opening_on_timeline_enabled">Ділянка опенінгу підсвічується на смузі прогресу</string>
     <string name="settings_auto_manage_library_lists_label">Авто-додавання в Дивлюсь / Переглянуто</string>
@@ -169,18 +176,14 @@
     <string name="settings_controls_auto_hide_label">Приховувати керування плеєром через</string>
     <string name="settings_picture_in_picture_label">Плаваючий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматично вмикати під час виходу із застосунку під час відтворення</string>
+    <string name="settings_brightness_return_system_label">Повертати системну яскравість при 0</string>
+    <string name="settings_brightness_return_system_hint">Коли яскравість плеєра досягає 0, застосунок перестає задавати її, і нею знову керує Android</string>
     <string name="settings_advanced_volume_label">Розширена гучність у плеєрі</string>
     <string name="settings_advanced_volume_enabled" formatted="false">Плеєр має власну гучність (0–100%, крок 1%), незалежно від системи</string>
     <string name="settings_advanced_volume_disabled">Гучність змінює системний звук як зазвичай</string>
     <string name="settings_volume_stabilization_label">Стабілізація гучності</string>
     <string name="settings_volume_stabilization_enabled">Вирівнює гучні й тихі сцени: тихі діалоги стають гучнішими, гучні моменти — тихішими</string>
     <string name="settings_volume_stabilization_disabled">Звук відтворюється з початковим динамічним діапазоном</string>
-    <string name="settings_audio_focus_label">Вимкнути аудіофокус</string>
-    <string name="settings_audio_focus_enabled">Плеєр не реагує на перехоплення фокусу іншими застосунками. Увімкніть, якщо відтворення саме ставиться на паузу</string>
-    <string name="settings_audio_focus_disabled">Плеєр ставиться на паузу або приглушується, коли фокус забирають інші застосунки</string>
-    <string name="settings_audio_focus_confirm_title">Вимкнути аудіофокус?</string>
-    <string name="settings_audio_focus_confirm_message">Без аудіофокусу відео не зупинятиметься під час дзвінків і звуку інших застосунків, не приглушуватиметься сповіщеннями та може грати поверх них. На деяких пристроях це може працювати некоректно. Вимикайте, лише якщо відтворення саме ставиться на паузу.</string>
-    <string name="settings_audio_focus_confirm">Вимкнути</string>
     <string name="settings_player_gesture_tutorial_reset">Повторити навчання жестам</string>
     <string name="settings_player_gesture_tutorial_reset_hint">Показати навчання під час наступного відкриття відео</string>
     <string name="settings_player_gesture_tutorial_reset_done">Навчання буде показано під час наступного відкриття відео</string>
@@ -191,7 +194,7 @@
     <string name="settings_cache_size_max">Максимальний</string>
     <string name="settings_cache_size_mb">%1$d МБ</string>
     <string name="settings_cache_size_300">300 МБ</string>
-    <string name="settings_content_language_title">Мова</string>
+    <string name="settings_content_language_title">Мова контенту</string>
     <string name="settings_content_language_russian">Російська</string>
     <string name="settings_content_language_english">Англійська</string>
     <string name="settings_content_language_ukrainian">Українська</string>
@@ -241,7 +244,7 @@
     <string name="settings_subtitle_edge_shadow">Тінь</string>
     <string name="settings_player_buffer_title">Розмір буфера плеєра</string>
     <string name="settings_player_buffer_minimal">Мінімальний</string>
-    <string name="settings_player_buffer_minimal_hint">5–15 с запасу, до 16 МБ ОЗП. Найшвидший старт, але частіше підвантаження.</string>
+    <string name="settings_player_buffer_minimal_hint">5–15 с запасу, до 16 МБ ОЗП. Найшвидший старт, але частіше підвантаження. В Alloha можливі зупинки під час оновлення сесії.</string>
     <string name="settings_player_buffer_small">Малий</string>
     <string name="settings_player_buffer_small_hint">18–30 с запасу, до 24 МБ ОЗП. Економить пам\'ять.</string>
     <string name="settings_player_buffer_medium">Середній</string>
@@ -325,4 +328,6 @@
         <string name="settings_new_episodes_source_on">Враховується</string>
     <string name="settings_new_episodes_source_off">Не враховується</string>
     <string name="settings_library_tabs_reset_hint">Повернути стандартний порядок вкладок бібліотеки</string>
+    <string name="settings_interface_language_title">Мова інтерфейсу</string>
+    <string name="settings_interface_language_system">Як на пристрої</string>
 </resources>

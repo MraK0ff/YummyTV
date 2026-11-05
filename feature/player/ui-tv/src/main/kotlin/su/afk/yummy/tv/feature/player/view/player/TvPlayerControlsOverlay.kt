@@ -11,10 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import su.afk.yummy.tv.feature.player.common.model.PlayerActiveSkip
@@ -48,6 +43,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     highlightedSkipKey: String?,
     qualityCount: Int,
     currentQualityLabel: String,
+    activeSpeed: Float,
     adaptiveQuality: Boolean,
     showAllohaButton: Boolean,
     onPlayPause: () -> Unit,
@@ -63,9 +59,8 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     onToggleBalancer: () -> Unit,
     onToggleEpisodes: () -> Unit,
     onTogglePlayerSettings: () -> Unit,
+    onCycleSpeed: () -> Unit,
     onToggleAlloha: () -> Unit,
-    /** Ряд управления остаётся в композиции (держит фокус), но невидим, пока поверх него лента серий. */
-    hidden: Boolean = false,
 ) {
     val progressDownFocusRequester = when {
         playback.dubbingNames.size > 1 -> focus.dubbing
@@ -86,7 +81,6 @@ internal fun BoxScope.TvPlayerControlsOverlay(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .graphicsLayer { alpha = if (hidden) 0f else 1f }
                 .background(
                     Brush.verticalGradient(
                         listOf(
@@ -99,13 +93,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    // Подсказка «Серии» сама занимает низ, поэтому нижний отступ при ней меньше.
-                    .padding(
-                        start = 48.dp,
-                        end = 48.dp,
-                        top = 20.dp,
-                        bottom = if (playback.episodes.isNotEmpty()) 6.dp else 20.dp,
-                    ),
+                    .padding(horizontal = 48.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 if (activeSkip != null) {
@@ -203,6 +191,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     playerName = playback.activeBalancerName,
                     dubbing = playback.activeDubbing,
                     currentQualityLabel = currentQualityLabel,
+                    activeSpeed = activeSpeed,
                     adaptiveQuality = adaptiveQuality,
                     qualityFocusRequester = focus.quality,
                     dubbingFocusRequester = focus.dubbing,
@@ -219,37 +208,13 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     onToggleEpisodes = onToggleEpisodes,
                     playerSettingsFocusRequester = focus.playerSettings,
                     onTogglePlayerSettings = onTogglePlayerSettings,
+                    onCycleSpeed = onCycleSpeed,
                     allohaFocusRequester = focus.alloha,
                     showAllohaButton = showAllohaButton,
                     nextEpisodeFocusRequester = focus.nextEpisodeControl,
                     onToggleAlloha = onToggleAlloha,
                 )
-                if (playback.episodes.isNotEmpty()) {
-                    TvPlayerEpisodesHint()
-                }
             }
         }
-    }
-}
-
-/** Подсказка под рядом кнопок: стрелка вниз раскрывает ленту серий. */
-@Composable
-private fun TvPlayerEpisodesHint() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = Icons.Filled.KeyboardArrowDown,
-            contentDescription = null,
-            tint = Color.White.copy(alpha = 0.7f),
-            modifier = Modifier.size(20.dp),
-        )
-        Text(
-            text = stringResource(R.string.player_episodes_list_title),
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White.copy(alpha = 0.7f),
-        )
     }
 }

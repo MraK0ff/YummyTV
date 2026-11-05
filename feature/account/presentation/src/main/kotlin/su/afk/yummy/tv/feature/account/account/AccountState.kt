@@ -117,6 +117,9 @@ class AccountState {
         /** Переход к списку своих друзей. */
         data object FriendsSelected : Event
 
+        /** Переход к списку личных сообщений. */
+        data object MessagesSelected : Event
+
         /** Переход к FAQ из быстрых действий аккаунта. */
         data object FaqSelected : Event
 

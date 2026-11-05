@@ -10,7 +10,19 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.domain.home.utils.isEpisodeWatched
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
+
+/** Применяет пользовательскую видимость и порядок к секциям ленты. Неизвестные секции сохраняются.
+ * Новые секции, отсутствующие в сохранённом порядке, добавляются в конец.
+ */
+internal fun HomeFeed.withHomeSectionPreferences(
+    order: List<String>,
+    hidden: Set<String>,
+): HomeFeed {
+    val visible = sections.filterNot { it.type.name in hidden }
+    if (visible.isEmpty()) return copy(sections = emptyList())
+    val rank = order.withIndex().associate { it.value to it.index }
+    return copy(sections = visible.sortedWith(compareBy { rank[it.type.name] ?: Int.MAX_VALUE }))
+}
 
 /** Убирает из блока рекомендаций тайтлы, скрытые пользователем. */
 internal fun HomeFeed.withoutHiddenRecommendations(hiddenIds: Set<Int>): HomeFeed {
@@ -25,10 +37,6 @@ internal fun HomeFeed.withoutHiddenRecommendations(hiddenIds: Set<Int>): HomeFee
         },
     )
 }
-
-/** Перемешивает тайтлы «Аниме сезона»; один и тот же [random]-seed даёт один и тот же порядок. */
-internal fun HomeFeed.withShuffledHero(random: Random): HomeFeed =
-    if (heroItems.size < 2) this else copy(heroItems = heroItems.shuffled(random))
 
 /**
  * Добавляет в начало ленты секцию недавно вышедших серий тайтлов из [libraryAnimeIds]; без

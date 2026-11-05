@@ -28,6 +28,8 @@ import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.navigation.root.RootTab
 import su.afk.yummy.tv.core.navigation.scene.FullscreenDestination
 import su.afk.yummy.tv.feature.main.MainState
+import su.afk.yummy.tv.feature.account.navigator.AccountNotificationsDestination
+import su.afk.yummy.tv.feature.catalog.ICatalogSearchOpener
 import su.afk.yummy.tv.feature.main.MainViewModel
 import su.afk.yummy.tv.feature.main.api.MainGraph
 import su.afk.yummy.tv.feature.main.mobile.model.mobileMenuItems
@@ -46,6 +48,7 @@ class MobileMainGraph @Inject internal constructor(
     private val navManager: INavigationManager,
     private val backStackHost: BackStackHost,
     private val navigationHolder: MobileNavigationHolder,
+    private val catalogSearchOpener: ICatalogSearchOpener,
 ) : MainGraph {
 
     @Composable
@@ -55,11 +58,7 @@ class MobileMainGraph @Inject internal constructor(
         val atTabRoot = navManager.appBackStack.isEmpty() && navManager.backStack.size <= 1
         val isRequiredUpdateDestination =
             currentDestination is UpdateDestination && currentDestination.required
-        // Полноэкранные экраны (плеер, первичная настройка) не должны соседствовать с меню: бар
-        // иначе держится только на atTabRoot, а тот зависит от того, успел ли таб-стек
-        // проинициализироваться к моменту навигации из MainViewModel.init.
         val isFullscreenDestination = currentDestination is FullscreenDestination
-        // Рейка на широком окне остаётся рядом с деталями, уходит только в полноэкранных сценах.
         val showRail = !isRequiredUpdateDestination && !isFullscreenDestination
 
         ScreenNavigator(viewModel) { state, effect, onEvent ->
@@ -99,13 +98,27 @@ class MobileMainGraph @Inject internal constructor(
                 ) {
                     MobileMainScaffold(
                         selectedDestination = navManager.currentRoot,
-                        menuItems = mobileMenuItems(
-                            state.unreadNotificationsCount,
-                            if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
-                        ),
+                        menuItems = mobileMenuItems(),
                         showBottomBar = atTabRoot && !isRequiredUpdateDestination &&
                             !isFullscreenDestination,
                         showRail = showRail,
+                        showGlobalHeader = atTabRoot && !isRequiredUpdateDestination && !isFullscreenDestination,
+                        avatarUrl = if (state.isYaniSignedIn) state.yaniAvatarUrl else "",
+                        unreadNotificationsCount = state.unreadNotificationsCount,
+                        onSearchSelected = { catalogSearchOpener.openSearch() },
+                        onProfileSelected = {
+                            onEvent(MainState.Event.RootSelected(RootTab.ACCOUNT, popToRootOnReselect = true))
+                        },
+                        onNotificationsSelected = {
+                            navManager.navigate(AccountNotificationsDestination)
+                        },
+                        onSettingsSelected = {
+                            onEvent(MainState.Event.RootSelected(RootTab.SETTINGS, popToRootOnReselect = true))
+                        },
+                        isSearchSelected = navManager.currentRoot == RootTab.CATALOG,
+                        isProfileSelected = navManager.currentRoot == RootTab.ACCOUNT,
+                        isNotificationsSelected = currentDestination is AccountNotificationsDestination,
+                        isSettingsSelected = navManager.currentRoot == RootTab.SETTINGS,
                         onDestinationSelected = { root ->
                             onEvent(MainState.Event.RootSelected(root, popToRootOnReselect = true))
                         },

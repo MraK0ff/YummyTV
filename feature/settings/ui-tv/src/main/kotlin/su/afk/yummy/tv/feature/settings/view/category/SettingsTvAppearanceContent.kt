@@ -113,6 +113,8 @@ internal fun SettingsTvAppearanceContent(
         modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsBlockGap()
+    pickerRow(SettingsTvPicker.HOME_SECTIONS, Modifier.restoreCategoryFocusOnLeft(tabFocusRequester))
+    SettingsBlockGap()
     SettingsSectionTitle(text = stringResource(R.string.settings_mobile_section_library))
     SettingsTvIconChoiceRow(
         label = stringResource(R.string.settings_library_continue_watching_card_size_title),
@@ -128,20 +130,8 @@ internal fun SettingsTvAppearanceContent(
     pickerRow(SettingsTvPicker.LIBRARY_TAB_ORDER, Modifier)
     SettingsBlockGap()
     SettingsSectionTitle(text = stringResource(R.string.settings_section_new_episodes))
-    ToggleRow(
-        label = stringResource(R.string.settings_new_episodes_section),
-        hint = if (state.newEpisodesSectionEnabled) {
-            stringResource(R.string.settings_new_episodes_section_enabled)
-        } else {
-            stringResource(R.string.settings_disabled)
-        },
-        enabled = state.newEpisodesSectionEnabled,
-        onClick = { onEvent(SettingsState.Event.NewEpisodesSectionToggled) },
-        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
-    )
-    // Список источников без включённого блока ни на что не влияет.
     if (state.newEpisodesSectionEnabled) {
-        SettingsDivider()
-        pickerRow(SettingsTvPicker.NEW_EPISODES_SOURCES, Modifier)
+        pickerRow(SettingsTvPicker.NEW_EPISODES_SOURCES, Modifier.restoreCategoryFocusOnLeft(tabFocusRequester))
     }
 }
+

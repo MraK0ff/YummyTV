@@ -1,13 +1,14 @@
 package su.afk.yummy.tv.android
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -15,17 +16,19 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import su.afk.yummy.tv.android.episodepush.utils.cancelEpisodePushNotification
 import su.afk.yummy.tv.android.shortcuts.AppShortcutsPublisher
 import su.afk.yummy.tv.android.widget.ContinueWatchingWidgetUpdater
 import su.afk.yummy.tv.core.deeplink.api.DeepLinkHandler
+import su.afk.yummy.tv.core.designsystem.insets.AdaptiveWindowInsetsProvider
 import su.afk.yummy.tv.core.designsystem.locals.LocalStaticBaseUrl
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.feature.catalog.android.SystemSearchIntentHandler
 import su.afk.yummy.tv.feature.main.mobile.MobileMainGraph
 import su.afk.yummy.tv.feature.main.mobile.navigation.MobileKeyboardShortcuts
-import javax.inject.Inject
+import su.afk.yummy.tv.feature.player.mobile.pip.MobilePlayerPipController
 
 @AndroidEntryPoint
 class MobileActivity : ComponentActivity() {
@@ -60,11 +63,13 @@ class MobileActivity : ComponentActivity() {
         )
 
         setContent {
-            // теги Compose видны UiAutomator как resource-id — на них опираются сценарии
-            // baseline profile и бенчмарки (модуль :baselineprofile)
-            CompositionLocalProvider(LocalStaticBaseUrl provides siteApiConfig.staticBaseUrl) {
-                Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
-                    mainGraph.MainGraph()
+            AdaptiveWindowInsetsProvider {
+                // теги Compose видны UiAutomator как resource-id — на них опираются сценарии
+                // baseline profile и бенчмарки (модуль :baselineprofile)
+                CompositionLocalProvider(LocalStaticBaseUrl provides siteApiConfig.staticBaseUrl) {
+                    Box(modifier = Modifier.semantics { testTagsAsResourceId = true }) {
+                        mainGraph.MainGraph()
+                    }
                 }
             }
         }
@@ -92,4 +97,17 @@ class MobileActivity : ComponentActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
         keyboardShortcuts.handle(event, onBack = onBackPressedDispatcher::onBackPressed) ||
             super.onKeyDown(keyCode, event)
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        MobilePlayerPipController.enterIfPlaying(this)
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration,
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        MobilePlayerPipController.updatePictureInPictureMode(isInPictureInPictureMode)
+    }
 }

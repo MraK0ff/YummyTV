@@ -22,6 +22,8 @@ import su.afk.yummy.tv.core.preferences.settings.currentLanguageCode
 import su.afk.yummy.tv.core.storage.anime.AnimeStorage
 import su.afk.yummy.tv.core.storage.home.HomeFeedCache
 import su.afk.yummy.tv.core.storage.home.HomeFeedStorage
+import su.afk.yummy.tv.core.storage.home.HomeNewReleaseEntry
+import su.afk.yummy.tv.core.storage.home.HOME_FEED_CONTAINER_NEW_RELEASES
 import su.afk.yummy.tv.core.storage.home.isFresh
 import su.afk.yummy.tv.core.storage.offlinefirst.offlineFirstCache
 import su.afk.yummy.tv.core.storage.watchprogress.WatchProgressStorage
@@ -29,11 +31,15 @@ import su.afk.yummy.tv.data.home.mapper.LocalFeedContext
 import su.afk.yummy.tv.data.home.mapper.localContinueWatchingItems
 import su.afk.yummy.tv.data.home.mapper.withLocalOverrides
 import su.afk.yummy.tv.data.home.network.YaniHomeApi
+import su.afk.yummy.tv.data.home.utils.YaniNewReleaseTracker
+import su.afk.yummy.tv.data.home.utils.MyNewEpisodeHistoryTracker
+import su.afk.yummy.tv.data.home.utils.toHomeFeedItem
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeContinueWatchingItem
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeedCache
 import su.afk.yummy.tv.domain.home.model.ContinueWatchingProgressMigration
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
+import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.repository.HomeFeedRepository
 import su.afk.yummy.tv.data.home.storage.mapper.toHomeFeed as toStoredHomeFeed
 
@@ -54,6 +60,7 @@ class YaniHomeFeedRepository(
 
     /** Параллельные загрузки ленты (экран и канал ТВ) ждут друг друга, а не качают её дважды. */
     private val fetchMutex = Mutex()
+    private val myNewEpisodeHistoryMutex = Mutex()
 
     override suspend fun getHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = false)
 
@@ -65,6 +72,23 @@ class YaniHomeFeedRepository(
     }
 
     override suspend fun refreshHomeFeed(): HomeFeed = getHomeFeed(forceRefresh = true)
+
+    override suspend fun trackMyNewEpisodes(
+        recentlyAired: List<HomeFeedItem>,
+        libraryAnimeIds: Set<Int>,
+        nowSeconds: Long,
+    ): List<HomeFeedItem> = withContext(Dispatchers.IO) {
+        myNewEpisodeHistoryMutex.withLock {
+            val history = MyNewEpisodeHistoryTracker().merge(
+                recentlyAired = recentlyAired,
+                history = homeFeedStore.getMyNewEpisodeHistory(),
+                libraryAnimeIds = libraryAnimeIds,
+                nowSeconds = nowSeconds,
+            )
+            homeFeedStore.saveMyNewEpisodeHistory(history)
+            history.map { it.toHomeFeedItem() }
+        }
+    }
 
     override suspend fun removeCachedContinueWatching(animeId: Int) {
         withContext(Dispatchers.IO) {
@@ -167,12 +191,48 @@ class YaniHomeFeedRepository(
         watchSignature: String,
     ): HomeFeedCache {
         analyticsTracker.log(TAG) { "Fetch feed language=$languageCode watchSignature=$watchSignature" }
+        val previousCache = homeFeedStore.getFeed(languageCode, watchSignature)
         val dto = api.getFeed()
         analyticsTracker.log(TAG) { "Feed dto ${dto.summaryForLog()}" }
-        val cache = dto.toHomeFeedCache(
+        val now = System.currentTimeMillis()
+        val storedHistory = homeFeedStore.getNewReleaseHistory()
+        // Upgrade path: the previous app cached one card per anime but did not persist its
+        // episode number. Keep those cards as zero-episode baselines until the API sees them
+        // again, instead of dropping titles that temporarily disappeared from /feed.
+        val historyForMerge = storedHistory.ifEmpty {
+            previousCache.toLegacyReleaseHistory(now)
+        }
+        val releaseHistory = YaniNewReleaseTracker().merge(
+            videos = dto.response.newVideos,
+            history = historyForMerge,
+            now = now,
+        )
+        homeFeedStore.saveNewReleaseHistory(releaseHistory)
+        val mappedCache = dto.toHomeFeedCache(
             language = languageCode,
             watchSignature = watchSignature,
-            cachedAt = System.currentTimeMillis(),
+            cachedAt = now,
+            newReleaseHistory = releaseHistory,
+        )
+        // Keep upgrade-era cards whose episode number was not present in the old cache. They
+        // remain in their original positions until a valid feed record establishes a baseline.
+        val legacyCardsByAnimeId = previousCache?.items
+            ?.filter { it.container == HOME_FEED_CONTAINER_NEW_RELEASES }
+            ?.associateBy { it.itemId }
+            .orEmpty()
+        val orderedReleaseCards = releaseHistory.sortedBy { it.position }.mapNotNull { entry ->
+            if (entry.episodeNumber > 0) {
+                mappedCache.items.firstOrNull {
+                    it.container == HOME_FEED_CONTAINER_NEW_RELEASES && it.itemId == entry.animeId
+                }
+            } else {
+                legacyCardsByAnimeId[entry.animeId]
+            }
+        }.mapIndexed { index, item -> item.copy(position = index) }
+        val cache = mappedCache.copy(
+            items = mappedCache.items.filterNot {
+                it.container == HOME_FEED_CONTAINER_NEW_RELEASES
+            } + orderedReleaseCards,
         )
         homeFeedStore.saveFeed(cache)
         analyticsTracker.log(TAG) {
@@ -197,3 +257,43 @@ class YaniHomeFeedRepository(
 
     private fun feedCacheSignature(): String = FEED_CACHE_SIGNATURE_VERSION
 }
+
+
+/**
+ * The previous home cache already deduplicated /feed videos by anime, but didn't persist ep_title.
+ * Preserve those cards as a baseline (episode 0) until the first valid feed item is seen.
+ */
+private fun HomeFeedCache?.toLegacyReleaseHistory(now: Long): List<HomeNewReleaseEntry> {
+    val baselineTimestamp = this?.cachedAt?.takeIf { it > 0L } ?: now
+    return this?.items
+        .orEmpty()
+        .asSequence()
+        .filter { it.container == HOME_FEED_CONTAINER_NEW_RELEASES }
+        .sortedBy { it.position }
+        .distinctBy { it.itemId }
+        .mapIndexed { index, item ->
+            HomeNewReleaseEntry(
+                animeId = item.itemId,
+                title = item.title,
+                animeUrl = "",
+                description = item.description,
+                episodeNumber = 0,
+                episodeTitle = "",
+                videoId = null,
+                dubTitle = item.dubbing.takeIf(String::isNotBlank),
+                playerTitle = item.playerName.takeIf(String::isNotBlank),
+                posterSmallUrl = item.posterSmallUrl,
+                posterMediumUrl = item.posterMediumUrl,
+                posterBigUrl = item.posterBigUrl,
+                posterFullsizeUrl = item.posterFullsizeUrl,
+                posterMegaUrl = item.posterMegaUrl,
+                firstSeenAt = baselineTimestamp,
+                lastDetectedAt = baselineTimestamp,
+                lastUpdatedAt = 0L,
+                position = index,
+            )
+        }
+        .toList()
+}
+
+

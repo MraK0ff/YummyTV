@@ -14,6 +14,8 @@ internal object SettingsPreferenceKeys {
     val showCatalogTitleYearKey = booleanPreferencesKey("show_top_title_year")
     val showEpisodeFlagsKey = booleanPreferencesKey("show_episode_flags")
     val newEpisodesSectionEnabledKey = booleanPreferencesKey("new_episodes_section_enabled")
+    val homeSectionOrderKey = stringPreferencesKey("home_section_order")
+    val hiddenHomeSectionsKey = stringSetPreferencesKey("hidden_home_sections")
     val seasonalDecorationsEnabledKey = booleanPreferencesKey("seasonal_decorations_enabled")
     val accountShortcutsExpandedKey = booleanPreferencesKey("account_shortcuts_expanded")
     val seasonalAnnouncedKey = stringPreferencesKey("seasonal_announced_key")
@@ -40,6 +42,7 @@ internal object SettingsPreferenceKeys {
         intPreferencesKey("player_controls_auto_hide_seconds")
 
     val pictureInPictureEnabledKey = booleanPreferencesKey("picture_in_picture_enabled")
+    val audioFocusDisabledKey = booleanPreferencesKey("audio_focus_disabled")
     val playerOrientationModeKey = stringPreferencesKey("player_orientation_mode")
     val suggestNextEpisodeOnWatchedKey =
         booleanPreferencesKey("suggest_next_episode_on_watched")
@@ -59,12 +62,12 @@ internal object SettingsPreferenceKeys {
         intPreferencesKey("advanced_player_volume_percent")
     val mobilePlayerBrightnessPercentKey =
         intPreferencesKey("mobile_player_brightness_percent")
+    val autoReturnMobileBrightnessToSystemAtZeroKey =
+        booleanPreferencesKey("auto_return_mobile_brightness_to_system_at_zero")
     val playerPlaybackSpeedKey =
         floatPreferencesKey("player_playback_speed")
     val volumeStabilizationEnabledKey =
         booleanPreferencesKey("volume_stabilization_enabled")
-    val audioFocusDisabledKey =
-        booleanPreferencesKey("audio_focus_disabled")
     val playerBufferProfileKey = stringPreferencesKey("player_buffer_profile")
     val browserUserAgentProfileKey = stringPreferencesKey("browser_user_agent_profile")
     val playerResizeModeKey = stringPreferencesKey("player_resize_mode")

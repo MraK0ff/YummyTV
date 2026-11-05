@@ -96,6 +96,7 @@ class SettingsViewModelTest : BaseUnitTest() {
         every { settingsStore.playerSubtitleStyle } returns MutableStateFlow(mockk<PlayerSubtitleStyleSettings>())
         every { settingsStore.mobilePlayerGestureTutorialDismissed } returns MutableStateFlow(false)
         every { settingsStore.tvPlayerControlsTutorialDismissed } returns MutableStateFlow(false)
+        every { settingsStore.autoReturnMobileBrightnessToSystemAtZero } returns MutableStateFlow(true)
         every { settingsStore.saveLastSearchEnabled } returns saveLastSearch
         every { settingsStore.betaUpdatesEnabled } returns betaUpdates
         every { settingsStore.appLogRecordingEnabled } returns MutableStateFlow(false)
@@ -258,11 +259,13 @@ class SettingsViewModelTest : BaseUnitTest() {
         vm.setEvent(Event.WatchNextToggled)
         vm.setEvent(Event.SaveLastSearchToggled)
         vm.setEvent(Event.BetaUpdatesToggled)
+        vm.setEvent(Event.AutoReturnMobileBrightnessToSystemAtZeroToggled)
 
         coVerify(exactly = 1) { settingsStore.setAutoPlayNextEpisode(true) }
         coVerify(exactly = 1) { settingsStore.setWatchNextEnabled(true) }
         coVerify(exactly = 1) { settingsStore.setSaveLastSearchEnabled(true) }
         coVerify(exactly = 1) { settingsStore.setBetaUpdatesEnabled(true) }
+        coVerify(exactly = 1) { settingsStore.setAutoReturnMobileBrightnessToSystemAtZero(false) }
         verify(exactly = 1) { analytics.eventAutoPlayNextEpisodeToggled(true) }
     }
 

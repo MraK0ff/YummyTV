@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -24,6 +25,7 @@ internal fun MobilePlayerActionButton(
     icon: ImageVector,
     /** Подпись для TalkBack: у кнопки нет текста, иначе она объявляется просто «кнопкой». */
     contentDescription: String,
+    label: String? = null,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -59,6 +61,14 @@ internal fun MobilePlayerActionButton(
                 onClick = onClick,
             ),
     ) {
-        Icon(imageVector = icon, contentDescription = contentDescription, tint = contentColor)
+        if (label == null) {
+            Icon(imageVector = icon, contentDescription = contentDescription, tint = contentColor)
+        } else {
+            Text(
+                text = label,
+                color = contentColor,
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
     }
 }

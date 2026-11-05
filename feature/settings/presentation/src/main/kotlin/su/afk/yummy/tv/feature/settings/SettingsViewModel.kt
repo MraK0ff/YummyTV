@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.settings
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.first
@@ -11,6 +13,7 @@ import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.seasonal.seasonalThemeAt
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
@@ -32,6 +35,7 @@ import su.afk.yummy.tv.feature.settings.mapper.toReleaseNoteItem
 import su.afk.yummy.tv.feature.settings.model.ReleaseNotesStatus
 import su.afk.yummy.tv.feature.settings.navigator.SettingsCategoryDestination
 import su.afk.yummy.tv.feature.settings.navigator.SettingsLibraryTabOrderDestination
+import su.afk.yummy.tv.feature.settings.navigator.SettingsHomeSectionsDestination
 import su.afk.yummy.tv.feature.settings.utils.groupedByThree
 import su.afk.yummy.tv.feature.settings.utils.movedLibraryTab
 import javax.inject.Inject
@@ -62,6 +66,9 @@ class SettingsViewModel @Inject internal constructor(
 
     override fun createInitialState() = SettingsState.State(
         interfaceMode = interfaceModePreferences.selectedMode ?: AppInterfaceMode.MOBILE,
+        interfaceLanguage = AppInterfaceLanguage.fromLocaleTags(
+            AppCompatDelegate.getApplicationLocales().toLanguageTags(),
+        ),
     )
 
     init {
@@ -102,6 +109,7 @@ class SettingsViewModel @Inject internal constructor(
                         watchedThresholds = snapshot.watchedThresholds,
                         tvPlayerVolumeKeysEnabled = snapshot.tvPlayerVolumeKeysEnabled,
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
+                        audioFocusDisabled = snapshot.audioFocusDisabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
                         audioFocusDisabled = snapshot.audioFocusDisabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
@@ -124,6 +132,24 @@ class SettingsViewModel @Inject internal constructor(
         appLifecycleSettingsStore.notificationPermissionRequested
             .onEach { requested -> setState { copy(notificationPermissionRequested = requested) } }
             .launchIn(viewModelScope)
+        settingsStore.homeSectionOrder
+            .onEach { storedOrder ->
+                val parsed = storedOrder.mapNotNull { key ->
+                    runCatching { HomeSectionKind.valueOf(key) }.getOrNull()
+                }.distinct()
+                val completeOrder = (parsed + HomeSectionKind.entries.filterNot { it in parsed })
+                    .toImmutableList()
+                setState { copy(homeSectionOrder = completeOrder) }
+            }
+            .launchIn(viewModelScope)
+        settingsStore.hiddenHomeSections
+            .onEach { hidden ->
+                val parsed = hidden.mapNotNull { key ->
+                    runCatching { HomeSectionKind.valueOf(key) }.getOrNull()
+                }.toSet()
+                setState { copy(hiddenHomeSections = parsed) }
+            }
+            .launchIn(viewModelScope)
         settingsStore.playerSubtitleStyle
             .onEach { style -> setState { copy(subtitleStyle = style) } }
             .launchIn(viewModelScope)
@@ -135,6 +161,11 @@ class SettingsViewModel @Inject internal constructor(
         settingsStore.tvPlayerControlsTutorialDismissed
             .onEach { dismissed ->
                 setState { copy(tvPlayerControlsTutorialDismissed = dismissed) }
+            }
+            .launchIn(viewModelScope)
+        settingsStore.autoReturnMobileBrightnessToSystemAtZero
+            .onEach { enabled ->
+                setState { copy(autoReturnMobileBrightnessToSystemAtZero = enabled) }
             }
             .launchIn(viewModelScope)
         // Запасной режим хранения сессии показываем в "О приложении": пользователю со сломанным
@@ -350,6 +381,12 @@ class SettingsViewModel @Inject internal constructor(
                 settingsStore.setPictureInPictureEnabled(enabled)
             }
 
+            SettingsState.Event.AutoReturnMobileBrightnessToSystemAtZeroToggled -> viewModelScope.launch {
+                settingsStore.setAutoReturnMobileBrightnessToSystemAtZero(
+                    !currentState.autoReturnMobileBrightnessToSystemAtZero,
+                )
+            }
+
             is SettingsState.Event.PlayerOrientationModeSelected -> viewModelScope.launch {
                 analytics.eventPlayerOrientationModeSelected(event.mode)
                 settingsStore.setPlayerOrientationMode(event.mode)
@@ -365,6 +402,10 @@ class SettingsViewModel @Inject internal constructor(
                 val enabled = !currentState.advancedPlayerVolumeEnabled
                 analytics.eventAdvancedPlayerVolumeToggled(enabled)
                 settingsStore.setAdvancedPlayerVolumeEnabled(enabled)
+            }
+
+            SettingsState.Event.AudioFocusToggled -> viewModelScope.launch {
+                settingsStore.setAudioFocusDisabled(!currentState.audioFocusDisabled)
             }
 
             SettingsState.Event.AdaptiveVideoQualityToggled -> viewModelScope.launch {
@@ -422,6 +463,14 @@ class SettingsViewModel @Inject internal constructor(
                 }
             }
 
+            is SettingsState.Event.InterfaceLanguageSelected -> {
+                if (event.language == currentState.interfaceLanguage) return
+                AppCompatDelegate.setApplicationLocales(
+                    LocaleListCompat.forLanguageTags(event.language.localeTag),
+                )
+                setState { copy(interfaceLanguage = event.language) }
+            }
+
             is SettingsState.Event.ContentLanguageSelected -> viewModelScope.launch {
                 analytics.eventContentLanguageSelected(event.language)
                 settingsStore.setYaniContentLanguage(event.language)
@@ -445,6 +494,28 @@ class SettingsViewModel @Inject internal constructor(
             SettingsState.Event.LibraryTabOrderReset -> viewModelScope.launch {
                 analytics.eventLibraryTabOrderReset()
                 settingsStore.setLibraryTabOrder(SettingsStore.defaultLibraryTabOrder)
+            }
+
+            SettingsState.Event.HomeSectionsSelected -> {
+                nav.navigate(SettingsHomeSectionsDestination)
+            }
+
+            is SettingsState.Event.HomeSectionMoved -> viewModelScope.launch {
+                val nextOrder = currentState.homeSectionOrder.movedHomeSection(
+                    event.section,
+                    event.direction,
+                )
+                settingsStore.setHomeSectionOrder(nextOrder.map { it.name })
+            }
+
+            is SettingsState.Event.HomeSectionVisibilityToggled -> viewModelScope.launch {
+                val hidden = currentState.hiddenHomeSections.toMutableSet()
+                if (!hidden.add(event.section)) hidden.remove(event.section)
+                settingsStore.setHiddenHomeSections(hidden.mapTo(mutableSetOf()) { it.name })
+            }
+
+            SettingsState.Event.HomeSectionOrderReset -> viewModelScope.launch {
+                settingsStore.setHomeSectionOrder(HomeSectionKind.entries.map { it.name })
             }
 
             is SettingsState.Event.CategorySelected -> {

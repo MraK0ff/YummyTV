@@ -494,23 +494,8 @@ internal fun TvExoPlayerView(
             )
         }
 
-        TvPlayerInfoBar(
-            visible = controllerVisible,
-            animeTitle = state.animeTitle,
-            episode = playback.activeEpisode,
-            dubbing = playback.activeDubbing,
-            modifier = Modifier.align(Alignment.TopStart),
-        )
-
-        TvPlayerNameBadge(
-            visible = controllerVisible,
-            playerName = playback.activeBalancerLabel,
-            modifier = Modifier.align(Alignment.TopEnd),
-        )
-
         TvPlayerControlsOverlay(
             visible = controllerVisible,
-            hidden = panels.isOpen(TvPlayerPanel.Episodes) && playback.episodes.isNotEmpty(),
             focus = focus,
             progress = progress,
             wantsPlay = playbackShouldPlay,
@@ -523,6 +508,7 @@ internal fun TvExoPlayerView(
             highlightedSkipKey = skipUi.highlightedSkipKey,
             qualityCount = playback.qualityLabels.size,
             currentQualityLabel = activeQuality.orEmpty(),
+            activeSpeed = activeSpeed,
             adaptiveQuality = playback.adaptiveQuality,
             showAllohaButton = trackMenu.showAudioChoice,
             onPlayPause = { if (wantsPlay) player.pause() else player.play() },
@@ -552,6 +538,11 @@ internal fun TvExoPlayerView(
             },
             onTogglePlayerSettings = {
                 togglePanel(TvPlayerPanel.PlayerSettings, PanelReturnFocusTarget.PlayerSettings)
+            },
+            onCycleSpeed = {
+                val nextIndex = (PlayerSpeedOptions.nearestIndex(activeSpeed) + 1) % speeds.size
+                onPlayerEvent(PlayerState.Event.SpeedSelected(speeds[nextIndex]))
+                onInteraction()
             },
             onToggleAlloha = {
                 togglePanel(TvPlayerPanel.Alloha, PanelReturnFocusTarget.Alloha)

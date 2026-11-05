@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
 import su.afk.yummy.tv.core.model.settings.PlayerSubtitleBackground
@@ -29,6 +30,8 @@ import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
+import su.afk.yummy.tv.feature.settings.presentation.R
+import su.afk.yummy.tv.feature.settings.HomeSectionKind
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.utils.hint
@@ -44,6 +47,7 @@ import su.afk.yummy.tv.feature.settings.common.utils.newEpisodesSourcesValue
 @Composable
 internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = when (this) {
     SettingsTvPicker.INTERFACE_MODE -> state.interfaceMode.label()
+    SettingsTvPicker.INTERFACE_LANGUAGE -> state.interfaceLanguage.label()
     SettingsTvPicker.CONTENT_LANGUAGE -> state.contentLanguage.label()
     SettingsTvPicker.THEME -> state.appTheme.label()
     SettingsTvPicker.BACKGROUND -> state.backgroundStyle.label()
@@ -52,6 +56,8 @@ internal fun SettingsTvPicker.valueText(state: SettingsState.State): String = wh
     SettingsTvPicker.NEW_EPISODES_SOURCES -> state.newEpisodesSources.newEpisodesSourcesValue()
     SettingsTvPicker.LIBRARY_TAB_ORDER ->
         state.libraryTabOrder.map { it.label() }.joinToString(" · ")
+    SettingsTvPicker.HOME_SECTIONS ->
+        state.homeSectionOrder.map { stringResource(it.labelRes()) }.joinToString(" · ")
 
     SettingsTvPicker.SUBTITLE_COLOR -> state.subtitleStyle.textColor.label()
     SettingsTvPicker.SUBTITLE_BACKGROUND -> state.subtitleStyle.background.label()
@@ -111,6 +117,14 @@ internal fun SettingsTvPickerPanel(
                 },
             )
 
+            SettingsTvPicker.INTERFACE_LANGUAGE -> PickerOptions(
+                values = AppInterfaceLanguage.entries,
+                selected = state.interfaceLanguage,
+                labelOf = { it.label() },
+                focusRequester = entryFocusRequester,
+                onSelected = { select(SettingsState.Event.InterfaceLanguageSelected(it)) },
+            )
+
             SettingsTvPicker.CONTENT_LANGUAGE -> PickerOptions(
                 values = YaniContentLanguage.entries,
                 selected = state.contentLanguage,
@@ -162,6 +176,13 @@ internal fun SettingsTvPickerPanel(
                 upFocusRequester = openerFocusRequester,
                 contentFocusRequester = entryFocusRequester,
                 onToggle = { onEvent(SettingsState.Event.NewEpisodesSourceToggled(it)) },
+            )
+
+            SettingsTvPicker.HOME_SECTIONS -> HomeSectionsPanel(
+                state = state,
+                upFocusRequester = openerFocusRequester,
+                contentFocusRequester = entryFocusRequester,
+                onEvent = onEvent,
             )
 
             SettingsTvPicker.LIBRARY_TAB_ORDER -> LibraryTabOrderPanel(
@@ -247,4 +268,15 @@ private fun <T> PickerOptions(
             SettingsDivider()
         }
     }
+}
+
+private fun HomeSectionKind.labelRes(): Int = when (this) {
+    HomeSectionKind.MY_NEW_EPISODES -> R.string.settings_home_section_my_new_episodes
+    HomeSectionKind.NEW_RELEASES -> R.string.settings_home_section_new_releases
+    HomeSectionKind.NEW_TITLES -> R.string.settings_home_section_new_titles
+    HomeSectionKind.RECOMMENDATIONS -> R.string.settings_home_section_recommendations
+    HomeSectionKind.ANNOUNCEMENTS -> R.string.settings_home_section_announcements
+    HomeSectionKind.COLLECTIONS -> R.string.settings_home_section_collections
+    HomeSectionKind.BLOGGER_VIDEOS -> R.string.settings_home_section_blogger_videos
+    HomeSectionKind.MORE -> R.string.settings_home_section_more
 }

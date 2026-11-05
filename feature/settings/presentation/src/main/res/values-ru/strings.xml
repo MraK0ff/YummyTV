@@ -81,6 +81,12 @@
     <string name="settings_player_orientation_sensor_landscape_hint">Всегда альбомная ориентация, сторона (влево или вправо) выбирается по датчику</string>
     <string name="settings_player_orientation_portrait">Вертикально</string>
     <string name="settings_player_orientation_portrait_hint">Всегда вертикальная ориентация, даже если в системе включён автоповорот</string>
+    <string name="settings_audio_focus_label">Отключить аудиофокус</string>
+    <string name="settings_audio_focus_enabled">Плеер не реагирует на перехват фокуса другими приложениями. Включите, если воспроизведение само ставится на паузу</string>
+    <string name="settings_audio_focus_disabled">Плеер ставится на паузу или приглушается, когда фокус забирают другие приложения</string>
+    <string name="settings_audio_focus_confirm_title">Отключить аудиофокус?</string>
+    <string name="settings_audio_focus_confirm_message">Без аудиофокуса видео не будет останавливаться при звонках и звуке других приложений, не будет приглушаться уведомлениями и может играть поверх них. На некоторых устройствах это может работать некорректно. Отключайте, только если воспроизведение само ставится на паузу.</string>
+    <string name="settings_audio_focus_confirm">Отключить</string>
     <string name="settings_adaptive_video_quality_title">Адаптивное качество</string>
     <string name="settings_adaptive_video_quality_hint">Подстраивается под устройство и сеть: понижается при подвисаниях, возвращается при улучшении. Выше предпочитаемого качества не поднимается</string>
     <string name="settings_preferred_video_quality_title">Предпочитаемое качество</string>
@@ -99,9 +105,9 @@
     <string name="settings_details_button_move_down">Переместить ниже</string>
     <string name="settings_watch_next_label">Продолжить просмотр</string>
     <string name="settings_watch_next_enabled">Синхронизируется с TV Home</string>
+    <string name="settings_seasonal_decorations">Праздничное оформление</string>
     <string name="settings_account_shortcuts_expanded">Отдельные кнопки в аккаунте</string>
     <string name="settings_account_shortcuts_expanded_hint">Показывать «Поиск пользователей» и «Отложенный просмотр» отдельными кнопками на вкладке аккаунта</string>
-    <string name="settings_seasonal_decorations">Праздничное оформление</string>
     <string name="settings_seasonal_decorations_halloween">Хэллоуинское оформление: с 20.10 по 02.11</string>
     <string name="settings_seasonal_decorations_new_year">Новогоднее оформление: с 15.12 по 10.01</string>
     <string name="settings_seasonal_decorations_off_season">Сейчас неподходящая дата для праздничного оформления — оно включится само в сезон</string>
@@ -155,6 +161,7 @@
         <string name="settings_auto_skip_label">Автопропуск опенинга и эндинга</string>
     <string name="settings_auto_skip_enabled">Пропускать, если для серии есть таймкоды</string>
     <string name="settings_auto_skip_delay_label">Задержка автопропуска</string>
+    <string name="settings_auto_skip_delay_instant">Мгновенно</string>
     <string name="settings_show_opening_on_timeline_label">Показывать опенинг на таймлайне</string>
     <string name="settings_show_opening_on_timeline_enabled">Участок опенинга подсвечивается на полосе прогресса</string>
     <string name="settings_auto_manage_library_lists_label">Авто-добавление в Смотрю / Просмотрено</string>
@@ -169,18 +176,14 @@
     <string name="settings_controls_auto_hide_label">Скрывать управление плеером через</string>
     <string name="settings_picture_in_picture_label">Плавающий режим (PiP)</string>
     <string name="settings_picture_in_picture_enabled">Автоматически включать при выходе из приложения во время воспроизведения</string>
+    <string name="settings_brightness_return_system_label">Возвращать системную яркость при 0</string>
+    <string name="settings_brightness_return_system_hint">При достижении 0 плеер перестаёт задавать яркость экрана, и ей снова управляет Android</string>
     <string name="settings_advanced_volume_label">Продвинутая громкость в плеере</string>
     <string name="settings_advanced_volume_enabled" formatted="false">У плеера своя громкость (0–100%, шаг 1%), независимо от системы</string>
     <string name="settings_advanced_volume_disabled">Громкость меняет системный звук как обычно</string>
     <string name="settings_volume_stabilization_label">Стабилизация громкости</string>
     <string name="settings_volume_stabilization_enabled">Выравнивает громкие и тихие сцены: тихие диалоги громче, громкие моменты тише</string>
     <string name="settings_volume_stabilization_disabled">Звук играет со своим исходным динамическим диапазоном</string>
-    <string name="settings_audio_focus_label">Отключить аудиофокус</string>
-    <string name="settings_audio_focus_enabled">Плеер не реагирует на перехват фокуса другими приложениями. Включите, если воспроизведение само ставится на паузу</string>
-    <string name="settings_audio_focus_disabled">Плеер ставится на паузу или приглушается, когда фокус забирают другие приложения</string>
-    <string name="settings_audio_focus_confirm_title">Отключить аудиофокус?</string>
-    <string name="settings_audio_focus_confirm_message">Без аудиофокуса видео не будет останавливаться при звонках и звуке других приложений, не будет приглушаться уведомлениями и может играть поверх них. На некоторых устройствах это может работать некорректно. Отключайте, только если воспроизведение само ставится на паузу.</string>
-    <string name="settings_audio_focus_confirm">Отключить</string>
     <string name="settings_player_gesture_tutorial_reset">Повторить обучение жестам</string>
     <string name="settings_player_gesture_tutorial_reset_hint">Показать обучалку при следующем открытии видео</string>
     <string name="settings_player_gesture_tutorial_reset_done">Обучалка будет показана при следующем открытии видео</string>
@@ -191,7 +194,7 @@
     <string name="settings_cache_size_max">Максимальный</string>
     <string name="settings_cache_size_mb">%1$d МБ</string>
     <string name="settings_cache_size_300">300 МБ</string>
-    <string name="settings_content_language_title">Язык</string>
+    <string name="settings_content_language_title">Язык контента</string>
     <string name="settings_content_language_russian">Русский</string>
     <string name="settings_content_language_english">Английский</string>
     <string name="settings_content_language_ukrainian">Украинский</string>
@@ -241,7 +244,7 @@
     <string name="settings_subtitle_edge_shadow">Тень</string>
     <string name="settings_player_buffer_title">Размер буфера плеера</string>
     <string name="settings_player_buffer_minimal">Минимальный</string>
-    <string name="settings_player_buffer_minimal_hint">5–15 с запаса, до 16 МБ ОЗУ. Самый быстрый старт, но чаще подгрузка.</string>
+    <string name="settings_player_buffer_minimal_hint">5–15 с запаса, до 16 МБ ОЗУ. Самый быстрый старт, но чаще подгрузка. У Alloha возможны остановки при обновлении сессии.</string>
     <string name="settings_player_buffer_small">Малый</string>
     <string name="settings_player_buffer_small_hint">18–30 с запаса, до 24 МБ ОЗУ. Экономит память.</string>
     <string name="settings_player_buffer_medium">Средний</string>
@@ -325,4 +328,21 @@
         <string name="settings_new_episodes_source_on">Учитывается</string>
     <string name="settings_new_episodes_source_off">Не учитывается</string>
     <string name="settings_library_tabs_reset_hint">Вернуть стандартный порядок вкладок библиотеки</string>
+    <string name="settings_home_sections_title">Секции главной</string>
+    <string name="settings_home_sections_hint">Выбирайте блоки для главной и меняйте их порядок</string>
+    <string name="settings_home_sections_reset">Сбросить порядок секций</string>
+    <string name="settings_home_section_enabled">Показывается на главной</string>
+    <string name="settings_home_section_my_new_episodes">Новые серии из моих списков</string>
+    <string name="settings_home_section_new_releases">Новинки</string>
+    <string name="settings_home_section_new_titles">Новые тайтлы</string>
+    <string name="settings_home_section_recommendations">Рекомендации</string>
+    <string name="settings_home_section_announcements">Скоро</string>
+    <string name="settings_home_section_collections">Подборки</string>
+    <string name="settings_home_sections_reset_hint">Вернуть исходный порядок блоков главной</string>
+    <string name="settings_home_sections_navigation_hint">Выберите блоки главной страницы и настройте их порядок</string>
+    <string name="settings_home_sections_visibility_title">Видимость блоков</string>
+    <string name="settings_home_section_blogger_videos">От блогеров</string>
+    <string name="settings_home_section_more">Ещё</string>
+    <string name="settings_interface_language_title">Язык интерфейса</string>
+    <string name="settings_interface_language_system">Как на устройстве</string>
 </resources>
