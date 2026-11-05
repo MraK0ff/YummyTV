@@ -330,4 +330,6 @@
     <string name="settings_library_tabs_reset_hint">Повернути стандартний порядок вкладок бібліотеки</string>
     <string name="settings_interface_language_title">Мова інтерфейсу</string>
     <string name="settings_interface_language_system">Як на пристрої</string>
+    <string name="settings_home_section_season_anime">Аніме сезону</string>
+    <string name="settings_home_section_continue_watching">Продовжити перегляд</string>
 </resources>
