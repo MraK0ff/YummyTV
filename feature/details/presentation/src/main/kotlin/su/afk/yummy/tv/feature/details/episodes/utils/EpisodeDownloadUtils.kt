@@ -47,6 +47,26 @@ internal fun buildEpisodeGroups(videos: List<AnimeVideo>): ImmutableList<Episode
         }
         .toImmutableList()
 
+/**
+ * Returns the inclusive episode-list prefix ending at [selectedEpisode]. Groups are already
+ * sorted by [buildEpisodeGroups], so numeric order and the existing placement of specials or
+ * unknown episode numbers are preserved. A selected episode missing from the loaded list is
+ * still included on its own.
+ */
+internal fun previousEpisodeGroups(
+    groups: List<EpisodesState.EpisodeGroup>,
+    selectedEpisode: String,
+    selectedVideos: List<AnimeVideo>,
+): List<EpisodesState.EpisodeGroup> {
+    val selectedKey = selectedEpisode.episodeGroupKey()
+    val selectedIndex = groups.indexOfFirst { it.episode.episodeGroupKey() == selectedKey }
+    return if (selectedIndex >= 0) {
+        groups.take(selectedIndex + 1)
+    } else {
+        listOf(EpisodesState.EpisodeGroup(selectedKey, selectedVideos.toImmutableList()))
+    }
+}
+
 /** Приоритет статуса загрузки серии: busy > paused > downloaded > failed. */
 internal fun resolveDownloadStatuses(
     episodeGroups: List<EpisodesState.EpisodeGroup>,

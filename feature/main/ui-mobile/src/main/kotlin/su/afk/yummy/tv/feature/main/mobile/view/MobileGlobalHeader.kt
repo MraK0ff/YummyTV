@@ -2,10 +2,13 @@ package su.afk.yummy.tv.feature.main.mobile.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.matchParentSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -16,7 +19,6 @@ import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -68,19 +70,34 @@ internal fun MobileGlobalHeader(
                 tint = if (isSettingsSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        IconButton(onClick = onNotificationsClick) {
-            BadgedBox(
-                badge = {
-                    if (unreadNotificationsCount > 0) {
-                        Badge { Text(unreadNotificationsCount.toString()) }
-                    }
-                },
+        Box(
+            modifier = Modifier.size(48.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            IconButton(
+                onClick = onNotificationsClick,
+                modifier = Modifier.matchParentSize(),
             ) {
                 Icon(
                     imageVector = Icons.Outlined.NotificationsNone,
                     contentDescription = "Notifications",
                     tint = if (isNotificationsSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            if (unreadNotificationsCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(24.dp),
+                ) {
+                    Badge(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 6.dp, y = (-6).dp),
+                    ) {
+                        Text(unreadNotificationsCount.toString())
+                    }
+                }
             }
         }
         IconButton(onClick = onProfileClick) {
