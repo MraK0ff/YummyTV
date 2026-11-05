@@ -43,6 +43,7 @@ import su.afk.yummy.tv.feature.account.utils.loginCredentialsOrNull
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
+import su.afk.yummy.tv.feature.messages.IMessagesNavigator
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
@@ -61,6 +62,7 @@ class AccountViewModel @Inject internal constructor(
     private val videoDownloadNavigator: IVideoDownloadNavigator,
     private val watchLaterNavigator: IWatchLaterNavigator,
     private val accountNavigator: IAccountNavigator,
+    private val messagesNavigator: IMessagesNavigator,
     private val faqNavigator: IFaqNavigator,
     private val glossaryNavigator: IGlossaryNavigator,
     private val sitePagesNavigator: ISitePagesNavigator,
@@ -263,6 +265,9 @@ class AccountViewModel @Inject internal constructor(
 
             AccountState.Event.FriendsSelected ->
                 if (currentState.isSignedIn) nav.navigate(accountNavigator.getUserFriendsDest(currentState.userId))
+
+            AccountState.Event.MessagesSelected ->
+                if (currentState.isSignedIn) nav.navigate(messagesNavigator.dialogs())
 
             AccountState.Event.FaqSelected -> nav.navigate(faqNavigator.getFaqDest())
             AccountState.Event.GlossarySelected -> nav.navigate(glossaryNavigator.getGlossaryDest())
