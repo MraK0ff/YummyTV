@@ -106,6 +106,8 @@
     <string name="settings_watch_next_label">Continue watching</string>
     <string name="settings_watch_next_enabled">Synced with TV Home</string>
     <string name="settings_seasonal_decorations">Seasonal decorations</string>
+    <string name="settings_account_shortcuts_expanded">Separate account buttons</string>
+    <string name="settings_account_shortcuts_expanded_hint">Show Find users and Watch later as separate buttons on the Account tab</string>
     <string name="settings_seasonal_decorations_halloween">Halloween decorations: Oct 20 – Nov 2</string>
     <string name="settings_seasonal_decorations_new_year">New Year decorations: Dec 15 – Jan 10</string>
     <string name="settings_seasonal_decorations_off_season">No holiday right now — decorations will appear on their own in season</string>
