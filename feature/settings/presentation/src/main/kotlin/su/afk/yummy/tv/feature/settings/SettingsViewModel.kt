@@ -1,5 +1,7 @@
 package su.afk.yummy.tv.feature.settings
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.first
@@ -11,6 +13,7 @@ import su.afk.yummy.tv.core.common.coroutines.runSuspendCatching
 import su.afk.yummy.tv.core.error.api.ErrorHandler
 import su.afk.yummy.tv.core.error.api.RetryStorage
 import su.afk.yummy.tv.core.model.seasonal.seasonalThemeAt
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.mvi.BaseViewModel
 import su.afk.yummy.tv.core.navigation.manager.INavigationManager
 import su.afk.yummy.tv.core.preferences.api.TokenStorageMode
@@ -63,6 +66,9 @@ class SettingsViewModel @Inject internal constructor(
 
     override fun createInitialState() = SettingsState.State(
         interfaceMode = interfaceModePreferences.selectedMode ?: AppInterfaceMode.MOBILE,
+        interfaceLanguage = AppInterfaceLanguage.fromLocaleTags(
+            AppCompatDelegate.getApplicationLocales().toLanguageTags(),
+        ),
     )
 
     init {
@@ -450,6 +456,14 @@ class SettingsViewModel @Inject internal constructor(
                 viewModelScope.launch {
                     settingsStore.setYaniApplicationToken(event.token)
                 }
+            }
+
+            is SettingsState.Event.InterfaceLanguageSelected -> {
+                if (event.language == currentState.interfaceLanguage) return
+                AppCompatDelegate.setApplicationLocales(
+                    LocaleListCompat.forLanguageTags(event.language.localeTag),
+                )
+                setState { copy(interfaceLanguage = event.language) }
             }
 
             is SettingsState.Event.ContentLanguageSelected -> viewModelScope.launch {

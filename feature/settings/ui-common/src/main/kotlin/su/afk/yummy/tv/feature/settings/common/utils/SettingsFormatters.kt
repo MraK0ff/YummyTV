@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import su.afk.yummy.tv.core.designsystem.theme.isDynamicColorSupported
 import su.afk.yummy.tv.core.model.seasonal.SeasonalTheme
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.AppTheme
 import su.afk.yummy.tv.core.model.settings.BackgroundStyle
 import su.afk.yummy.tv.core.model.settings.NavTransitionStyle
@@ -230,6 +231,16 @@ val videoQualitySliderEntries: List<PreferredVideoQuality> = listOf(
     PreferredVideoQuality.P1440,
     PreferredVideoQuality.P2160,
     PreferredVideoQuality.BEST,
+)
+
+@Composable
+fun AppInterfaceLanguage.label(): String = stringResource(
+    when (this) {
+        AppInterfaceLanguage.SYSTEM -> R.string.settings_interface_language_system
+        AppInterfaceLanguage.ENGLISH -> R.string.settings_content_language_english
+        AppInterfaceLanguage.RUSSIAN -> R.string.settings_content_language_russian
+        AppInterfaceLanguage.UKRAINIAN -> R.string.settings_content_language_ukrainian
+    },
 )
 
 @Composable
