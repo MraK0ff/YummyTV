@@ -83,7 +83,6 @@ class SettingsState {
         val watchedThresholds: WatchedThresholds = WatchedThresholds(),
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
-        val audioFocusDisabled: Boolean = false,
         val volumeStabilizationEnabled: Boolean = false,
         /** Аудиофокус плеера отключён пользователем. */
         val audioFocusDisabled: Boolean = false,
@@ -232,7 +231,6 @@ class SettingsState {
 
         /** Пользователь переключил стабилизацию громкости (сжатие динамического диапазона). */
         data object VolumeStabilizationToggled : Event
-        data object AudioFocusToggled : Event
 
         /** Пользователь запросил повторный показ обучения жестам мобильного плеера. */
         data object MobilePlayerGestureTutorialReset : Event
