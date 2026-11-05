@@ -1,0 +1,182 @@
+name: Upstream synchronization
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Merge upstream and validate combined tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout current fork main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git identity and fetch upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/Helandy/YummyTV.git
+          git fetch --no-tags upstream main
+
+      - name: Merge upstream without discarding fork commits
+        id: merge
+        shell: bash
+        run: |
+          set -uo pipefail
+          report="$RUNNER_TEMP/upstream-sync-report.md"
+          log="$RUNNER_TEMP/upstream-merge.log"
+          echo "## Upstream synchronization" > "$report"
+          echo "- Upstream: `Helandy/YummyTV:main`" >> "$report"
+          echo "- Fork base: `MraK0ff/YummyTV:main`" >> "$report"
+          echo "- Upstream HEAD: `$(git rev-parse upstream/main)`" >> "$report"
+
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "No upstream commits to merge." | tee -a "$report"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git merge --no-ff --no-edit upstream/main >"$log" 2>&1; then
+            cat "$log"
+            echo "Upstream merge completed." >> "$report"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          cat "$log"
+          {
+            echo
+            echo "### Merge conflict"
+            echo
+            echo "The merge was aborted safely. No upstream or custom changes were discarded."
+            echo
+            echo "#### Conflicting paths"
+            git diff --name-only --diff-filter=U | sed 's/^/- /'
+            echo
+            echo "#### Git output"
+            echo '~~~text'
+            cat "$log"
+            echo '~~~'
+          } >> "$report"
+          cp "$report" "$GITHUB_WORKSPACE/upstream-sync-conflict-report.md"
+          git merge --abort || true
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+          echo "conflict=true" >> "$GITHUB_OUTPUT"
+          exit 1
+
+      - name: Upload conflict report
+        if: failure() && steps.merge.outputs.conflict == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: upstream-sync-conflict-report
+          path: upstream-sync-conflict-report.md
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Set up JDK
+        if: success() && steps.merge.outputs.changed == 'true'
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        if: success() && steps.merge.outputs.changed == 'true'
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Set up Android SDK
+        if: success() && steps.merge.outputs.changed == 'true'
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android SDK platform
+        if: success() && steps.merge.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          compile_sdk=$(grep -m1 '^android-compileSdk' gradle/libs.versions.toml | cut -d'"' -f2)
+          case "$compile_sdk" in
+            *.*) platform_version="$compile_sdk" ;;
+            *) platform_version="$compile_sdk.0" ;;
+          esac
+          (yes || true) | sdkmanager --licenses >/dev/null
+          sdkmanager --install "platforms;android-$platform_version"
+
+      - name: Build combined Android app
+        if: success() && steps.merge.outputs.changed == 'true'
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Publish synchronization branch
+        if: success() && steps.merge.outputs.changed == 'true'
+        id: publish
+        env:
+          SYNC_BRANCH: sync/upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$SYNC_BRANCH" || true
+          expected="$(git ls-remote origin "refs/heads/$SYNC_BRANCH" | awk '{print $1}')"
+          if [[ -n "$expected" ]]; then
+            git push --force-with-lease="refs/heads/$SYNC_BRANCH:$expected" origin "HEAD:refs/heads/$SYNC_BRANCH"
+          else
+            git push origin "HEAD:refs/heads/$SYNC_BRANCH"
+          fi
+
+      - name: Create or update upstream sync pull request
+        if: success() && steps.merge.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SYNC_BRANCH: sync/upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          pr_number="$(gh pr list --state open --head "$SYNC_BRANCH" --base main --json number --jq '.[0].number // empty')"
+          body=$(cat <<'EOF'
+          This PR merges the latest `Helandy/YummyTV:main` into the fork's combined branch.
+
+          - Keeps existing fork commits and custom changes.
+          - Does not rewrite public history.
+          - Runs the Android debug build before publishing this PR.
+          - If upstream overlaps with custom code, synchronization stops and uploads a conflict report instead of choosing either side.
+
+          Merge this PR after reviewing the combined diff and checks.
+          EOF
+          )
+          if [[ -n "$pr_number" ]]; then
+            gh pr edit "$pr_number" --title "chore: synchronize upstream" --body "$body"
+          else
+            gh pr create --base main --head "$SYNC_BRANCH" --title "chore: synchronize upstream" --body "$body"
+          fi
+
+      - name: Report result
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Upstream sync result"
+            if [[ "${{ steps.merge.outputs.conflict }}" == "true" ]]; then
+              echo "Conflicts detected. Merge aborted; download the conflict report artifact."
+            elif [[ "${{ steps.merge.outputs.changed }}" == "true" && "${{ job.status }}" == "success" ]]; then
+              echo "Combined tree built and synchronization PR created or updated."
+            elif [[ "${{ steps.merge.outputs.changed }}" == "false" ]]; then
+              echo "Fork is already up to date with upstream."
+            else
+              echo "Synchronization did not complete. Inspect the failed step."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
