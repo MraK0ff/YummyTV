@@ -150,10 +150,14 @@ class YaniAnimeRepository(
     private suspend fun fetchDetailsShared(animeId: Int, languageCode: String): AnimeDetails {
         val key = "$animeId:$languageCode"
         val deferred = detailsInFlight.computeIfAbsent(key) {
-            detailsScope.async { fetchDetailsFromNetwork(animeId, languageCode) }.also { started ->
-                started.invokeOnCompletion { detailsInFlight.remove(key, started) }
+            detailsScope.async(start = kotlinx.coroutines.CoroutineStart.LAZY) {
+                fetchDetailsFromNetwork(animeId, languageCode)
             }
         }
+        // Регистрируем очистку после выхода из computeIfAbsent: при мгновенном завершении
+        // callback не должен повторно изменять ту же ConcurrentHashMap из mapping-функции.
+        deferred.invokeOnCompletion { detailsInFlight.remove(key, deferred) }
+        deferred.start()
         return deferred.await()
     }
 
@@ -585,7 +589,7 @@ class YaniAnimeRepository(
         // выхода, чужому состоянию отдавать нельзя.
         val key = "$animeId:$languageCode:${settingsStore.currentUserId()}"
         val deferred = videosInFlight.computeIfAbsent(key) {
-            detailsScope.async {
+            detailsScope.async(start = kotlinx.coroutines.CoroutineStart.LAZY) {
                 val dto = api.getAnimeVideos(animeId)
                 // Маппинг тысяч видео — вычисления, а не IO: отдаём его пулу Default.
                 val cache = withContext(Dispatchers.Default) {
@@ -597,10 +601,11 @@ class YaniAnimeRepository(
                 }
                 animeStorage.saveVideos(cache)
                 cache
-            }.also { started ->
-                started.invokeOnCompletion { videosInFlight.remove(key, started) }
             }
         }
+        // Удаляем только тот же Deferred и только после computeIfAbsent.
+        deferred.invokeOnCompletion { videosInFlight.remove(key, deferred) }
+        deferred.start()
         return deferred.await()
     }
 
