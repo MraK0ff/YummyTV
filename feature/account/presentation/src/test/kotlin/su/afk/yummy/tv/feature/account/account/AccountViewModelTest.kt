@@ -53,6 +53,7 @@ import su.afk.yummy.tv.feature.account.localauth.LocalAuthAnalytics
 import su.afk.yummy.tv.feature.details.IDetailsNavigator
 import su.afk.yummy.tv.feature.faq.IFaqNavigator
 import su.afk.yummy.tv.feature.glossary.IGlossaryNavigator
+import su.afk.yummy.tv.feature.messages.IMessagesNavigator
 import su.afk.yummy.tv.feature.pages.ISitePagesNavigator
 import su.afk.yummy.tv.feature.settings.ISettingsNavigator
 import su.afk.yummy.tv.feature.videodownload.IVideoDownloadNavigator
@@ -70,6 +71,7 @@ class AccountViewModelTest : BaseUnitTest() {
     private val detailsNavigator: IDetailsNavigator = mockk(relaxed = true)
     private val videoDownloadNavigator: IVideoDownloadNavigator = mockk(relaxed = true)
     private val accountNavigator: IAccountNavigator = mockk(relaxed = true)
+    private val messagesNavigator: IMessagesNavigator = mockk(relaxed = true)
     private val faqNavigator: IFaqNavigator = mockk(relaxed = true)
     private val glossaryNavigator: IGlossaryNavigator = mockk(relaxed = true)
     private val sitePagesNavigator: ISitePagesNavigator = mockk(relaxed = true)
@@ -113,6 +115,7 @@ class AccountViewModelTest : BaseUnitTest() {
         detailsNavigator = detailsNavigator,
         videoDownloadNavigator = videoDownloadNavigator,
         accountNavigator = accountNavigator,
+        messagesNavigator = messagesNavigator,
         faqNavigator = faqNavigator,
         glossaryNavigator = glossaryNavigator,
         sitePagesNavigator = sitePagesNavigator,
