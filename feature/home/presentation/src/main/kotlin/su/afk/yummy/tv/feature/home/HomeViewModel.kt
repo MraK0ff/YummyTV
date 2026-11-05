@@ -490,6 +490,8 @@ class HomeViewModel @Inject internal constructor(
             order to hidden
         }.onEach { (order, hidden) ->
             val defaultOrder = listOf(
+                "SEASON_ANIME",
+                "CONTINUE_WATCHING",
                 "MY_NEW_EPISODES",
                 "NEW_RELEASES",
                 "NEW_TITLES",
