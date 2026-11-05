@@ -345,4 +345,6 @@
     <string name="settings_home_section_more">More</string>
     <string name="settings_interface_language_title">Interface language</string>
     <string name="settings_interface_language_system">System default</string>
+    <string name="settings_home_section_season_anime">Season anime</string>
+    <string name="settings_home_section_continue_watching">Continue watching</string>
 </resources>
