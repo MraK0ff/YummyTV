@@ -30,6 +30,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoRetu
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.nextEpisodeSwitchDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.pictureInPictureEnabledKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.audioFocusDisabledKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerBufferProfileKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerControlsAutoHideSecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.playerOrientationModeKey
@@ -94,6 +95,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override val pictureInPictureEnabled: Flow<Boolean> =
         store.boolean(pictureInPictureEnabledKey, true)
+
+    override val audioFocusDisabled: Flow<Boolean> =
+        store.boolean(audioFocusDisabledKey, false)
 
     override val playerOrientationMode: Flow<PlayerOrientationMode> =
         store.enumFlow(playerOrientationModeKey, PlayerOrientationMode.SYSTEM)
@@ -232,6 +236,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
 
     override suspend fun setPictureInPictureEnabled(enabled: Boolean) =
         store.setBoolean(pictureInPictureEnabledKey, enabled)
+
+    override suspend fun setAudioFocusDisabled(disabled: Boolean) =
+        store.setBoolean(audioFocusDisabledKey, disabled)
 
     override suspend fun setPlayerOrientationMode(mode: PlayerOrientationMode) =
         store.setEnum(playerOrientationModeKey, mode)
