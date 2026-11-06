@@ -236,6 +236,7 @@ class PlayerViewModel @AssistedInject internal constructor(
             ).copy(
                 playerOrientationMode = playerOrientationMode,
                 controlsAutoHideSeconds = controlsAutoHideSeconds,
+                manualSkipSeconds = manualSkipSeconds,
                 mobileGestureTutorialReady = mobileGestureTutorialReady,
                 showMobileGestureTutorial = showMobileGestureTutorial,
                 tvControlsTutorialReady = tvControlsTutorialReady,
