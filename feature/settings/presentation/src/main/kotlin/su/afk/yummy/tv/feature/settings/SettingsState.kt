@@ -83,7 +83,6 @@ class SettingsState {
         val watchedThresholds: WatchedThresholds = WatchedThresholds(),
         val tvPlayerVolumeKeysEnabled: Boolean = false,
         val advancedPlayerVolumeEnabled: Boolean = false,
-        val audioFocusDisabled: Boolean = false,
         val volumeStabilizationEnabled: Boolean = false,
         /** Аудиофокус плеера отключён пользователем. */
         val audioFocusDisabled: Boolean = false,
