@@ -122,8 +122,11 @@ class SettingsViewModel @Inject internal constructor(
                 }
             }
             .launchIn(viewModelScope)
+        settingsStore.manualSkipSeconds
+            .onEach { seconds -> setState { copy(manualSkipSeconds = seconds) } }
+            .launchIn(viewModelScope)
         episodePushSettingsStore.enabled
-            .onEach { enabled -> setState { copy(episodePushEnabled = enabled) } }
+            .onEach { enabled -> setState { copy(episodePushEnabled = enabled) }
             .launchIn(viewModelScope)
         episodePushSettingsStore.libraryEnabled
             .onEach { enabled -> setState { copy(libraryEpisodePushEnabled = enabled) } }
@@ -372,6 +375,10 @@ class SettingsViewModel @Inject internal constructor(
             is SettingsState.Event.PlayerControlsAutoHideChanged -> viewModelScope.launch {
                 analytics.eventPlayerControlsAutoHideChanged(event.seconds)
                 settingsStore.setPlayerControlsAutoHideSeconds(event.seconds)
+            }
+
+            is SettingsState.Event.ManualSkipSecondsChanged -> viewModelScope.launch {
+                settingsStore.setManualSkipSeconds(event.seconds)
             }
 
             SettingsState.Event.PictureInPictureToggled -> viewModelScope.launch {
