@@ -40,6 +40,7 @@ internal object SettingsPreferenceKeys {
         intPreferencesKey("next_episode_switch_delay_seconds")
     val playerControlsAutoHideSecondsKey =
         intPreferencesKey("player_controls_auto_hide_seconds")
+    val manualSkipSecondsKey = intPreferencesKey("player_manual_skip_seconds")
 
     val pictureInPictureEnabledKey = booleanPreferencesKey("picture_in_picture_enabled")
     val audioFocusDisabledKey = booleanPreferencesKey("audio_focus_disabled")
