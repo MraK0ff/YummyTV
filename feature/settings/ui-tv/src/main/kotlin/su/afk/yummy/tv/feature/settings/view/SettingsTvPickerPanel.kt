@@ -32,6 +32,7 @@ import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.presentation.R
 import su.afk.yummy.tv.feature.settings.HomeSectionKind
+import su.afk.yummy.tv.feature.settings.labelRes
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
 import su.afk.yummy.tv.feature.settings.model.SettingsTvPicker
 import su.afk.yummy.tv.feature.settings.utils.hint
