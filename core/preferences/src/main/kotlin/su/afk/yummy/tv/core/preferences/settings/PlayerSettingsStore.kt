@@ -32,6 +32,9 @@ interface PlayerSettingsStore {
     val nextEpisodeSwitchDelaySeconds: Flow<Int>
 
     /** Через сколько секунд бездействия скрываются контролы плеера (1–10). */
+    /** Длительность ручного пропуска вперёд в секундах; значение по умолчанию — 88 секунд. */
+    val manualSkipSeconds: Flow<Int>
+
     val playerControlsAutoHideSeconds: Flow<Int>
 
     val pictureInPictureEnabled: Flow<Boolean>
@@ -101,6 +104,7 @@ interface PlayerSettingsStore {
     suspend fun setShowOpeningOnTimeline(enabled: Boolean)
     suspend fun setAutoPlayNextEpisode(enabled: Boolean)
     suspend fun setNextEpisodeSwitchDelaySeconds(seconds: Int)
+    suspend fun setManualSkipSeconds(seconds: Int)
     suspend fun setPlayerControlsAutoHideSeconds(seconds: Int)
     suspend fun setPictureInPictureEnabled(enabled: Boolean)
     suspend fun setAudioFocusDisabled(disabled: Boolean)
