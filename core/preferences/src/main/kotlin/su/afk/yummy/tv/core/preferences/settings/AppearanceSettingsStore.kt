@@ -35,18 +35,18 @@ interface AppearanceSettingsStore {
     val libraryTabOrder: Flow<List<LibraryTabKind>>
 
     /** Показывать ли праздничное оформление (гирлянда, тыквы) в сезон. */
+    val seasonalDecorationsEnabled: Flow<Boolean>
+
     /** Показывать быстрые действия аккаунта отдельными кнопками. */
     val accountShortcutsExpanded: Flow<Boolean>
 
-    val seasonalDecorationsEnabled: Flow<Boolean>
-
-    /** Показывать ли на главной блок новых серий из списков пользователя. */
     /** Стабильный пользовательский порядок секций главной ленты. */
     val homeSectionOrder: Flow<List<String>>
 
     /** Секции главной ленты, отключённые пользователем. */
     val hiddenHomeSections: Flow<Set<String>>
 
+    /** Показывать ли на главной блок новых серий из списков пользователя. */
     val newEpisodesSectionEnabled: Flow<Boolean>
 
     /** Списки, по которым блок новых серий отбирает тайтлы. */
