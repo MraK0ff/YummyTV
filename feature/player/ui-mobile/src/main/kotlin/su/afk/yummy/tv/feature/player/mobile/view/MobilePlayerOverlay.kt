@@ -2,9 +2,11 @@ package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -66,16 +68,33 @@ internal fun MobilePlayerOverlay(
             .padding(horizontal = 18.dp, vertical = 18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        MobilePlayerProgressRow(
-            displayTime = progress.displayTimeMs,
-            duration = progress.duration,
-            seekProgress = progress.progressFraction,
-            bufferedProgress = progress.bufferedProgress,
-            openingStartMs = openingStartMs,
-            openingEndMs = openingEndMs,
-            onSeekChange = onSeekChange,
-            onSeekFinished = onSeekFinished,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            MobilePlayerActionButton(
+                icon = Icons.Filled.FastForward,
+                contentDescription = stringResource(
+                    R.string.player_manual_skip,
+                    manualSkipSeconds.toManualSkipTime(),
+                ),
+                onClick = onManualSkip,
+                modifier = Modifier.size(40.dp),
+            )
+            Box(modifier = Modifier.weight(1f)) {
+                MobilePlayerProgressRow(
+                    displayTime = progress.displayTimeMs,
+                    duration = progress.duration,
+                    seekProgress = progress.progressFraction,
+                    bufferedProgress = progress.bufferedProgress,
+                    openingStartMs = openingStartMs,
+                    openingEndMs = openingEndMs,
+                    onSeekChange = onSeekChange,
+                    onSeekFinished = onSeekFinished,
+                )
+            }
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -110,14 +129,6 @@ internal fun MobilePlayerOverlay(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                MobilePlayerActionButton(
-                    icon = Icons.Filled.FastForward,
-                    contentDescription = stringResource(
-                        R.string.player_manual_skip,
-                        manualSkipSeconds.toManualSkipTime(),
-                    ),
-                    onClick = onManualSkip,
-                )
                 MobilePlayerActionButton(
                     icon = Icons.Filled.Speed,
                     contentDescription = stringResource(R.string.player_speed_title),
