@@ -126,7 +126,7 @@ class SettingsViewModel @Inject internal constructor(
             .onEach { seconds -> setState { copy(manualSkipSeconds = seconds) } }
             .launchIn(viewModelScope)
         episodePushSettingsStore.enabled
-            .onEach { enabled -> setState { copy(episodePushEnabled = enabled) }
+            .onEach { enabled -> setState { copy(episodePushEnabled = enabled) } }
             .launchIn(viewModelScope)
         episodePushSettingsStore.libraryEnabled
             .onEach { enabled -> setState { copy(libraryEpisodePushEnabled = enabled) } }
