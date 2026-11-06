@@ -22,6 +22,7 @@ internal class PlayerSettingsHandler @Inject constructor(
     val autoPlayNextEpisode: Flow<Boolean> = settingsStore.autoPlayNextEpisode
     val nextEpisodeSwitchDelaySeconds: Flow<Int> = settingsStore.nextEpisodeSwitchDelaySeconds
     val playerControlsAutoHideSeconds: Flow<Int> = settingsStore.playerControlsAutoHideSeconds
+    val manualSkipSeconds: Flow<Int> = settingsStore.manualSkipSeconds
     val pictureInPictureEnabled: Flow<Boolean> = settingsStore.pictureInPictureEnabled
     val playerOrientationMode: Flow<PlayerOrientationMode> = settingsStore.playerOrientationMode
     val mobilePlayerGestureTutorialDismissed: Flow<Boolean> =
@@ -38,6 +39,10 @@ internal class PlayerSettingsHandler @Inject constructor(
 
     suspend fun saveOrientationMode(mode: PlayerOrientationMode) {
         settingsStore.setPlayerOrientationMode(mode)
+    }
+
+    suspend fun saveManualSkipSeconds(seconds: Int) {
+        settingsStore.setManualSkipSeconds(seconds)
     }
 
     suspend fun savePlaybackSpeed(speed: Float) {
