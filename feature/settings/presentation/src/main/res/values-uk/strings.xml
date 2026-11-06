@@ -168,6 +168,8 @@
     <string name="settings_auto_manage_library_lists_hint">Тайтл потрапляє в «Дивлюсь» після 2 серій, переглянутих більш ніж на 50%, і в «Переглянуто» — коли переглянуто всі серії завершеного тайтлу</string>
     <string name="settings_suggest_next_episode_on_watched_label">Пропонувати наступну серію</string>
     <string name="settings_suggest_next_episode_on_watched_enabled">Показувати на головній після завершення поточної</string>
+    <string name="settings_manual_skip_seconds_title">Тривалість ручного пропуску</string>
+    <string name="settings_manual_skip_seconds_hint">На скільки секунд перемотує кнопка ручного пропуску.</string>
     <string name="settings_auto_play_next_episode_label">Автовідтворення наступної серії</string>
     <string name="settings_auto_play_next_episode_enabled">Запускати наступну серію після 10-секундного відліку</string>
     <string name="settings_next_episode_switch_delay_label">Затримка перед перемиканням серії</string>
