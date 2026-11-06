@@ -40,9 +40,6 @@ interface AppearanceSettingsStore {
 
     val seasonalDecorationsEnabled: Flow<Boolean>
 
-    /** Показывать быстрые действия аккаунта отдельными кнопками. */
-    val accountShortcutsExpanded: Flow<Boolean>
-
     /** Показывать ли на главной блок новых серий из списков пользователя. */
     /** Стабильный пользовательский порядок секций главной ленты. */
     val homeSectionOrder: Flow<List<String>>
