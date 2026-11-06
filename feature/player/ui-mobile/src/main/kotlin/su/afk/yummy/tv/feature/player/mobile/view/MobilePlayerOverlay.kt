@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -36,6 +37,8 @@ internal fun MobilePlayerOverlay(
     openingEndMs: Long?,
     hasPrevEpisode: Boolean,
     selectedSpeed: Float,
+    manualSkipSeconds: Int,
+    onManualSkip: () -> Unit,
     onCycleSpeed: () -> Unit,
     onPlayPause: () -> Unit,
     onSeekChange: (Float) -> Unit,
@@ -108,6 +111,14 @@ internal fun MobilePlayerOverlay(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 MobilePlayerActionButton(
+                    icon = Icons.Filled.FastForward,
+                    contentDescription = stringResource(
+                        R.string.player_manual_skip,
+                        manualSkipSeconds.toManualSkipTime(),
+                    ),
+                    onClick = onManualSkip,
+                )
+                MobilePlayerActionButton(
                     icon = Icons.Filled.Speed,
                     contentDescription = stringResource(R.string.player_speed_title),
                     label = selectedSpeed.toMobileSpeedLabel(),
@@ -130,3 +141,7 @@ internal fun MobilePlayerOverlay(
 
 private fun Float.toMobileSpeedLabel(): String =
     if (this % 1f == 0f) "${toInt()}x" else "${this}x"
+
+
+private fun Int.toManualSkipTime(): String =
+    "${this / 60}:${(this % 60).toString().padStart(2, '0')}"
