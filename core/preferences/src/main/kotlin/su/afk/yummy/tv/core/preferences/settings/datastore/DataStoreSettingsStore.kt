@@ -96,6 +96,9 @@ internal class DataStoreSettingsStore @Inject constructor(
     AppLifecycleSettingsStore by appLifecycle,
     SearchSettingsStore by search {
 
+    // Явно разрешаем делегирование свойства, унаследованного через SettingsStore.
+    override val accountShortcutsExpanded: Flow<Boolean> = appearance.accountShortcutsExpanded
+
     override val settingsSnapshot: Flow<SettingsSnapshot> = store.data.map { prefs ->
         SettingsSnapshot(
             appTheme = prefs.enum(appThemeKey, AppTheme.WARM_AMBER),
