@@ -57,6 +57,7 @@
     <string name="player_resize_crop">Fill screen</string>
     <string name="player_count_thousands">%1$sK</string>
     <string name="player_count_millions">%1$sM</string>
+    <string name="player_manual_skip">Skip forward %1$s</string>
     <string name="player_skip_segment">Skip</string>
     <string name="player_skip_segment_countdown">Skip · %1$d</string>
     <string name="player_opening_skipped">Opening skipped %1$s–%2$s</string>
