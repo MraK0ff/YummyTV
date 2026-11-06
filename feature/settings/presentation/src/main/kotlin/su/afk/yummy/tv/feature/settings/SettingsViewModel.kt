@@ -111,7 +111,6 @@ class SettingsViewModel @Inject internal constructor(
                         advancedPlayerVolumeEnabled = snapshot.advancedPlayerVolumeEnabled,
                         audioFocusDisabled = snapshot.audioFocusDisabled,
                         volumeStabilizationEnabled = snapshot.volumeStabilizationEnabled,
-                        audioFocusDisabled = snapshot.audioFocusDisabled,
                         playerBufferProfile = snapshot.playerBufferProfile,
                         browserUserAgentProfile = snapshot.browserUserAgentProfile,
                         videoExportAutoEnabled = snapshot.videoExportAutoEnabled,
@@ -414,10 +413,6 @@ class SettingsViewModel @Inject internal constructor(
 
             SettingsState.Event.VolumeStabilizationToggled -> viewModelScope.launch {
                 settingsStore.setVolumeStabilizationEnabled(!currentState.volumeStabilizationEnabled)
-            }
-
-            SettingsState.Event.AudioFocusToggled -> viewModelScope.launch {
-                settingsStore.setAudioFocusDisabled(!currentState.audioFocusDisabled)
             }
 
             SettingsState.Event.MobilePlayerGestureTutorialReset -> viewModelScope.launch {
