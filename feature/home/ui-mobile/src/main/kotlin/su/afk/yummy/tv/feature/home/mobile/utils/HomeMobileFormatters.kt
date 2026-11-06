@@ -15,7 +15,12 @@ internal fun HomeFeedSectionType.showMobileCardMetadata(): Boolean = when (this)
     HomeFeedSectionType.NEW_TITLES,
     HomeFeedSectionType.RECOMMENDATIONS,
     HomeFeedSectionType.ANNOUNCEMENTS,
-    HomeFeedSectionType.COLLECTIONS -> false
+    HomeFeedSectionType.COLLECTIONS,
+    // These sections render dedicated UI rather than standard feed cards.
+    HomeFeedSectionType.SEASON_ANIME,
+    HomeFeedSectionType.CONTINUE_WATCHING,
+    HomeFeedSectionType.BLOGGER_VIDEOS,
+    HomeFeedSectionType.MORE -> false
 }
 
 @Composable
