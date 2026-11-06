@@ -607,6 +607,13 @@ internal fun MobileNativePlayer(
             openingEndMs = ui.activeSkips.opening?.endMs?.takeIf { state.showOpeningOnTimeline },
             hasPrevEpisode = ui.hasPrevEpisode,
             selectedSpeed = selectedSpeed,
+            manualSkipSeconds = state.manualSkipSeconds,
+            onManualSkip = {
+                seekController.seekTo(
+                    player.currentPosition + state.manualSkipSeconds * 1_000L,
+                )
+                overlay.show()
+            },
             onCycleSpeed = {
                 val speeds = PlayerSpeedOptions.values
                 val nextIndex = (PlayerSpeedOptions.nearestIndex(selectedSpeed) + 1) % speeds.size
