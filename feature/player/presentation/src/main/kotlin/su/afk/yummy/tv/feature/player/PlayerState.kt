@@ -75,6 +75,8 @@ class PlayerState {
         val nextEpisodeSwitchDelaySeconds: Int = 10,
         /** Через сколько секунд бездействия скрываются контролы. */
         val controlsAutoHideSeconds: Int = 4,
+        /** Длительность ручного пропуска вперёд в секундах (по умолчанию 1:28). */
+        val manualSkipSeconds: Int = 88,
         val pictureInPictureEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val mobileGestureTutorialReady: Boolean = false,
