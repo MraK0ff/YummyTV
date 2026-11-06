@@ -18,7 +18,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":feature:account:api"))
     implementation(project(":feature:settings:api"))
-    implementation(project(":feature:home:domain"))
+    api(project(":feature:home:domain"))
     implementation(project(":feature:update:domain"))
     implementation(project(":feature:video-download:domain"))
 
