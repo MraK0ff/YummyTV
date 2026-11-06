@@ -14,6 +14,7 @@ import su.afk.yummy.tv.domain.bloggers.model.BloggerVideo
 import su.afk.yummy.tv.domain.home.model.HomeContinueWatchingItem
 import su.afk.yummy.tv.domain.home.model.HomeFeed
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
+import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
 import su.afk.yummy.tv.feature.home.model.HomeAnnouncement
 
 class HomeState {
@@ -39,7 +40,8 @@ class HomeState {
         /** Предложение добавить preview-канал «Новинки» на главный экран ТВ. */
         val previewChannelPromptVisible: Boolean = false,
         /** Пользовательский порядок и видимость всех управляемых блоков Home. */
-        val homeSectionOrder: ImmutableList<String> = listOf("SEASON_ANIME", "CONTINUE_WATCHING", "MY_NEW_EPISODES", "NEW_RELEASES", "NEW_TITLES", "RECOMMENDATIONS", "ANNOUNCEMENTS", "COLLECTIONS", "BLOGGER_VIDEOS", "MORE").toImmutableList(),
+        val homeSectionOrder: ImmutableList<String> =
+            HomeFeedSectionType.entries.map { it.name }.toImmutableList(),
         val hiddenHomeSections: Set<String> = emptySet(),
         val bloggerVideos: ImmutableList<BloggerVideo> = persistentListOf(),
         val isBloggerVideosLoading: Boolean = true,
