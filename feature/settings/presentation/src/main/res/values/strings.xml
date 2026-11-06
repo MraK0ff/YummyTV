@@ -168,6 +168,8 @@
     <string name="settings_auto_manage_library_lists_hint">Move a title to Watching after 2 episodes watched over 50%, and to Completed after the last episode of a finished title</string>
     <string name="settings_suggest_next_episode_on_watched_label">Suggest next episode</string>
     <string name="settings_suggest_next_episode_on_watched_enabled">Show on Home after finishing the current episode</string>
+    <string name="settings_manual_skip_seconds_title">Manual skip duration</string>
+    <string name="settings_manual_skip_seconds_hint">How far the manual skip button jumps forward.</string>
     <string name="settings_auto_play_next_episode_label">Autoplay next episode</string>
     <string name="settings_auto_play_next_episode_enabled">Start the next episode after a 10-second countdown</string>
     <string name="settings_next_episode_switch_delay_label">Next episode switch delay</string>
