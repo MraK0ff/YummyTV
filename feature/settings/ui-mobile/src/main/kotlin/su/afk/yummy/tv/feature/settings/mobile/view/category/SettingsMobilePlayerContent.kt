@@ -69,6 +69,16 @@ internal fun SettingsMobilePlayerContent(
                 },
             )
             SettingsMobileSliderRow(
+                label = stringResource(R.string.settings_manual_skip_seconds_title),
+                valueLabel = { seconds -> "${seconds / 60}:${(seconds % 60).toString().padStart(2, '0')}" },
+                value = state.manualSkipSeconds,
+                valueRange = 5..300,
+                enabled = true,
+                onValueCommitted = {
+                    onEvent(SettingsState.Event.ManualSkipSecondsChanged(it))
+                },
+            )
+            SettingsMobileSliderRow(
                 label = stringResource(R.string.settings_browser_user_agent_title),
                 valueLabel = { BrowserUserAgentProfile.entries[it].label() },
                 value = BrowserUserAgentProfile.entries.indexOf(state.browserUserAgentProfile)
