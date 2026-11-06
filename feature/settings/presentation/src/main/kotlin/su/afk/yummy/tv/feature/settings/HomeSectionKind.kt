@@ -1,17 +1,9 @@
 package su.afk.yummy.tv.feature.settings
 
-/** Stable preference keys shared with HomeFeedSectionType.name. */
-enum class HomeSectionKind {
-    /** Hero carousel populated from the current anime season. */
-    SEASON_ANIME,
-    /** Continue-watching row populated from local and remote progress. */
-    CONTINUE_WATCHING,
-    MY_NEW_EPISODES,
-    NEW_RELEASES,
-    NEW_TITLES,
-    RECOMMENDATIONS,
-    ANNOUNCEMENTS,
-    COLLECTIONS,
-    BLOGGER_VIDEOS,
-    MORE,
-}
+/**
+ * Compatibility alias for the canonical Home section registry.
+ *
+ * Keep section IDs in HomeFeedSectionType so settings, default ordering and Home rendering
+ * all share one registered set of stable preference keys.
+ */
+typealias HomeSectionKind = su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
