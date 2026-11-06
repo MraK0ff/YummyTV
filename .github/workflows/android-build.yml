@@ -10,9 +10,9 @@ on:
 permissions:
   contents: read
 
-# Один общий слот: новый запуск отменяет предыдущий, в том числе на другой ветке.
+# Отменяем только предыдущий запуск того же PR или push-ветки.
 concurrency:
-  group: android-debug-build
+  group: android-debug-build-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
