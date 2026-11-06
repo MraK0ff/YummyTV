@@ -509,9 +509,16 @@ internal fun TvExoPlayerView(
             qualityCount = playback.qualityLabels.size,
             currentQualityLabel = activeQuality.orEmpty(),
             activeSpeed = activeSpeed,
+            manualSkipSeconds = state.manualSkipSeconds,
             adaptiveQuality = playback.adaptiveQuality,
             showAllohaButton = trackMenu.showAudioChoice,
             onPlayPause = { if (wantsPlay) player.pause() else player.play() },
+            onManualSkip = {
+                seekController.seekTo(
+                    player.currentPosition + state.manualSkipSeconds * 1_000L,
+                )
+                onInteraction()
+            },
             onSeekTo = seekController::seekTo,
             onInteraction = ::onInteraction,
             onSkipActiveSegment = { skipActiveSegment() },
