@@ -44,9 +44,11 @@ internal fun BoxScope.TvPlayerControlsOverlay(
     qualityCount: Int,
     currentQualityLabel: String,
     activeSpeed: Float,
+    manualSkipSeconds: Int,
     adaptiveQuality: Boolean,
     showAllohaButton: Boolean,
     onPlayPause: () -> Unit,
+    onManualSkip: () -> Unit,
     onSeekTo: (positionMs: Long) -> Unit,
     onInteraction: () -> Unit,
     onSkipActiveSegment: () -> Unit,
@@ -96,6 +98,25 @@ internal fun BoxScope.TvPlayerControlsOverlay(
                     .padding(horizontal = 48.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+                ) {
+                    TvControlButton(
+                        onClick = onManualSkip,
+                        onFocused = onInteraction,
+                        modifier = Modifier.focusProperties { down = focus.play },
+                    ) { color ->
+                        Text(
+                            text = stringResource(
+                                R.string.player_manual_skip,
+                                manualSkipSeconds.toManualSkipTime(),
+                            ),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = color,
+                        )
+                    }
+                }
                 if (activeSkip != null) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -218,3 +239,7 @@ internal fun BoxScope.TvPlayerControlsOverlay(
         }
     }
 }
+
+
+private fun Int.toManualSkipTime(): String =
+    "${this / 60}:${(this % 60).toString().padStart(2, '0')}"
