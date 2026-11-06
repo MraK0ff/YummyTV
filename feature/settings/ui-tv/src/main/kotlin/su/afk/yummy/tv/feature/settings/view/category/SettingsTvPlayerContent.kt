@@ -79,6 +79,19 @@ internal fun SettingsTvPlayerContent(
             .restoreCategoryFocusOnLeft(tabFocusRequester),
     )
     SettingsDivider()
+    SettingsDivider()
+    SettingsSliderRow(
+        label = stringResource(R.string.settings_manual_skip_seconds_title),
+        valueText = "${state.manualSkipSeconds / 60}:${(state.manualSkipSeconds % 60).toString().padStart(2, '0')}",
+        value = state.manualSkipSeconds,
+        valueRange = 5..300,
+        enabled = true,
+        onValueChange = {
+            onEvent(SettingsState.Event.ManualSkipSecondsChanged(it))
+        },
+        modifier = Modifier.restoreCategoryFocusOnLeft(tabFocusRequester),
+    )
+    SettingsDivider()
     val userAgents = BrowserUserAgentProfile.entries
     SettingsSliderRow(
         label = stringResource(R.string.settings_browser_user_agent_title),
