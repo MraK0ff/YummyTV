@@ -25,6 +25,7 @@ import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoPlay
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipDelaySecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoSkipOpeningsEndingsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.browserUserAgentProfileKey
+import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.manualSkipSecondsKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerBrightnessPercentKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.autoReturnMobileBrightnessToSystemAtZeroKey
 import su.afk.yummy.tv.core.preferences.settings.SettingsPreferenceKeys.mobilePlayerGestureTutorialDismissedKey
@@ -90,6 +91,11 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
     override val playerControlsAutoHideSeconds: Flow<Int> = store.data.map { prefs ->
         (prefs[playerControlsAutoHideSecondsKey] ?: DEFAULT_CONTROLS_AUTO_HIDE_SECONDS)
             .coerceIn(MIN_CONTROLS_AUTO_HIDE_SECONDS, MAX_CONTROLS_AUTO_HIDE_SECONDS)
+    }
+
+    override val manualSkipSeconds: Flow<Int> = store.data.map { prefs ->
+        (prefs[manualSkipSecondsKey] ?: DEFAULT_MANUAL_SKIP_SECONDS)
+            .coerceIn(MIN_MANUAL_SKIP_SECONDS, MAX_MANUAL_SKIP_SECONDS)
     }
 
 
@@ -224,6 +230,13 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         store.edit { prefs ->
             prefs[nextEpisodeSwitchDelaySecondsKey] =
                 seconds.coerceIn(0, MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS)
+        }
+    }
+
+    override suspend fun setManualSkipSeconds(seconds: Int) {
+        store.edit { prefs ->
+            prefs[manualSkipSecondsKey] =
+                seconds.coerceIn(MIN_MANUAL_SKIP_SECONDS, MAX_MANUAL_SKIP_SECONDS)
         }
     }
 
@@ -366,6 +379,9 @@ internal class DataStorePlayerSettingsStore @Inject constructor(
         const val DEFAULT_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 10
         const val MAX_NEXT_EPISODE_SWITCH_DELAY_SECONDS = 30
         const val DEFAULT_CONTROLS_AUTO_HIDE_SECONDS = 4
+        const val DEFAULT_MANUAL_SKIP_SECONDS = 88
+        const val MIN_MANUAL_SKIP_SECONDS = 5
+        const val MAX_MANUAL_SKIP_SECONDS = 300
         const val MIN_CONTROLS_AUTO_HIDE_SECONDS = 1
         const val MAX_CONTROLS_AUTO_HIDE_SECONDS = 30000
         const val DEFAULT_SUBTITLE_TEXT_SIZE_PERCENT = 100
