@@ -57,6 +57,7 @@
     <string name="player_resize_crop">Заполнить экран</string>
     <string name="player_count_thousands">%1$sк</string>
     <string name="player_count_millions">%1$sм</string>
+    <string name="player_manual_skip">Перемотать вперёд на %1$s</string>
     <string name="player_skip_segment">Пропустить</string>
     <string name="player_skip_segment_countdown">Пропустить · %1$d</string>
     <string name="player_opening_skipped">Опенинг пропущен %1$s–%2$s</string>
