@@ -168,6 +168,8 @@
     <string name="settings_auto_manage_library_lists_hint">Тайтл попадает в «Смотрю» после 2 серий, просмотренных больше чем на 50%, и в «Просмотрено» — когда досмотрены все серии вышедшего тайтла</string>
     <string name="settings_suggest_next_episode_on_watched_label">Предлагать следующую серию</string>
     <string name="settings_suggest_next_episode_on_watched_enabled">Показывать на главной после завершения текущей</string>
+    <string name="settings_manual_skip_seconds_title">Длительность ручного пропуска</string>
+    <string name="settings_manual_skip_seconds_hint">На сколько секунд перематывает кнопка ручного пропуска.</string>
     <string name="settings_auto_play_next_episode_label">Автовоспроизведение следующей серии</string>
     <string name="settings_auto_play_next_episode_enabled">Запускать следующую серию после 10-секундного отсчёта</string>
     <string name="settings_next_episode_switch_delay_label">Задержка перед переключением серии</string>
