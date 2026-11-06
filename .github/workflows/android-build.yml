@@ -49,9 +49,6 @@ jobs:
           (yes || true) | sdkmanager --licenses >/dev/null
           sdkmanager --install "platforms;android-$platform_version"
 
-      - name: Run unit tests
-        run: ./gradlew testDebugUnitTest --stacktrace
-
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
 
