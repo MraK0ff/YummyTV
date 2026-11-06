@@ -66,6 +66,7 @@ class SettingsState {
         val autoPlayNextEpisode: Boolean = false,
         val nextEpisodeSwitchDelaySeconds: Int = 10,
         val playerControlsAutoHideSeconds: Int = 4,
+        val manualSkipSeconds: Int = 88,
         val pictureInPictureEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val autoReturnMobileBrightnessToSystemAtZero: Boolean = true,
@@ -206,6 +207,9 @@ class SettingsState {
 
         /** Пользователь изменил время, через которое скрываются контролы плеера. */
         data class PlayerControlsAutoHideChanged(val seconds: Int) : Event
+
+        /** Пользователь изменил длительность ручного пропуска вперёд. */
+        data class ManualSkipSecondsChanged(val seconds: Int) : Event
 
         /** Пользователь переключил запрос выбора озвучки при нажатии "Смотреть". */
 
