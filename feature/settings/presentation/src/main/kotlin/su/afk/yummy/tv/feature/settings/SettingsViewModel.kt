@@ -554,11 +554,27 @@ class SettingsViewModel @Inject internal constructor(
                 setState { copy(releaseNotes = ReleaseNotesStatus.Idle) }
             }
 
-            SettingsState.Event.AppLogRecordingToggled -> viewModelScope.launch {
-                val enabled = !currentState.appLogRecordingEnabled
-                analytics.eventAppLogRecordingToggled(enabled)
-                settingsStore.setAppLogRecordingEnabled(enabled)
+            SettingsState.Event.AppLogRecordingToggled -> {
+                if (currentState.appLogRecordingEnabled) {
+                    viewModelScope.launch {
+                        analytics.eventAppLogRecordingToggled(false)
+                        settingsStore.setAppLogRecordingEnabled(false)
+                        setEffect(SettingsState.Effect.ColdRestartApplication)
+                    }
+                } else {
+                    setState { copy(isLogRecordingRestartConfirmVisible = true) }
+                }
             }
+
+            SettingsState.Event.AppLogRecordingEnableConfirmed -> viewModelScope.launch {
+                setState { copy(isLogRecordingRestartConfirmVisible = false) }
+                analytics.eventAppLogRecordingToggled(true)
+                settingsStore.setAppLogRecordingEnabled(true)
+                setEffect(SettingsState.Effect.ColdRestartApplication)
+            }
+
+            SettingsState.Event.AppLogRecordingEnableDismissed ->
+                setState { copy(isLogRecordingRestartConfirmVisible = false) }
 
             SettingsState.Event.ReleaseNotesRequested -> loadReleaseNotes()
 
