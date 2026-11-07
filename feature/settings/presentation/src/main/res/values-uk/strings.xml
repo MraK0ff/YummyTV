@@ -330,4 +330,8 @@
     <string name="settings_library_tabs_reset_hint">Повернути стандартний порядок вкладок бібліотеки</string>
     <string name="settings_interface_language_title">Мова інтерфейсу</string>
     <string name="settings_interface_language_system">Як на пристрої</string>
+    <string name="settings_log_recording_confirm_title">Увімкнути запис логів?</string>
+    <string name="settings_log_recording_confirm_message">Застосунок зберігатиме діагностичні логи у файл. Вони можуть містити технічну інформацію про роботу застосунку. Запис можна вимкнути будь-коли.</string>
+    <string name="settings_log_recording_confirm">Увімкнути</string>
+    <string name="settings_log_recording_restart_failed">Зміна набуде чинності під час наступного запуску застосунку</string>
 </resources>
