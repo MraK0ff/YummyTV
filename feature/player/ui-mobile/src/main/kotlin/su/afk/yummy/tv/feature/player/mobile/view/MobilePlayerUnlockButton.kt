@@ -1,11 +1,11 @@
 package su.afk.yummy.tv.feature.player.mobile.view
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -55,6 +55,8 @@ import su.afk.yummy.tv.feature.player.presentation.R
 internal fun MobilePlayerUnlockButton(
     visible: Boolean,
     onUnlock: () -> Unit,
+    /** Требовать удержание (настройка «Удержание для блокировки»); иначе разблокировка обычным тапом. */
+    holdRequired: Boolean,
     /** Любое касание кнопки: родитель продлевает время её показа. */
     onTouched: () -> Unit,
     modifier: Modifier = Modifier,
@@ -86,7 +88,7 @@ internal fun MobilePlayerUnlockButton(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(72.dp)
                     .clip(CircleShape)
                     .background(Color.Black.copy(alpha = 0.55f))
                     .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape)
@@ -94,16 +96,18 @@ internal fun MobilePlayerUnlockButton(
                         role = Role.Button
                         contentDescription = unlockLabel
                     }
-                    .pointerInput(Unit) {
+                    .pointerInput(holdRequired) {
                         detectTapGestures(
+                            onTap = { if (!holdRequired) onUnlock() },
                             onPress = {
                                 onTouched()
+                                if (!holdRequired) return@detectTapGestures
                                 val hold = scope.launch {
                                     holdProgress.snapTo(0f)
                                     holdProgress.animateTo(
                                         targetValue = 1f,
                                         animationSpec = tween(
-                                            durationMillis = UNLOCK_HOLD_DURATION_MS,
+                                            durationMillis = HOLD_TO_CONFIRM_MS,
                                             easing = LinearEasing,
                                         ),
                                     )
@@ -124,13 +128,13 @@ internal fun MobilePlayerUnlockButton(
                     color = MaterialTheme.colorScheme.primary,
                     trackColor = Color.Transparent,
                     strokeWidth = 3.dp,
-                    modifier = Modifier.size(56.dp),
+                    modifier = Modifier.size(72.dp),
                 )
                 Icon(
                     imageVector = Icons.Filled.Lock,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(26.dp),
+                    modifier = Modifier.size(34.dp),
                 )
             }
             AnimatedVisibility(visible = hintVisible, enter = fadeIn(), exit = fadeOut()) {
@@ -149,5 +153,4 @@ internal fun MobilePlayerUnlockButton(
     }
 }
 
-private const val UNLOCK_HOLD_DURATION_MS = 600
 private const val UNLOCK_HINT_DURATION_MS = 1_800L

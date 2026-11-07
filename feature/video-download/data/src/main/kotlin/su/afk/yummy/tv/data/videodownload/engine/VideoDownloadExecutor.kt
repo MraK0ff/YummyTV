@@ -4,9 +4,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.dash.offline.DashDownloader
 import androidx.media3.exoplayer.hls.offline.HlsDownloader
 import androidx.media3.exoplayer.offline.Downloader
@@ -23,6 +21,8 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.analytics.api.AnalyticsTracker
+import su.afk.yummy.tv.core.network.di.DownloadOkHttp
+import su.afk.yummy.tv.core.utils.network.BrowserUserAgentProvider
 import su.afk.yummy.tv.data.videodownload.cache.VideoDownloadCacheProvider
 import su.afk.yummy.tv.data.videodownload.cache.downloadCacheKeyFactoryFor
 import su.afk.yummy.tv.data.videodownload.strategy.DownloadPlayerStrategy
@@ -31,15 +31,12 @@ import su.afk.yummy.tv.data.videodownload.worker.logDownloadDebug
 import su.afk.yummy.tv.data.videodownload.worker.logDownloadInfo
 import su.afk.yummy.tv.data.videodownload.worker.safeDownloadUrlForLog
 import su.afk.yummy.tv.data.videodownload.worker.utils.StreamKind
-import su.afk.yummy.tv.data.videodownload.worker.utils.USER_AGENT_HEADER
 import su.afk.yummy.tv.data.videodownload.worker.utils.safeHeaderNames
 import su.afk.yummy.tv.data.videodownload.worker.utils.streamKind
 import su.afk.yummy.tv.data.videodownload.worker.utils.throttleLabel
-import su.afk.yummy.tv.data.videodownload.worker.utils.userAgent
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadItem
 import su.afk.yummy.tv.domain.videodownload.model.VideoDownloadStatus
 import su.afk.yummy.tv.domain.videodownload.repository.VideoDownloadRepository
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -55,15 +52,10 @@ internal class VideoDownloadExecutor @Inject constructor(
     private val repository: VideoDownloadRepository,
     private val cacheProvider: VideoDownloadCacheProvider,
     private val analyticsTracker: AnalyticsTracker,
-) {
+    private val userAgents: BrowserUserAgentProvider,
     // Один клиент на все загрузки: общий пул соединений вместо нового клиента на каждую попытку
-    private val okHttpClient: OkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .connectTimeout(ADAPTIVE_HTTP_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS)
-            .readTimeout(ADAPTIVE_HTTP_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS)
-            .build()
-    }
-
+    @DownloadOkHttp private val okHttpClient: OkHttpClient,
+) {
     /**
      * Качает [item] до конца или бросает исключение. Отмена корутины прерывает блокирующий
      * [Downloader.download]: зовёт [Downloader.cancel] и прерывает поток загрузки.
@@ -90,15 +82,8 @@ internal class VideoDownloadExecutor @Inject constructor(
         val progressUpdates = Channel<ProgressSnapshot>(Channel.CONFLATED)
         var progressWriter: Job? = null
         try {
-            val downloadHeaders = strategy.decorateHeaders(item.headers, item.iframeUrl)
-            val requestHeaders =
-                downloadHeaders.filterKeys { !it.equals(USER_AGENT_HEADER, ignoreCase = true) }
-            val httpUpstream = createHttpUpstream(
-                strategy = strategy,
-                streamKind = streamKind,
-                downloadHeaders = downloadHeaders,
-                requestHeaders = requestHeaders,
-            )
+            val downloadHeaders = strategy.decorateHeaders(item.headers, item.iframeUrl, userAgents.userAgent)
+            val httpUpstream = okHttpUpstreamFactory(okHttpClient, downloadHeaders)
             val throttledUpstream = strategy.downloadBytesPerSecond
                 ?.let { RateLimitedDataSource.Factory(httpUpstream, it) }
                 ?: httpUpstream
@@ -201,30 +186,6 @@ internal class VideoDownloadExecutor @Inject constructor(
         }
     }
 
-    private fun createHttpUpstream(
-        strategy: DownloadPlayerStrategy,
-        streamKind: StreamKind,
-        downloadHeaders: Map<String, String>,
-        requestHeaders: Map<String, String>,
-    ): DataSource.Factory {
-        val userAgent = downloadHeaders.userAgent()?.takeIf { it.isNotBlank() }
-        return if (strategy.preferOkHttpUpstream(streamKind)) {
-            OkHttpDataSource.Factory(okHttpClient).apply {
-                userAgent?.let(::setUserAgent)
-                if (requestHeaders.isNotEmpty()) setDefaultRequestProperties(requestHeaders)
-            }
-        } else {
-            DefaultHttpDataSource.Factory().apply {
-                if (streamKind.isAdaptive) {
-                    setConnectTimeoutMs(ADAPTIVE_HTTP_TIMEOUT_MS)
-                    setReadTimeoutMs(ADAPTIVE_HTTP_TIMEOUT_MS)
-                }
-                userAgent?.let(::setUserAgent)
-                if (requestHeaders.isNotEmpty()) setDefaultRequestProperties(requestHeaders)
-            }
-        }
-    }
-
     private fun createDownloader(
         mediaItem: MediaItem,
         cacheDataSourceFactory: CacheDataSource.Factory,
@@ -239,7 +200,6 @@ internal class VideoDownloadExecutor @Inject constructor(
     }
 
     private companion object {
-        const val ADAPTIVE_HTTP_TIMEOUT_MS = 30_000
         const val PROGRESS_LOG_STEP = 10
     }
 }

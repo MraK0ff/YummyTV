@@ -1,13 +1,10 @@
 package su.afk.yummy.tv.core.network.yani
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpRequestTimeoutException
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.api.createClientPlugin
-import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
@@ -20,6 +17,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.network.BuildConfig
+import su.afk.yummy.tv.core.network.NetworkTimeouts
+import su.afk.yummy.tv.core.network.okHttpKtorClient
+import su.afk.yummy.tv.core.model.settings.ImageFormatSupport
 import su.afk.yummy.tv.core.preferences.api.YaniAccountSettingsStore
 import su.afk.yummy.tv.core.preferences.api.YaniAuthPreferences
 import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
@@ -28,11 +28,6 @@ private const val YANI_APPLICATION_HEADER = "X-Application"
 private const val YANI_LANGUAGE_HEADER = "Lang"
 private const val YANI_AUTHORIZATION_PREFIX = "Bearer "
 
-// connect- и socket-таймауты GET ретраятся один раз, поэтому худший случай ≈ 2 × connect.
-private const val YANI_CONNECT_TIMEOUT_MS = 10_000L
-private const val YANI_SOCKET_TIMEOUT_MS = 15_000L
-private const val YANI_REQUEST_TIMEOUT_MS = 20_000L
-
 fun buildYaniHttpClient(
     settingsStore: YaniAccountSettingsStore,
     yaniAuthPreferences: YaniAuthPreferences,
@@ -40,22 +35,15 @@ fun buildYaniHttpClient(
     scope: CoroutineScope,
     apiConfig: YaniApiConfig,
     logRecordingSettings: AppLogRecordingSettings,
+    imageFormatSupport: ImageFormatSupport,
 ): HttpClient {
-    val headerCache = YaniRequestHeaderCache(settingsStore, yaniAuthPreferences, scope)
+    val headerCache = YaniRequestHeaderCache(settingsStore, yaniAuthPreferences, imageFormatSupport, scope)
 
-    return HttpClient(OkHttp) {
+    return okHttpKtorClient(okHttpClient, timeouts = NetworkTimeouts.Yani) {
         // Без этого 401/5xx с JSON-телом декодируются в «пустой успех» (DTO с дефолтами) и затирают
         // кэш. Запросы, которые сами разбирают статус/тело ошибки (логин, регистрация, сброс пароля,
         // YummyTV API), отключают проверку точечно: `expectSuccess = false`.
         expectSuccess = true
-        engine {
-            preconfigured = okHttpClient
-        }
-        install(HttpTimeout) {
-            connectTimeoutMillis = YANI_CONNECT_TIMEOUT_MS
-            requestTimeoutMillis = YANI_REQUEST_TIMEOUT_MS
-            socketTimeoutMillis = YANI_SOCKET_TIMEOUT_MS
-        }
         // Ретраим только GET: мутации могут быть неидемпотентны.
         install(HttpRequestRetry) {
             maxRetries = 1
@@ -74,14 +62,13 @@ fun buildYaniHttpClient(
         install(ContentNegotiation) {
             json(YaniApiJson)
         }
-        install(ContentEncoding) {
-            gzip()
-            deflate()
-        }
         install(
             createClientPlugin("YaniApplicationHeader") {
                 onRequest { request, _ ->
                     if (request.url.host == YANI_API_HOST) {
+                        // ContentNegotiation шлёт один `Accept: application/json`, и yani подменяет картинки на
+                        // JPEG (в `mega` приходит `posters/full`). Нужные форматы добавляем по документации yani.
+                        headerCache.imageAccept()?.let { request.headers.append(HttpHeaders.Accept, it) }
                         val headers = headerCache.current()
                         if (headers.applicationToken.isNotBlank()) {
                             request.headers.remove(YANI_APPLICATION_HEADER)

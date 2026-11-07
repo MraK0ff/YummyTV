@@ -34,6 +34,7 @@ import su.afk.yummy.tv.core.designsystem.focus.requestFocusUntilTimeout
 import su.afk.yummy.tv.core.designsystem.preview.ScreenPreviewTheme
 import su.afk.yummy.tv.feature.player.common.rememberPlayerPlaybackUiState
 import su.afk.yummy.tv.feature.player.common.service.PlayerServiceWarmupEffect
+import kotlinx.collections.immutable.persistentListOf
 import su.afk.yummy.tv.feature.player.mapper.loadingTextRes
 import su.afk.yummy.tv.feature.player.model.PlayerControlFocusTarget
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
@@ -120,8 +121,10 @@ fun PlayerTvScreen(
     }
     var showErrorBalancerPanel by rememberSaveable { mutableStateOf(false) }
     var showErrorDubbingPanel by rememberSaveable { mutableStateOf(false) }
+    var showErrorQualityPanel by rememberSaveable { mutableStateOf(false) }
     val selectedErrorBalancerFocusRequester = remember { FocusRequester() }
     val selectedErrorDubbingFocusRequester = remember { FocusRequester() }
+    val selectedErrorQualityFocusRequester = remember { FocusRequester() }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -141,8 +144,16 @@ fun PlayerTvScreen(
         }
     }
 
+    LaunchedEffect(showErrorQualityPanel, uiState.canChangeQuality) {
+        if (showErrorQualityPanel && uiState.canChangeQuality) {
+            requestFocusUntilTimeout(selectedErrorQualityFocusRequester)
+        }
+    }
+
     BackHandler {
-        if (showErrorBalancerPanel) {
+        if (showErrorQualityPanel) {
+            showErrorQualityPanel = false
+        } else if (showErrorBalancerPanel) {
             showErrorBalancerPanel = false
         } else if (showErrorDubbingPanel) {
             showErrorDubbingPanel = false
@@ -212,6 +223,11 @@ fun PlayerTvScreen(
                     } else {
                         null
                     },
+                    onChangeQuality = if (uiState.canChangeQuality) {
+                        { showErrorQualityPanel = true }
+                    } else {
+                        null
+                    },
                 )
             }
 
@@ -238,7 +254,7 @@ fun PlayerTvScreen(
 
             else -> TvStreamLoadingView(
                 messageRes = state.resolveStatus.loadingTextRes(),
-                resolveLog = state.resolveLog,
+                resolveLog = if (state.showResolveLog) state.resolveLog else persistentListOf(),
                 onChangePlayer = if (state.showChangePlayerHint && uiState.canChangePlayer) {
                     { showErrorBalancerPanel = true }
                 } else {
@@ -277,6 +293,24 @@ fun PlayerTvScreen(
                 onEvent(PlayerState.Event.BalancerSelected(index, uiState.errorResumePositionMs))
             },
             onExitDown = { showErrorBalancerPanel = false },
+        )
+        TvPlayerSelectionPanel(
+            visible = showErrorQualityPanel && uiState.canChangeQuality,
+            title = stringResource(R.string.player_quality_title),
+            items = uiState.qualityLabels,
+            selectedIndex = uiState.qualityLabels.indexOf(uiState.activeQuality),
+            selectedFocusRequester = selectedErrorQualityFocusRequester,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 48.dp, bottom = 72.dp),
+            itemMeta = { stringResource(R.string.player_quality_meta) },
+            onItemSelected = { index ->
+                showErrorQualityPanel = false
+                uiState.qualityLabels.getOrNull(index)?.let { quality ->
+                    onEvent(PlayerState.Event.ChangeQualityAfterError(quality, uiState.errorResumePositionMs))
+                }
+            },
+            onExitDown = { showErrorQualityPanel = false },
         )
         TvDubbingSelectionPanel(
             visible = showErrorDubbingPanel && uiState.canChangeDubbing,

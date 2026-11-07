@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import kotlinx.coroutines.flow.Flow
 import su.afk.yummy.tv.core.utils.system.restartApplication
+import su.afk.yummy.tv.core.utils.system.restartApplicationCold
 import su.afk.yummy.tv.feature.settings.SettingsState
 import su.afk.yummy.tv.feature.settings.presentation.R
 
@@ -41,6 +42,16 @@ internal fun SettingsMobileEffects(
                     }
                 }
 
+                SettingsState.Effect.ColdRestartApplication -> {
+                    if (!context.restartApplicationCold()) {
+                        Toast.makeText(
+                            context,
+                            R.string.settings_log_recording_restart_failed,
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                }
+
                 SettingsState.Effect.OpenVideoExportDirectoryPicker ->
                     videoExportDirectoryPicker.launch(null)
 
@@ -66,6 +77,12 @@ internal fun SettingsMobileEffects(
 
                 SettingsState.Effect.LogsFailed ->
                     Toast.makeText(context, R.string.settings_logs_failed, Toast.LENGTH_LONG).show()
+
+                SettingsState.Effect.CacheCleared ->
+                    Toast.makeText(context, R.string.settings_clear_cache_done, Toast.LENGTH_SHORT).show()
+
+                SettingsState.Effect.CacheClearFailed ->
+                    Toast.makeText(context, R.string.settings_clear_cache_failed, Toast.LENGTH_LONG).show()
 
                 SettingsState.Effect.VideoExportDirectorySelectionFailed ->
                     Toast.makeText(

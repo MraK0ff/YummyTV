@@ -12,6 +12,7 @@ import su.afk.yummy.tv.domain.player.model.AllohaSubtitleTrack
 import su.afk.yummy.tv.domain.player.model.PlayerStreamRequest
 import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
 import su.afk.yummy.tv.core.common.player.ResolveDetail
+import su.afk.yummy.tv.feature.player.utils.isDecoderErrorCode
 import su.afk.yummy.tv.feature.player.utils.toText
 import su.afk.yummy.tv.feature.player.mapper.failedStepTextRes
 import su.afk.yummy.tv.feature.player.mapper.resolveProblemText
@@ -48,6 +49,8 @@ internal class PlayerStreamHandler @Inject constructor(
         forceRefresh: Boolean = false,
         onStatus: (PlayerStreamResolveStatus) -> Unit = {},
         onDetail: (ResolveDetail) -> Unit = {},
+        positionMs: () -> Long = { 0L },
+        durationMs: () -> Long = { 0L },
     ): PlayerStreamResult = coroutineScope {
         val request = PlayerStreamRequest(
             iframeUrl = activeIframeUrl(state),
@@ -55,6 +58,8 @@ internal class PlayerStreamHandler @Inject constructor(
             forceRefresh = forceRefresh,
             onStatus = onStatus,
             onDetail = onDetail,
+            positionMs = positionMs,
+            durationMs = durationMs,
         )
         // Started before the extraction is awaited: neither depends on it, so a DataStore read and
         // a Room read overlap the network instead of queueing behind it.
@@ -166,7 +171,11 @@ internal class PlayerStreamHandler @Inject constructor(
         val detail = message.trim().takeIf { it.isNotBlank() }
         val code = errorCode?.trim()?.takeIf { it.isNotBlank() && it != detail }
         return buildString {
-            append(strings.get(R.string.player_stream_error))
+            append(
+                strings.get(
+                    if (errorCode.isDecoderErrorCode()) R.string.player_decoder_error else R.string.player_stream_error,
+                ),
+            )
             if (detail != null) {
                 append("\n")
                 append(detail)

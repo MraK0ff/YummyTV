@@ -13,12 +13,13 @@ import coil3.memory.MemoryCache
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
+import su.afk.yummy.tv.core.model.anime.utils.PosterMirrorConfig
+import su.afk.yummy.tv.core.network.okHttpKtorClient
+import su.afk.yummy.tv.core.network.statics.AppVersionHeaderPlugin
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceModePreferences
@@ -27,7 +28,9 @@ import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailFetcher
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailKeyer
 import su.afk.yummy.tv.core.utils.episode.EpisodeThumbnailResolver
 import su.afk.yummy.tv.core.utils.kodik.KodikThumbnailCacheIO
+import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 /**
@@ -46,6 +49,8 @@ class CoilImageLoaderInstaller @Inject constructor(
     private val episodeThumbnailResolver: EpisodeThumbnailResolver,
     private val kodikThumbnailCacheIO: KodikThumbnailCacheIO,
     private val siteApiConfig: SiteApiConfig,
+    private val logRecordingSettings: AppLogRecordingSettings,
+    @param:Named("appVersionName") private val appVersionName: String,
 ) {
 
     @OptIn(ExperimentalCoilApi::class)
@@ -54,11 +59,11 @@ class CoilImageLoaderInstaller @Inject constructor(
             if (isLowRamDevice()) LOW_RAM_MEMORY_CACHE_PERCENT else MEMORY_CACHE_PERCENT
 
         SingletonImageLoader.setSafe {
-            // newBuilder(): общий пул соединений и диспетчер с API-клиентом,
-            // но независимая конфигурация — картинки кэширует сам Coil.
-            val imageHttpClient = HttpClient(OkHttp) {
-                engine {
-                    preconfigured = okHttpClient.newBuilder().build()
+            // Общий пул соединений и DNS с API-клиентом; картинки кэширует сам Coil, поэтому без таймаутов Ktor.
+            val imageHttpClient = okHttpKtorClient(okHttpClient) {
+                install(AppVersionHeaderPlugin) {
+                    host = { PosterMirrorConfig.host }
+                    version = appVersionName
                 }
             }
             // Лоадер собирается лениво, на первой картинке — интерфейс к этому моменту уже выбран.
@@ -66,7 +71,7 @@ class CoilImageLoaderInstaller @Inject constructor(
             // приставках, а при DPAD-скролле её всё равно не видно.
             val isTvInterface = interfaceModePreferences.selectedMode == AppInterfaceMode.TV
             ImageLoader.Builder(it)
-                .logger(CoilErrorLogger())
+                .logger(CoilErrorLogger(logRecordingSettings))
                 .crossfade(!isTvInterface)
                 .memoryCache {
                     MemoryCache.Builder()
@@ -80,6 +85,7 @@ class CoilImageLoaderInstaller @Inject constructor(
                         .build()
                 }
                 .components {
+                    add(YaniStaticHostMapper())
                     add(EpisodeThumbnailKeyer())
                     add(EpisodeThumbnailFetcher.Factory(episodeThumbnailResolver, kodikThumbnailCacheIO))
                     add(
