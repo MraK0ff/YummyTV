@@ -345,4 +345,8 @@
     <string name="settings_home_section_more">More</string>
     <string name="settings_interface_language_title">Interface language</string>
     <string name="settings_interface_language_system">System default</string>
+    <string name="settings_log_recording_confirm_title">Enable log recording?</string>
+    <string name="settings_log_recording_confirm_message">The app will save diagnostic logs to a file. Logs may contain technical information about app activity. You can turn recording off at any time.</string>
+    <string name="settings_log_recording_confirm">Enable</string>
+    <string name="settings_log_recording_restart_failed">The change will take effect the next time you open the app</string>
 </resources>
