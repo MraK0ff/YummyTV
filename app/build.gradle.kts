@@ -52,8 +52,8 @@ android {
         // чтобы можно было ставить и проверять результат минификации без релизного keystore.
         create("releaseDebug") {
             initWith(getByName("release"))
-            applicationIdSuffix = ".releasedebug"
-            resValue("string", "search_suggest_authority", "$baseApplicationId.releasedebug.search")
+            applicationIdSuffix = ""
+            resValue("string", "search_suggest_authority", "$baseApplicationId.search")
             signingConfig = signingConfigs.getByName("debug")
             // библиотечные модули этого типа не объявляют — берём их release-вариант
             matchingFallbacks += listOf("release")
