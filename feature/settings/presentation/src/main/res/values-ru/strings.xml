@@ -345,4 +345,8 @@
     <string name="settings_home_section_more">Ещё</string>
     <string name="settings_interface_language_title">Язык интерфейса</string>
     <string name="settings_interface_language_system">Как на устройстве</string>
+    <string name="settings_log_recording_confirm_title">Включить запись логов?</string>
+    <string name="settings_log_recording_confirm_message">Приложение будет сохранять диагностические логи в файл. Они могут содержать техническую информацию о работе приложения. Запись можно отключить в любое время.</string>
+    <string name="settings_log_recording_confirm">Включить</string>
+    <string name="settings_log_recording_restart_failed">Изменение вступит в силу при следующем запуске приложения</string>
 </resources>
