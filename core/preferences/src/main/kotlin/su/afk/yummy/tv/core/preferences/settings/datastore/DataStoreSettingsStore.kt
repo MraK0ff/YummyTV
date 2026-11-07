@@ -161,7 +161,6 @@ internal class DataStoreSettingsStore @Inject constructor(
             appTheme = prefs.enum(appThemeKey, AppTheme.WARM_AMBER),
             backgroundStyle = prefs.enum(backgroundStyleKey, BackgroundStyle.DARK),
             navTransitionStyle = prefs.enum(navTransitionStyleKey, NavTransitionStyle.FADE_SCALE),
-            posterQuality = prefs.enum<PosterQuality>(posterQualityKey, defaultPosterQuality),
             posterCardSize = prefs.enum(posterCardSizeKey, PosterCardSize.STANDARD),
             yaniNickname = prefs[yaniNicknameKey].orEmpty(),
             yaniAvatarUrl = prefs[yaniAvatarUrlKey].orEmpty(),
