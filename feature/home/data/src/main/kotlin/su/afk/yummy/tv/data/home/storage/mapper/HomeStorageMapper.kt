@@ -30,7 +30,7 @@ import su.afk.yummy.tv.domain.home.model.HomeFeedItem
 import su.afk.yummy.tv.domain.home.model.HomeFeedItemAction
 import su.afk.yummy.tv.domain.home.model.HomeFeedSection
 import su.afk.yummy.tv.domain.home.model.HomeFeedSectionType
-import su.afk.yummy.tv.core.model.anime.bestUrl
+import su.afk.yummy.tv.core.model.anime.defaultUrl
 
 internal fun YaniFeedDto.toHomeFeedCache(
     language: String,
@@ -113,7 +113,7 @@ internal fun HomeContinueWatchingItem.toWatchProgressEntry(): WatchProgressEntry
         durationMs = durationMs,
         updatedAt = updatedAt,
         animeTitle = animeTitle,
-        posterUrl = poster?.bestUrl().orEmpty(),
+        posterUrl = poster?.defaultUrl().orEmpty(),
         playerName = playerName,
         dubbing = dubbing,
         screenshotUrl = screenshotUrl,
