@@ -105,7 +105,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: reyummy-optimized-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/releaseDebug/*.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -121,4 +121,4 @@ jobs:
           draft: false
           overwrite_files: true
           fail_on_unmatched_files: true
-          files: app/build/outputs/apk/debug/*.apk
+          files: app/build/outputs/apk/releaseDebug/*.apk
