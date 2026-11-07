@@ -38,6 +38,7 @@ import su.afk.yummy.tv.feature.settings.mobile.model.icon
 import su.afk.yummy.tv.feature.settings.mobile.model.titleRes
 import su.afk.yummy.tv.feature.settings.mobile.view.ReleaseNotesMobileSheet
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileAboutRow
+import su.afk.yummy.tv.feature.settings.mobile.view.MobileLogRecordingConfirmationDialog
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileEffects
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileNavigationRow
 import su.afk.yummy.tv.feature.settings.mobile.view.SettingsMobileSection
@@ -69,6 +70,13 @@ fun SettingsMobileScreen(
     var showReleaseNotes by rememberSaveable { mutableStateOf(false) }
 
     SettingsMobileEffects(effect = effect, onEvent = onEvent)
+
+    if (state.isLogRecordingRestartConfirmVisible) {
+        MobileLogRecordingConfirmationDialog(
+            onConfirm = { onEvent(SettingsState.Event.AppLogRecordingEnableConfirmed) },
+            onDismiss = { onEvent(SettingsState.Event.AppLogRecordingEnableDismissed) },
+        )
+    }
 
     if (showReleaseNotes) {
         LaunchedEffect(Unit) { onEvent(SettingsState.Event.ReleaseNotesRequested) }
