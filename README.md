@@ -5,10 +5,8 @@
 <h1 align="center">ReYummy</h1>
 
 <p align="center">
-  ReYummy — независимый форк <a href="https://github.com/Helandy/YummyTV">YummyTV</a>, неофициального клиента
-  <a href="https://yummyani.me/">YummyAnime</a> для Android и Android TV.
-  <br />
-  Сохраняет основу оригинального приложения и развивает собственные улучшения.
+  Неофициальный клиент <a href="https://yummyani.me/">YummyAnime</a> для Android и Android TV,
+  основанный на <a href="https://github.com/Helandy/YummyTV">YummyTV</a> и дополненный собственными улучшениями.
 </p>
 
 <p align="center">
@@ -24,9 +22,8 @@
 </p>
 
 > [!IMPORTANT]
-> **Это независимый форк, а не официальный репозиторий YummyTV.**
-> Оригинальный проект YummyTV создаёт [Helandy](https://github.com/Helandy).
-> Изменения, относящиеся к этому форку, обсуждаются в [Issues MraK0ff/YummyTV](https://github.com/MraK0ff/YummyTV/issues).
+> ReYummy — независимый форк оригинального YummyTV, который разрабатывает [Helandy](https://github.com/Helandy).
+> Предложения и сообщения об ошибках, относящиеся к ReYummy, можно оставлять в [Issues](https://github.com/MraK0ff/YummyTV/issues).
 
 ## Особенности форка
 
