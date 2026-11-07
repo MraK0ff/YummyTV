@@ -8,7 +8,7 @@ on:
       - master
 
 permissions:
-  contents: read
+  contents: write
 
 # Один общий слот: новый запуск отменяет предыдущий, в том числе на другой ветке.
 concurrency:
@@ -108,3 +108,17 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 7
+
+      - name: Publish latest ReYummy release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: ReYummy — Latest build
+          target_commitish: main
+          make_latest: true
+          prerelease: false
+          draft: false
+          overwrite_files: true
+          fail_on_unmatched_files: true
+          files: app/build/outputs/apk/debug/*.apk
