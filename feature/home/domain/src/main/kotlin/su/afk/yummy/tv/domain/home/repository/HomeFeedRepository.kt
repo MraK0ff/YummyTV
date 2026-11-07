@@ -35,6 +35,12 @@ interface HomeFeedRepository {
      */
     fun observeServerWatchProgress(): Flow<List<AnimeWatchProgress>>
 
+    /**
+     * Максимальный номер доступной серии по тайтлам из кэша `/videos`: id тайтла → номер.
+     * Тайтлов без кэша здесь нет, поэтому для них доступность следующей серии неизвестна.
+     */
+    fun observeAvailableEpisodes(): Flow<Map<Int, Int>>
+
     /** Ручные удаления из «Продолжить просмотр»: id тайтла → момент удаления (мс). */
     fun observeContinueWatchingSuppressions(): Flow<Map<Int, Long>>
 
