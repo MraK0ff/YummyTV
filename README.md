@@ -11,10 +11,10 @@
 
 <p align="center">
   <a href="https://github.com/MraK0ff/YummyTV/releases/latest">
-    <img alt="Скачать APK" src="https://img.shields.io/badge/Скачать-APK-2ea44f?style=flat&logo=android&logoColor=white" />
+    <img alt="Скачать APK" src="https://img.shields.io/badge/Скачать-APK-2ea44f?style=for-the-badge&logo=android&logoColor=white" />
   </a>
   <a href="https://github.com/MraK0ff/YummyTV/releases">
-    <img alt="Релизы" src="https://img.shields.io/github/v/release/MraK0ff/YummyTV?style=flat" />
+    <img alt="Релизы" src="https://img.shields.io/github/v/release/MraK0ff/YummyTV?style=for-the-badge" />
   </a>
 </p>
 
