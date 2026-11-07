@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">YummyTV</string>
+    <string name="app_name">ReYummy</string>
     <string name="search_hint">Search anime</string>
     <string name="search_settings_description">Search YummyTV catalog</string>
     <string name="interface_mode_title">Choose interface</string>
