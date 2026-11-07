@@ -18,14 +18,14 @@ object AppInterfaceLanguageContext {
     internal const val LANGUAGE_KEY = "language"
 
     internal fun read(context: Context): AppInterfaceLanguage =
-        AppInterfaceLanguage.fromPreferenceValue(
+        AppInterfaceLanguage.fromLocaleTags(
             context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
                 .getString(LANGUAGE_KEY, null),
         )
 
     /** Контекст с локалью выбранного языка; для «как в системе» возвращает [base] без изменений. */
     fun wrap(base: Context): Context {
-        val tag = read(base).languageTag ?: return base
+        val tag = read(base).localeTag.takeIf(String::isNotEmpty) ?: return base
         val locale = Locale.forLanguageTag(tag)
         Locale.setDefault(locale)
         val configuration = Configuration(base.resources.configuration)
