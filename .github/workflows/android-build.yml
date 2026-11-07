@@ -1,4 +1,4 @@
-name: Android Debug Build
+name: ReYummy Optimized Build
 
 on:
   pull_request:
@@ -12,12 +12,12 @@ permissions:
 
 # Один общий слот: новый запуск отменяет предыдущий, в том числе на другой ветке.
 concurrency:
-  group: android-debug-build
+  group: reyummy-optimized-build
   cancel-in-progress: true
 
 jobs:
   build:
-    name: Build debug APK
+    name: Build optimized APK
     runs-on: ubuntu-latest
     timeout-minutes: 40
 
@@ -49,7 +49,7 @@ jobs:
           sdkmanager --install "platforms;android-$platform_version"
 
       - name: Build debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace
+        run: ./gradlew :app:assembleReleaseDebug --stacktrace
 
       - name: Upload generated Room schema
         uses: actions/upload-artifact@v7
@@ -90,7 +90,7 @@ jobs:
           test -n "$apksigner"
 
           shopt -s nullglob
-          apks=(app/build/outputs/apk/debug/*.apk)
+          apks=(app/build/outputs/apk/releaseDebug/*.apk)
           test "${#apks[@]}" -gt 0
 
           for apk in "${apks[@]}"; do
@@ -101,10 +101,10 @@ jobs:
             "$apksigner" verify --verbose --print-certs "$apk"
           done
 
-      - name: Upload debug APK
+      - name: Upload optimized APK
         uses: actions/upload-artifact@v7
         with:
-          name: reyummy-debug-apk
+          name: reyummy-optimized-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 7
