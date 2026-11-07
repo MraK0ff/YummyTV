@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.android.di
 
 import android.app.Application
+import android.content.Context
 import android.os.StrictMode
 import android.os.SystemClock
 import androidx.annotation.OptIn
@@ -25,12 +26,15 @@ import su.afk.yummy.tv.android.startup.CoilImageLoaderInstaller
 import su.afk.yummy.tv.android.startup.StartupMetricsTracker
 import su.afk.yummy.tv.android.startup.WatchedEpisodeRuleSync
 import su.afk.yummy.tv.core.analytics.api.initialize.AnalyticsInitializer
+import su.afk.yummy.tv.core.model.anime.utils.PosterMirrorConfig
 import su.afk.yummy.tv.core.featuretoggle.FeatureToggleRefreshCoordinator
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureFlags
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleInitializer
 import su.afk.yummy.tv.core.featuretoggle.api.FeatureToggleProvider
+import su.afk.yummy.tv.core.network.BuildConfig as NetworkBuildConfig
 import su.afk.yummy.tv.core.network.yani.YaniApiConfig
 import su.afk.yummy.tv.core.network.yummy.SiteApiConfig
+import su.afk.yummy.tv.core.preferences.interface_language.AppInterfaceLanguageContext
 import su.afk.yummy.tv.core.tv.HomeFeedRefreshScheduler
 import su.afk.yummy.tv.core.utils.cast.CastSupport
 import su.afk.yummy.tv.core.utils.coroutines.TrustedAppClock
@@ -112,11 +116,16 @@ class YummyTvApplication :
             .setWorkerFactory(workerFactory)
             .build()
 
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(AppInterfaceLanguageContext.wrap(base))
+    }
+
     @OptIn(UnstableApi::class)
     override fun onCreate() {
         // Hilt инжектит поля в super.onCreate(), поэтому начало замеряем до него
         val onCreateStartedAt = SystemClock.uptimeMillis()
         trace("App.hiltInject") { super.onCreate() }
+        PosterMirrorConfig.host = NetworkBuildConfig.STATIC_HOST
         // Файловый дамп logcat для передачи разработчику (Настройки → О приложении)
         appLogCollector.start()
         startupMetricsTracker.start(this, onCreateStartedAt)

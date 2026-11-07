@@ -3,7 +3,6 @@ package su.afk.yummy.tv.feature.player
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import su.afk.yummy.tv.core.common.player.PlayerStreamResolveStatus
-import su.afk.yummy.tv.feature.player.model.PlayerResolveLogEntry
 import su.afk.yummy.tv.core.model.anime.AnimeWatchProgress
 import su.afk.yummy.tv.core.model.anime.EpisodeFlags
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
@@ -20,6 +19,7 @@ import su.afk.yummy.tv.feature.player.model.PlayerFinalEpisodeAction
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeSource
 import su.afk.yummy.tv.feature.player.model.PlayerNextEpisodeUnavailable
 import su.afk.yummy.tv.feature.player.model.PlayerProgressSnapshot
+import su.afk.yummy.tv.feature.player.model.PlayerResolveLogEntry
 import su.afk.yummy.tv.feature.player.model.PlayerSkipType
 import su.afk.yummy.tv.feature.player.navigator.PlayerDestination
 import su.afk.yummy.tv.feature.player.utils.QualityAdaptationPolicy
@@ -60,10 +60,17 @@ class PlayerState {
         val zoomLevel: PlayerZoomLevel = PlayerZoomLevel.PERCENT_10,
         val subtitleStyle: PlayerSubtitleStyleSettings = PlayerSubtitleStyleSettings(),
         val playerError: String? = null,
+        /**
+         * Текст [playerError], если он вызван ошибкой декодера устройства (подсказываем сменить качество).
+         * Сравнивается со [playerError], поэтому сам сбрасывать не нужно: другая ошибка — другой текст.
+         */
+        val decoderErrorMessage: String? = null,
         /** Текущий шаг получения потока; null, пока резолв не идёт. */
         val resolveStatus: PlayerStreamResolveStatus? = null,
         /** Журнал шагов и сетевых запросов текущего резолва. */
         val resolveLog: ImmutableList<PlayerResolveLogEntry> = persistentListOf(),
+        /** Лог шагов под спиннером — только при включённой «Записи логов»; иначе один текущий шаг. */
+        val showResolveLog: Boolean = false,
         val kodikBlockedError: String? = null,
         val resumeFromMs: Long = 0L,
         val playbackPositionMs: Long = 0L,
@@ -76,6 +83,8 @@ class PlayerState {
         /** Через сколько секунд бездействия скрываются контролы. */
         val controlsAutoHideSeconds: Int = 4,
         val pictureInPictureEnabled: Boolean = true,
+        /** Блокировка и смена серии в мобильном плеере требуют удержания кнопки. */
+        val holdToConfirmEnabled: Boolean = true,
         val playerOrientationMode: PlayerOrientationMode = PlayerOrientationMode.SYSTEM,
         val mobileGestureTutorialReady: Boolean = false,
         val showMobileGestureTutorial: Boolean = false,
@@ -171,6 +180,12 @@ class PlayerState {
             val currentPosMs: Long,
             val auto: Boolean = false,
         ) : Event
+
+        /**
+         * Пользователь выбрал качество на экране ошибки декодера: поток перезапрашивается в этом
+         * качестве с позиции [currentPosMs].
+         */
+        data class ChangeQualityAfterError(val quality: String, val currentPosMs: Long) : Event
 
         /**
          * Пользователь выбрал озвучку из собственного списка Alloha (шестерёнка её плеера) —

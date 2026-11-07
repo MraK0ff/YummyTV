@@ -1,6 +1,7 @@
 package su.afk.yummy.tv.core.model.anime
 
-import su.afk.yummy.tv.core.model.settings.PosterQuality
+import su.afk.yummy.tv.core.model.anime.utils.normalizeYaniStaticUrl
+import su.afk.yummy.tv.core.model.anime.utils.posterMirrorUrl
 
 data class AnimePoster(
     val small: String?,
@@ -11,26 +12,14 @@ data class AnimePoster(
 )
 
 /**
- * Все доступные ссылки на постер без дублей, в порядке предпочтения для выбранного [quality]:
- * первая — желаемая версия, остальные — запасные на случай, если она не загрузится.
+ * Ссылки на постер для показа в UI: версия `mega` (у устройств с AVIF это AVIF, у остальных yani подставляет в неё
+ * полный JPEG) и, если это AVIF, следом копия на нашем хосте ([posterMirrorUrl]): к ней картинка переходит при
+ * 404/5xx и сетевом сбое yani. Пусто, если `mega` нет.
  */
-fun AnimePoster?.urlsByQuality(quality: PosterQuality): List<String> {
-    if (this == null) return emptyList()
-    val ordered = when (quality) {
-        PosterQuality.LOW -> listOf(medium, big, fullsize, small, mega)
-        PosterQuality.STANDARD -> listOf(big, medium, fullsize, small, mega)
-        PosterQuality.MEGA -> listOf(mega, big, medium, fullsize, small)
-        PosterQuality.HIGH -> listOf(fullsize, mega, big, medium, small)
-    }
-    return ordered.filterNotNull().filter { it.isNotBlank() }.distinct()
+fun AnimePoster?.posterUrls(): List<String> {
+    val url = this?.mega?.takeIf { it.isNotBlank() }?.let(::normalizeYaniStaticUrl) ?: return emptyList()
+    return listOfNotNull(url, posterMirrorUrl(url))
 }
 
-/** Желаемая для выбранного [quality] ссылка на постер (первая из [urlsByQuality]). */
-fun AnimePoster?.urlFor(quality: PosterQuality): String? = urlsByQuality(quality).firstOrNull()
-
-/**
- * Лучшая доступная ссылка на постер: от самой крупной версии к самой мелкой. Только для мест, где
- * ссылка сохраняется строкой в кэш/хранилище и настройки качества недоступны; в UI — [urlFor].
- */
-fun AnimePoster?.bestUrl(): String? =
-    this?.mega ?: this?.fullsize ?: this?.big ?: this?.medium ?: this?.small
+/** Ссылка на постер для записи строкой: версия `mega` (см. [posterUrls]); `null`, если её нет. */
+fun AnimePoster?.defaultUrl(): String? = this?.mega?.takeIf { it.isNotBlank() }?.let(::normalizeYaniStaticUrl)

@@ -29,6 +29,27 @@ class YummyImagesMapperTest {
     }
 
     @Test
+    fun `screenshot mirrors go position to position with the stills, empty when there is no copy`() {
+        val dto = YummyEpisodesDto(
+            episodes = listOf(
+                YummyEpisodeDto(
+                    episodeNumber = 1,
+                    stills = listOf(
+                        image("/s1.jpg").copy(mirrorUrl = "https://static.self.made/img/still/h1.avif"),
+                        image("/s2.jpg"),
+                        image("/s1.jpg").copy(mirrorUrl = "https://static.self.made/img/still/dup.avif"),
+                    ),
+                ),
+            ),
+        )
+
+        val images = dto.toAnimeTmdbImages()
+
+        assertEquals(2, images.firstEpisodeStillUrls.size)
+        assertEquals(listOf("https://static.self.made/img/still/h1.avif", ""), images.firstEpisodeStillMirrorUrls)
+    }
+
+    @Test
     fun `episode previews are keyed by episode group key and kept as served`() {
         val dto = YummyEpisodesDto(
             episodes = listOf(
@@ -46,12 +67,12 @@ class YummyImagesMapperTest {
     fun `mirror urls are mapped separately from tmdb previews`() {
         val dto = YummyEpisodesDto(
             episodes = listOf(
-                YummyEpisodeDto(episodeNumber = 1, previewUrl = "https://image.tmdb.org/t/p/w300/a.jpg", previewMirrorUrl = "https://static.afk.su/img/still/a.avif"),
+                YummyEpisodeDto(episodeNumber = 1, previewUrl = "https://image.tmdb.org/t/p/w300/a.jpg", previewMirrorUrl = "https://static.self.made/img/still/a.avif"),
                 YummyEpisodeDto(episodeNumber = 2, previewUrl = "https://image.tmdb.org/t/p/w300/b.jpg"),
             ),
         )
 
-        assertEquals(mapOf("1" to "https://static.afk.su/img/still/a.avif"), dto.toAnimeTmdbImages().episodeMirrorUrls)
+        assertEquals(mapOf("1" to "https://static.self.made/img/still/a.avif"), dto.toAnimeTmdbImages().episodeMirrorUrls)
     }
 
     @Test

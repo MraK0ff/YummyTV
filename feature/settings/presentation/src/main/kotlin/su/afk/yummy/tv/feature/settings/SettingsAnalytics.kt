@@ -11,10 +11,10 @@ import su.afk.yummy.tv.core.model.settings.LibraryTabKind
 import su.afk.yummy.tv.core.model.settings.PlayerBufferProfile
 import su.afk.yummy.tv.core.model.settings.PlayerOrientationMode
 import su.afk.yummy.tv.core.model.settings.PosterCardSize
-import su.afk.yummy.tv.core.model.settings.PosterQuality
 import su.afk.yummy.tv.core.model.settings.PreferredVideoQuality
 import su.afk.yummy.tv.core.model.settings.TitleCardLayout
 import su.afk.yummy.tv.core.model.settings.WatchedThresholds
+import su.afk.yummy.tv.core.model.settings.AppInterfaceLanguage
 import su.afk.yummy.tv.core.model.settings.YaniContentLanguage
 import su.afk.yummy.tv.core.preferences.interface_mode.AppInterfaceMode
 import su.afk.yummy.tv.feature.settings.model.DetailsButtonMoveDirection
@@ -71,18 +71,6 @@ internal class SettingsAnalytics @Inject constructor(
         tracker.track(
             EVENT_NAV_TRANSITION_STYLE_SELECTED,
             analyticsParamsOf(PARAM_VALUE to style.name.lowercase()),
-        )
-    }
-
-    /**
-     * Пользователь изменил качество постеров.
-     *
-     * Параметры: value.
-     */
-    fun eventPosterQualitySelected(quality: PosterQuality) {
-        tracker.track(
-            EVENT_POSTER_QUALITY_SELECTED,
-            analyticsParamsOf(PARAM_VALUE to quality.name.lowercase()),
         )
     }
 
@@ -368,6 +356,14 @@ internal class SettingsAnalytics @Inject constructor(
         )
     }
 
+    /** Пользователь изменил язык интерфейса приложения. */
+    fun eventInterfaceLanguageSelected(language: AppInterfaceLanguage) {
+        tracker.track(
+            EVENT_INTERFACE_LANGUAGE_SELECTED,
+            analyticsParamsOf(PARAM_VALUE to language.name.lowercase()),
+        )
+    }
+
     /**
      * Пользователь изменил язык контента Yani.
      *
@@ -460,6 +456,7 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_auto_skip_openings_endings_toggled"
         const val EVENT_AUTO_SKIP_DELAY_CHANGED = "settings_auto_skip_delay_changed"
         const val EVENT_CONTENT_LANGUAGE_SELECTED = "settings_content_language_selected"
+        const val EVENT_INTERFACE_LANGUAGE_SELECTED = "settings_interface_language_selected"
         const val EVENT_LIBRARY_TAB_ORDER_MOVED = "settings_library_tab_order_moved"
         const val EVENT_LIBRARY_TAB_ORDER_RESET = "settings_library_tab_order_reset"
         const val EVENT_LIBRARY_TAB_ORDER_SCREEN_OPENED = "settings_library_tab_order_screen"
@@ -475,7 +472,6 @@ internal class SettingsAnalytics @Inject constructor(
             "settings_library_continue_watching_card_size_selected"
         const val EVENT_POSTER_CARD_SIZE_SELECTED = "settings_poster_card_size_selected"
         const val EVENT_TITLE_CARD_LAYOUT_SELECTED = "settings_title_card_layout_selected"
-        const val EVENT_POSTER_QUALITY_SELECTED = "settings_poster_quality_selected"
         const val EVENT_PLAYER_BUFFER_PROFILE_SELECTED = "settings_player_buffer_profile_selected"
         const val EVENT_BROWSER_USER_AGENT_SELECTED = "settings_browser_user_agent_selected"
         const val EVENT_PREFERRED_VIDEO_QUALITY_SELECTED =

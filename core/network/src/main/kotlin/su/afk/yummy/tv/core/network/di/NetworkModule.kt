@@ -5,9 +5,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
@@ -16,13 +13,18 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import su.afk.yummy.tv.core.network.BuildConfig
-import su.afk.yummy.tv.core.network.dns.tmdbImageDns
-import su.afk.yummy.tv.core.network.dns.tmdbImageTimeouts
+import su.afk.yummy.tv.core.network.NetworkTimeouts
+import su.afk.yummy.tv.core.network.applyTimeouts
+import su.afk.yummy.tv.core.network.dns.imageHostTimeouts
+import su.afk.yummy.tv.core.network.dns.imageHostsDns
+import su.afk.yummy.tv.core.network.okHttpKtorClient
 import su.afk.yummy.tv.core.network.progress.ResolveProgressPlugin
 import su.afk.yummy.tv.core.network.yani.SensitiveDataMaskingLogger
 import su.afk.yummy.tv.core.network.yani.YaniApiJson
+import su.afk.yummy.tv.core.utils.kodik.di.KodikHttpClient
 import su.afk.yummy.tv.core.utils.logging.AppLogRecordingSettings
 import javax.inject.Singleton
 
@@ -34,28 +36,46 @@ object NetworkModule {
     @Singleton
     fun provideJson(): Json = YaniApiJson
 
+    /**
+     * Базовый клиент: источник пула соединений, диспетчера и DNS для всех остальных. Не нейтральный: DNS
+     * обходит блокировку картинок TMDB (DoH) и интерцептор даёт короткие таймауты хостам картинок. Остальные клиенты
+     * приложения (Ktor, [StreamingOkHttp], [DownloadOkHttp], [AllohaOkHttp]) строятся от него через `newBuilder()`.
+     */
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
-        OkHttpClient.Builder().dns(tmdbImageDns()).addInterceptor(tmdbImageTimeouts()).build()
+        OkHttpClient.Builder().dns(imageHostsDns()).addInterceptor(imageHostTimeouts(BuildConfig.STATIC_HOST)).build()
 
     @Provides
     @Singleton
-    fun provideHttpClient(okHttpClient: OkHttpClient): HttpClient = HttpClient(OkHttp) {
-        engine { preconfigured = okHttpClient }
-        install(HttpTimeout) {
-            connectTimeoutMillis = CONNECT_TIMEOUT_MS
-            requestTimeoutMillis = REQUEST_TIMEOUT_MS
+    @StreamingOkHttp
+    fun provideStreamingOkHttp(okHttpClient: OkHttpClient): OkHttpClient =
+        okHttpClient.newBuilder().dispatcher(Dispatcher()).applyTimeouts(NetworkTimeouts.Streaming).build()
+
+    @Provides
+    @Singleton
+    @DownloadOkHttp
+    fun provideDownloadOkHttp(okHttpClient: OkHttpClient): OkHttpClient =
+        okHttpClient.newBuilder().dispatcher(Dispatcher()).applyTimeouts(NetworkTimeouts.Download).build()
+
+    @Provides
+    @Singleton
+    @AllohaOkHttp
+    fun provideAllohaOkHttp(okHttpClient: OkHttpClient): OkHttpClient =
+        okHttpClient.newBuilder().dispatcher(Dispatcher()).applyTimeouts(NetworkTimeouts.Alloha).build()
+
+    /**
+     * Клиент резолва потоков плееров. Отдельный, чтобы `ResolveProgressPlugin` не ловил запросы
+     * остальных частей приложения; пул соединений общий с остальными через [okHttpClient].
+     */
+    @Provides
+    @Singleton
+    @PlayerResolveClient
+    fun providePlayerResolveClient(okHttpClient: OkHttpClient): HttpClient =
+        // Нагружено: Zedfilm без gzip отвечает 404, плагин добавляет Accept-Encoding и декодирует ответ.
+        okHttpKtorClient(okHttpClient, timeouts = NetworkTimeouts.Api) {
+            install(ResolveProgressPlugin)
         }
-        // Нагружено: экстракторы полагаются на этот плагин. Он добавляет Accept-Encoding и
-        // декодирует ответ, а часть страниц плееров (Zedfilm) без gzip отвечает 404. Убрать или
-        // заменить клиент без него нельзя, не проверив ZedfilmExtractor.
-        install(ContentEncoding) {
-            gzip()
-            deflate()
-        }
-        install(ResolveProgressPlugin)
-    }
 
     /**
      * Отдельный клиент, а не ContentNegotiation поверх общего: общий ходит в плееры и за
@@ -69,18 +89,8 @@ object NetworkModule {
         json: Json,
         logRecordingSettings: AppLogRecordingSettings,
     ): HttpClient =
-        HttpClient(OkHttp) {
-            engine { preconfigured = okHttpClient }
-            install(HttpTimeout) {
-                connectTimeoutMillis = CONNECT_TIMEOUT_MS
-                requestTimeoutMillis = REQUEST_TIMEOUT_MS
-            }
+        okHttpKtorClient(okHttpClient, timeouts = NetworkTimeouts.Api) {
             install(ContentNegotiation) { json(json) }
-            install(ResolveProgressPlugin)
-            install(ContentEncoding) {
-                gzip()
-                deflate()
-            }
             // В release тело пишется, только пока пользователь включил запись логов: filter считается
             // на каждый вызов, при false Ktor тело не читает.
             install(Logging) {
@@ -99,6 +109,13 @@ object NetworkModule {
             }
         }
 
-    private const val CONNECT_TIMEOUT_MS = 10_000L
-    private const val REQUEST_TIMEOUT_MS = 15_000L
+    /**
+     * Ktor-клиент превью серий Kodik. Общий OkHttpClient приложения: пул соединений и TLS-сессии к Kodik
+     * переиспользуются вместо отдельного движка со своими пулом и потоками. Таймауты запросы задают сами.
+     */
+    @Provides
+    @Singleton
+    @KodikHttpClient
+    fun provideKodikHttpClient(okHttpClient: OkHttpClient): HttpClient =
+        okHttpKtorClient(okHttpClient, allowRequestTimeouts = true)
 }

@@ -1,0 +1,53 @@
+package su.afk.yummy.tv.core.network.dns
+
+import okhttp3.Dns
+import okhttp3.Interceptor
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.OkHttpClient
+import okhttp3.dnsoverhttps.DnsOverHttps
+import su.afk.yummy.tv.core.network.NetworkTimeouts
+import java.net.InetAddress
+import java.util.concurrent.TimeUnit
+
+/** CDN картинок TMDB: у части провайдеров его DNS-имена подменены на `127.0.0.1`, а узлы бывают медленными или упавшими. */
+private val TMDB_IMAGE_HOSTS = setOf("image.tmdb.org", "media.themoviedb.org")
+
+/** Картинки yani (постеры, баннеры, аватары): та же история с блокировками и упавшими узлами, что и у TMDB. */
+private const val YANI_STATIC_HOST = "static.yani.tv"
+
+/** Хосты чужих CDN с картинками, у которых есть запасные источники: для них короткие таймауты и запасной DNS. */
+private val IMAGE_CDN_HOSTS = TMDB_IMAGE_HOSTS + YANI_STATIC_HOST
+
+
+/**
+ * Таймауты для картинок: соединение 3 с, чтение 5 с. Для CDN TMDB, CDN картинок yani и для своего хоста статики [staticHost] (копии кадров
+ * и постеров). У каждой картинки есть запасные источники (Tenrai, Kodik, yani, TMDB, наш хост), поэтому при упавшем или зависшем
+ * узле лучше быстро перейти к ним, чем ждать общие десять секунд. Пустой [staticHost] — только чужие CDN.
+ */
+fun imageHostTimeouts(staticHost: String): Interceptor =
+    HostTimeoutInterceptor(
+        hosts = { if (staticHost.isBlank()) IMAGE_CDN_HOSTS else IMAGE_CDN_HOSTS + staticHost.lowercase() },
+        connectTimeoutSeconds = NetworkTimeouts.IMAGE_HOST_CONNECT_SECONDS,
+        readTimeoutSeconds = NetworkTimeouts.IMAGE_HOST_READ_SECONDS,
+    )
+
+/**
+ * DNS общего OkHttp-клиента: хосты картинок TMDB и yani при блокировке или сбое DNS резолвятся через Quad9 (DNS-over-HTTPS, адрес
+ * `9.9.9.9` задан сразу, поэтому для самого DoH обычный DNS не нужен), остальные — системным DNS.
+ */
+fun imageHostsDns(): Dns {
+    // Клиент и DoH создаются лениво: на старте приложения они не нужны, а без блокировки не понадобятся вовсе.
+    val quad9 by lazy {
+        DnsOverHttps.Builder()
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(NetworkTimeouts.DOH_SECONDS.toLong(), TimeUnit.SECONDS)
+                    .readTimeout(NetworkTimeouts.DOH_SECONDS.toLong(), TimeUnit.SECONDS)
+                    .build(),
+            )
+            .url("https://dns.quad9.net/dns-query".toHttpUrl())
+            .bootstrapDnsHosts(InetAddress.getByName("9.9.9.9"), InetAddress.getByName("149.112.112.112"))
+            .build()
+    }
+    return BlockedHostDns(hosts = IMAGE_CDN_HOSTS, fallback = Dns { hostname -> quad9.lookup(hostname) })
+}

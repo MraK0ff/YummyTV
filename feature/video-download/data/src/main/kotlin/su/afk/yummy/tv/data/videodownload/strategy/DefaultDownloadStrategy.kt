@@ -11,13 +11,12 @@ internal object DefaultDownloadStrategy : DownloadPlayerStrategy {
 
     override fun usesRotatingSegmentUrls(streamKind: StreamKind): Boolean = false
 
-    override fun preferOkHttpUpstream(streamKind: StreamKind): Boolean = false
-
     override fun decorateHeaders(
         headers: Map<String, String>,
-        iframeUrl: String
+        iframeUrl: String,
+        defaultUserAgent: String,
     ): Map<String, String> =
-        headers.withDownloadRequestHeaders(iframeUrl)
+        headers.withDownloadRequestHeaders(iframeUrl, defaultUserAgent)
 
     override fun manifestKeyToEvictOnRefresh(item: VideoDownloadItem): String? =
         item.cacheKey.takeIf { item.streamUrl.streamKind().isAdaptive }
