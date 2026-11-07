@@ -23,13 +23,6 @@
   </a>
 </p>
 
-<p align="center">
-  <img alt="Android 7.0+" src="https://img.shields.io/badge/Android-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white" />
-  <img alt="Android TV" src="https://img.shields.io/badge/Android%20TV-supported-4285F4?style=flat-square&logo=androidtv&logoColor=white" />
-  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-Compose-7F52FF?style=flat-square&logo=kotlin&logoColor=white" />
-  <img alt="Media3" src="https://img.shields.io/badge/Player-Media3%20%2F%20ExoPlayer-orange?style=flat-square" />
-</p>
-
 > [!IMPORTANT]
 > **Это независимый форк, а не официальный репозиторий YummyTV.**
 > Оригинальный проект YummyTV создаёт [Helandy](https://github.com/Helandy).
